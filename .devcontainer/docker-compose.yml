@@ -1,0 +1,68 @@
+services:
+  backend:
+    build:
+      context: ../backend  
+      dockerfile: Dockerfile
+    container_name: backend-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydatabase
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+    volumes:
+      - ..:/workspace 
+    healthcheck:
+      test: "exit 0"  
+      interval: 30s   
+      timeout: 5s    
+      retries: 3
+    command: ["sleep", "infinity"]
+
+  frontend:
+    build:
+      context: ../frontend 
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    volumes:
+      - ..:/workspace 
+    environment:
+      REACT_APP_API_URL: http://backend:8080
+    command: ["sleep", "infinity"]
+
+  db:
+    image: postgres:latest
+    container_name: backend-db
+    restart: always
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../backend/src/main/resources/data:/data
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  postgres_data:
+

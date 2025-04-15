@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:${DATABASE_URL}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:yourpassword}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  flyway:
+    enabled: true
+    url: jdbc:${DATABASE_URL}
+    user: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:yourpassword}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+jwt:
+  secret:
+    key: ${JWT_SECRET:myWebAppQuizKey12345678901234567890123456789012}  # JWT_SECRETが設定されない場合のデフォルト
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}  # 必ず環境変数 GEMINI_API_KEY を設定する
+
+logging:
+  file:
+    name: logs/app.log
+  level:
+    org.springframework.security: DEBUG
+    com.example.myapp: DEBUG

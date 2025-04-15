@@ -1,0 +1,19 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.jdt.ls.java.home": "/opt/java/openjdk",
+    "java.project.sourcePaths": [
+        "src"
+    ],
+    "java.project.outputPath": "target/classes",
+    "prettier.printWidth": 3000,
+    "prettier.proseWrap": "never",
+    "prettier.endOfLine": "lf",
+    "prettier.vueIndentScriptAndStyle": false,
+    "prettier.bracketSpacing": true,
+    "prettier.quoteProps": "as-needed",
+    "java.import.gradle.home": "/opt/gradle/",
+    "java.import.gradle.wrapper.enabled": false,
+    "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+    "java.format.settings.profile": "GoogleStyle",
+    "java.compile.nullAnalysis.mode": "automatic",
+}

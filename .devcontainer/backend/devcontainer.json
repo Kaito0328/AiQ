@@ -1,0 +1,63 @@
+{
+    "name": "AiQContainer",
+    "dockerComposeFile": "./../docker-compose.yml",
+    "service": "backend",
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder}/..,target=/workspace,type=bind",
+    "forwardPorts": [8080, 3000],
+    "init": true,
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "java.compile.nullAnalysis.mode": "automatic",
+                "java.format.settings.profile": "GoogleStyle", // フォーマットスタイル
+                "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+                "java.import.gradle.wrapper.enabled": true,
+                "[java]": {
+                    "editor.defaultFormatter": "redhat.java", // Java フォーマッター
+                    "editor.formatOnPaste": true,
+                    "editor.formatOnSave": true
+                },
+                "[typescript]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode",
+                    "editor.formatOnSave": true
+                },
+                "[typescriptreact]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode"
+                },    
+                "workbench.colorCustomizations": {
+                "editorIndentGuide.background1": "#b22222",
+                "editorIndentGuide.background2": "#ff4500",
+                "editorIndentGuide.background3": "#ffd700",
+                "editorIndentGuide.background4": "#228b22",
+                "editorIndentGuide.background5": "#000080",
+                "editorIndentGuide.background6": "#8b008b",
+                "editorIndentGuide.activeBackground1": "#fff",
+                "editorIndentGuide.activeBackground2": "#fff",
+                "editorIndentGuide.activeBackground3": "#fff",
+                "editorIndentGuide.activeBackground4": "#fff",
+                "editorIndentGuide.activeBackground5": "#fff",
+                "editorIndentGuide.activeBackground6": "#fff"
+                }, 
+            },
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "VisualStudioExptTeam.vscodeintellicode",
+                "vscjava.vscode-gradle",
+                "esbenp.prettier-vscode", 
+                "dbaeumer.vscode-eslint",
+                "streetsidesoftware.code-spell-checker",
+                "formulahendry.auto-rename-tag",
+                "ionutvmi.path-autocomplete",
+                "GitHub.copilot",
+                "eamodio.gitlens"
+            ]
+        }
+    },
+    "containerEnv": {
+        "GEMINI_API_KEY": "AIzaSyCBQwrUnpUfIY-aotMB75RDtnw9X7mzj54",
+    },
+
+    "remoteUser": "root"
+}
+  

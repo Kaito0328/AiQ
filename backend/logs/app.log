@@ -1,0 +1,41 @@
+2025-04-13T06:28:41.327Z DEBUG 9251 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-04-13T06:28:41.331Z DEBUG 9251 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-04-13T06:30:17.026Z DEBUG 9251 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/user/id/2
+2025-04-13T06:30:17.029Z DEBUG 9251 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/user/id/2
+2025-04-13T06:30:17.032Z DEBUG 9251 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/user/id/2
+2025-04-13T06:30:17.034Z DEBUG 9251 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/user/id/2
+2025-04-13T06:30:17.059Z DEBUG 9251 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-04-13T06:30:17.062Z DEBUG 9251 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-04-13T06:30:17.065Z DEBUG 9251 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-04-13T06:30:17.066Z DEBUG 9251 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-04-13T06:30:20.738Z DEBUG 9251 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-04-13T06:30:20.739Z DEBUG 9251 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-04-13T06:30:20.741Z DEBUG 9251 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-04-13T06:30:20.741Z DEBUG 9251 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-04-13T06:30:20.744Z DEBUG 9251 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-04-13T06:30:20.745Z DEBUG 9251 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-04-13T06:30:20.745Z DEBUG 9251 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-04-13T06:30:20.747Z DEBUG 9251 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-04-13T06:33:09.363Z DEBUG 9251 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/20
+2025-04-13T06:33:09.363Z DEBUG 9251 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/20
+2025-04-13T06:33:09.366Z DEBUG 9251 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/20
+2025-04-13T06:33:09.366Z DEBUG 9251 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/20
+2025-04-13T06:33:09.381Z DEBUG 9251 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/20
+2025-04-13T06:33:09.383Z DEBUG 9251 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/20
+2025-04-13T06:33:09.386Z DEBUG 9251 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/20
+2025-04-13T06:33:09.387Z DEBUG 9251 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/20
+2025-04-13T06:33:17.563Z DEBUG 9251 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/20
+2025-04-13T06:33:17.562Z DEBUG 9251 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/20
+2025-04-13T06:33:17.562Z DEBUG 9251 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/user/id/2
+2025-04-13T06:33:17.565Z DEBUG 9251 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/user/id/2
+2025-04-13T06:33:17.565Z DEBUG 9251 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/20
+2025-04-13T06:33:17.568Z DEBUG 9251 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/20
+2025-04-13T06:33:17.569Z DEBUG 9251 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/20
+2025-04-13T06:33:17.569Z DEBUG 9251 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user/id/2
+2025-04-13T06:33:17.570Z DEBUG 9251 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/20
+2025-04-13T06:33:17.571Z DEBUG 9251 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user/id/2
+2025-04-13T06:33:17.575Z DEBUG 9251 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/20
+2025-04-13T06:33:17.576Z DEBUG 9251 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/20
+2025-04-13T08:28:40.683Z  INFO 9251 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-13T08:28:40.748Z  INFO 9251 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-04-13T08:28:40.761Z  INFO 9251 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

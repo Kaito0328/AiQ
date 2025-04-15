@@ -1,0 +1,29 @@
+{
+    "name": "FrontendContainer",
+    "dockerComposeFile": "../../docker-compose.yml",
+    "service": "frontend",
+    "workspaceFolder": "/workspace/frontend",
+    "workspaceMount": "source=${localWorkspaceFolder}/frontend,target=/workspace/frontend,type=bind",
+    "remoteUser": "node",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "esbenp.prettier-vscode",
+                "dbaeumer.vscode-eslint",
+                "streetsidesoftware.code-spell-checker",
+                "formulahendry.auto-rename-tag",
+                "ionutvmi.path-autocomplete"
+            ],
+            "settings": {
+                "[typescript]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode",
+                    "editor.formatOnSave": true
+                },
+                "[typescriptreact]": {
+                    "editor.defaultFormatter": "esbenp.prettier-vscode",
+                    "editor.formatOnSave": true
+                }
+            }
+        }
+    }
+}
