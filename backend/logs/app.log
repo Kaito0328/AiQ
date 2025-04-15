@@ -4319,3 +4319,6 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 2025-04-15T09:13:52.347Z DEBUG 21886 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/1
 2025-04-15T09:13:52.347Z DEBUG 21886 --- [http-nio-8080-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
 2025-04-15T09:13:52.347Z DEBUG 21886 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/1
+2025-04-15T12:22:35.910Z  INFO 21886 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-15T12:22:35.979Z  INFO 21886 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-04-15T12:22:35.988Z  INFO 21886 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
