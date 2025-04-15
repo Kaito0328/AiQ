@@ -122,8 +122,9 @@ public class UserService implements UserDetailsService {
         userStats.setFollowerCount(0);
         userStats.setFollowingCount(0);
 
+        user = userRepository.save(user);
         userStatsRepository.save(userStats);
-        return userRepository.save(user);
+        return user;
     }
 
     public User getUserById(Long id) {
