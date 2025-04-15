@@ -1,7 +1,7 @@
 import { ApiError } from '../types/error';
 
 // API_BASE_URL を環境変数から取得するように変更
-export const API_BASE_URL = import.meta.env.REACT_APP_API_BASE_URL || 'http://localhost:8080'; // ローカルデフォルト値を設定
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'; // ローカルデフォルト値を設定
 // https://mechanical-annabel-t-tech-f1b7cf63.koyeb.app
 const API_ENDPOINT = '/api';
 
