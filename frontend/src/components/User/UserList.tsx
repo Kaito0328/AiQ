@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchUserList } from "../../api/UserAPI";
-import { User } from "../../types/types";
+import { User } from "../../types/user";
 
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
