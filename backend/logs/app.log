@@ -4743,3 +4743,6 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 2025-04-15T12:53:32.310Z  INFO 23248 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
 2025-04-15T12:53:32.328Z  INFO 23248 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
 2025-04-15T12:53:32.333Z  INFO 23248 --- [restartedMain] com.example.myapp.MyApplication          : Started MyApplication in 2.958 seconds (process running for 3.172)
+2025-04-15T14:19:46.729Z  INFO 23248 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-04-15T14:19:46.782Z  INFO 23248 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-04-15T14:19:46.794Z  INFO 23248 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
