@@ -15,7 +15,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "question")
+@Table(name = "questions")
 public class Question extends BaseTimeEntity {
 
     @Id
