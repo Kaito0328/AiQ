@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 	INVALID_PASSWORD("INVALID_PASSWORD", "Password is not valid.",
 			HttpStatus.BAD_REQUEST), DUPLICATE_COLLECTION("DUPLICATE_COLLECTION",
-					"Collection already exists.", HttpStatus.CONFLICT), NOT_FOUND_COLLECTIONSET(
+					"Collection already exists.", HttpStatus.CONFLICT), NOT_FOUND_COLLECTION_SET(
 							"NOT_FOUND_COLLECTIONSET", "CollectionSet not found.",
 							HttpStatus.NOT_FOUND), NOT_FOUND_COLLECTION("NOT_FOUND_COLLECTION",
 									"Collection not found.",
@@ -13,7 +13,7 @@ public enum ErrorCode {
 											"Question not found.",
 											HttpStatus.NOT_FOUND), NOT_FOUND_USER("NOT_FOUND_USER",
 													"User not found.",
-													HttpStatus.NOT_FOUND), DUPLICATE_COLLECTIONSET(
+													HttpStatus.NOT_FOUND), DUPLICATE_COLLECTION_SET(
 															"DUPLICATE_COLLECTIONSET",
 															"CollectionSet already exists.",
 															HttpStatus.CONFLICT), DUPLICATE_USER(
@@ -49,7 +49,7 @@ public enum ErrorCode {
 																																			HttpStatus.BAD_REQUEST), COLLECTION_NAME_EMPTY(
 																																					"COLLECTION_NAME_EMPTY",
 																																					"collection name is empty. ",
-																																					HttpStatus.BAD_REQUEST), COLLECTIONSET_NAME_EMPTY(
+																																					HttpStatus.BAD_REQUEST), COLLECTION_SET_NAME_EMPTY(
 																																							"COLLECTIONSET_NAME_EMPTY",
 																																							"collection set name is empty. ",
 																																							HttpStatus.BAD_REQUEST), LOGIN_REQUIRED(
@@ -58,7 +58,13 @@ public enum ErrorCode {
 																																									HttpStatus.UNAUTHORIZED), UNKNOWN_ERROR(
 																																											"UNKNOWN_ERROR",
 																																											"An unexpected error occurred.",
-																																											HttpStatus.INTERNAL_SERVER_ERROR);
+																																											HttpStatus.INTERNAL_SERVER_ERROR), NOT_FOUND_CASUAL_QUIZ(
+																																												"NOt_FOUND_CASUAL_QUIZ",
+																																												"CasualQuiz not found.",
+																																												HttpStatus.NOT_FOUND), NOT_CASUAL_QUIZ_OWNER(
+																																														"NOT_CASUAL_QUIZ_OWNER",
+																																														"You are not the casual quiz's owner.",
+																																														HttpStatus.FORBIDDEN);
 
 	private final String code;
 	private final String message;

@@ -1,134 +1,119 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Result from './Result';
-import { useLocation } from 'react-router-dom';
-import  Score  from './Score';
 import QuizQuestion from './QuizQuestion';
-import { getQuestionIds, checkAnswer, getNextHint } from '../../api/QuizAPI';
-import { Quiz, QuizAnswerResponse } from '../../types/quiz';
-
-
-interface LocationState {
-  selectedCollections: number[];
-  questionOrder: 'random' | 'sequential';
-  questionCount: number;
-}
+import { CasualQuiz } from '../../types/quiz';
+import { Question } from '../../types/question';
+import { submitAnswer } from '../../api/QuizAPI';
+import { AnswerHistory } from '../../types/answerHistory';
 
 const QuizPage: React.FC = () => {
   const location = useLocation();
-  const { selectedCollections, questionOrder, questionCount } = location.state as LocationState;
+  const state = location.state as { questions?: Question[], quiz?: CasualQuiz, userAnswers?: AnswerHistory[] } | undefined;
 
-  const [quizs, setQuizs] = useState<Quiz[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [result, setResult] = useState<QuizAnswerResponse | null>(null);
-  const [isEnd, setIsEnd] = useState(false);
-  const [hint, setHint] = useState('');
+  const questions = useMemo(() => state?.questions ?? [], [state]);
+  const quiz = state?.quiz ?? null;
 
-  const fetchQuizs = async () => {
-    try {
-      const data = await getQuestionIds(selectedCollections, questionOrder, questionCount);
-      console.log('Fetched quiz IDs:', data);
-      setQuizs(data);
-    } catch (error) {
-      console.error('Error fetching question IDs:', error);
-    }
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [isFinished, setIsFinished] = useState(false);
+  const [userAnswers, setUserAnswers] = useState<AnswerHistory[]>(state?.userAnswers ?? []);
+
+  const [userAnswerText, setUserAnswer] = useState('');
+  const isSubmittingRef = useRef(false);
+
+  const navigate = useNavigate();
+  const judgeAnswer = (userAnswer: string, correctAnswer: string): boolean => {
+    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+    const correctAnswers = correctAnswer
+      .split(/[,|]/)
+      .map(ans => ans.trim().toLowerCase());
+    return correctAnswers.includes(normalizedUserAnswer);
   };
 
-  // const fetchNextQuestion = async () => {
-  //   if (quizs.length === 0) return;
+  const handleAnswer = useCallback(async () => {
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
-  //   try {
-  //     const data = quizs[currentQuestionIndex];
-  //     if (data) {
-  //       setQuiz(data);
-  //       setResult(null);
-  //       setHint('');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching next question:', error);
-  //   }
-  // };
+    const q = questions[currentIndex];
+    const correct = judgeAnswer(userAnswerText, q.correctAnswer);
 
-  const handleAnswerSubmit = async (quiz: Quiz, userAnswer: string) => {
-    try {
-      const response = await checkAnswer(quiz.id, userAnswer);
-      setResult(response);
-    } catch (error) {
-      console.error('Error checking answer:', error);
+    setIsCorrect(correct);
+    const userAnswer: AnswerHistory = {question: q, userAnswer: userAnswerText, correct};
+
+    setUserAnswers((prev) => [...prev, userAnswer]);
+    if (quiz) {
+      try {
+        await submitAnswer(quiz.quizId, { questionId: q.id, userAnswer: userAnswerText, correct });
+      } catch (err) {
+        console.error('回答送信に失敗しました', err);
+      }
     }
-  };
+  }, [questions, currentIndex, userAnswerText, quiz]);
 
-  const getNextHintText = async (quiz: Quiz) => {
-    try {
-      const nextChar = await getNextHint(quiz.id, hint.length);
-      setHint((prevHint) => prevHint + nextChar);
-    } catch (error) {
-      console.error('Error fetching hint:', error);
+  const handleNext = useCallback(() => {
+    isSubmittingRef.current = false;
+    if (currentIndex + 1 >= questions.length) {
+      setIsFinished(true);
+    } else {
+      setCurrentIndex(i => i + 1);
+      setIsCorrect(null);
+      setUserAnswer('');
     }
-  };
+  }, [currentIndex, questions.length]);
 
   useEffect(() => {
-    fetchQuizs();
-  }, []);
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.repeat) return;
+      e.preventDefault();
 
-  useEffect(() => {
-    if (quizs.length > 0) {
-      setCurrentQuestionIndex(0);
-      setQuiz(quizs[0]);
-    }
-  }, [quizs]);
-
-  useEffect(() => {
-    if (quizs.length <= 0) return;
-    console.log('Current question index:', currentQuestionIndex);
-    if (currentQuestionIndex < quizs.length) setQuiz(quizs[currentQuestionIndex]);
-    else setIsEnd(true);
-  }, [currentQuestionIndex]);
-
-  useEffect(() => {
-    if (result?.correct) {
-      setScore((prev) => prev + 1);
-    }
-  }, [result]);
-
-  const handleNext = () => {
-    setCurrentQuestionIndex((prev) => prev + 1);
-    setResult(null);
-    setHint('');
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && result !== null) {
-        handleNext(); // エンターキーで次の問題
+      if (isCorrect === null) {
+        handleAnswer();
+      } else {
+        handleNext();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown); // クリーンアップ
-  }, [result]);
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isCorrect, handleAnswer, handleNext]);
+
+  
+  // ── 完了表示 ───────────────────────────────────────
+  useEffect(() => {
+    if (isFinished) {
+      navigate('/quiz/score', { state: { userAnswers } });
+    }
+  }, [isFinished, navigate, userAnswers]);
+
+  // ── stateなし・questionsなし対応 ─────────────────────────────────
+  if (!state || questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <h2 className="text-2xl font-bold mb-4">クイズデータがありません</h2>
+        <p className="text-gray-600 mb-6">クイズをスタート画面から始めてください。</p>
+        {/* ここに「トップへ戻る」ボタンとかも追加できる */}
+      </div>
+    );
+  }
+
+  const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="w-full h-full flex flex-col justify-center">
-      {!isEnd && quiz ? (
-        result ? (
-          <Result
-            isCorrect={result.correct}
-            correctAnswer={result.correctAnswer}
-            description={result.description}
-            onNext={handleNext}
-          />
-        ) : (
-          <QuizQuestion
-            question={quiz.questionText}
-            questionId={quiz.id}
-            hint={hint}
-            getNextHint={() => getNextHintText(quiz)}
-            onAnswerSubmit={(userAnswer: string) => handleAnswerSubmit(quiz, userAnswer)}
-          />
-        )
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 w-full">
+      {isCorrect !== null ? (
+        <Result
+          isCorrect={isCorrect}
+          correctAnswer={currentQuestion.correctAnswer}
+          description={currentQuestion.descriptionText}
+          onNext={handleNext}
+        />
       ) : (
-        <Score score={score} total={quizs.length} />
+        <QuizQuestion
+          question={currentQuestion}
+          userAnswer={userAnswerText}
+          onUserAnswerChange={setUserAnswer}
+          onSubmitAnswer={handleAnswer}
+        />
       )}
     </div>
   );

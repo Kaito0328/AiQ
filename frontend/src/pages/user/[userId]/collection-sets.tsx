@@ -1,25 +1,38 @@
-import CollectionSetList from "./../../../components/collectionSet/CollectionSetList";
+import React from "react";
+import { useParams } from "react-router-dom";
+import CollectionSetList from "../../../components/item/collectionSet/CollectionSetList";
 import { useUser } from "../../../hooks/useUser";
 import UserHeader from "../../../components/User/UserHeader";
-import { useParams } from "react-router-dom";
+import PageContainer from "../../../components/item/layout/PageContainer";
+import SectionCard from "../../../components/item/layout/SectionCard";
+import SectionTitle from "../../../components/item/layout/SectionTitle";
 
 const CollectionSetPage: React.FC = () => {
-    const { userId } = useParams();
-  const { user, loading, errorMessage }= useUser(userId);
+  const { userId } = useParams();
+  const { user, loading, errorMessage, onFollowStatusChange } = useUser(userId);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <UserHeader user={user} loading={loading} errorMessage={errorMessage}/>
+    <PageContainer backgroundClassName="bg-gradient-to-br from-green-100 to-green-300">
+      {/* ユーザーヘッダー */}
+      <UserHeader
+        user={user}
+        loading={loading}
+        errorMessage={errorMessage}
+        onFollowStatusChange={onFollowStatusChange}
+      />
+
       {user && (
-        <>
-          <h2 className="text-2xl font-bold mb-4 mt-4">コレクションセット一覧</h2>
-          <CollectionSetList 
-            userId={Number(user.id)}
-            isOwner={user.self}
-          />
-        </>
+        <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
+          <SectionTitle>コレクションセット一覧</SectionTitle>
+          <div className="grid gap-6 md:grid-cols-2">
+            <CollectionSetList
+              userId={Number(user.id)}
+              isOwner={user.self}
+            />
+          </div>
+        </SectionCard>
       )}
-    </div>
+    </PageContainer>
   );
 };
 

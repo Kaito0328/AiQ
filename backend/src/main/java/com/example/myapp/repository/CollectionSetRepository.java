@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CollectionSetRepository extends JpaRepository<CollectionSet, Long> {
-    Optional<CollectionSet> findByUserAndName(User user, String name); // ユーザーと名前でコレクションセットを検索
+    Optional<CollectionSet> findByUserAndName(User user, String name);
+
+    boolean existsByUserAndName(User user, String name);
 
     List<CollectionSet> findAllByUser(User user);
 }

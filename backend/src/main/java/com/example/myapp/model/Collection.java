@@ -29,6 +29,10 @@ public class Collection extends BaseTimeEntity {
     @JoinColumn(name = "collectionSetId", nullable = false)
     private CollectionSet collectionSet;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "collection_stats_id", nullable = false)
+    private CollectionStats collectionStats;
+
     public Collection() {}
 
     public Collection(String name, boolean open, CollectionSet collectionSet) {

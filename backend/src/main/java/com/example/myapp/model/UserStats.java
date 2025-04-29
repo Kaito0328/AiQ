@@ -14,18 +14,11 @@ public class UserStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @OneToOne(mappedBy = "userStats", optional = false)
     private User user;
 
     private long followerCount = 0;
     private long followingCount = 0;
-
-    @OneToOne
-    @JoinColumn(name = "current_quiz_id")
-    private Quiz currentQuiz;
-
-
     
     public void incrementFollowerCount() {
         this.followerCount++;

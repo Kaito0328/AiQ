@@ -14,8 +14,7 @@ public class CollectionStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "collection_id", referencedColumnName = "id")
+    @OneToOne(mappedBy = "collectionStats", optional = false)
     private Collection collection;
 
     private long favoriteCount = 0;

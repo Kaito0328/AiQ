@@ -2,7 +2,7 @@
     "java.configuration.updateBuildConfiguration": "interactive",
     "java.jdt.ls.java.home": "/opt/java/openjdk",
     "java.project.sourcePaths": [
-        "src"
+        "build/generated/querydsl"
     ],
     "java.project.outputPath": "target/classes",
     "prettier.printWidth": 3000,

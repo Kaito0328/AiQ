@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchUserList } from "../../api/UserAPI";
+import { getFollowees, getFollowers } from "../../api/Follow";
 import { User } from "../../types/user";
+import { useLoginUser } from "../../hooks/useLoginUser"; // 仮：認証ユーザー取得フック
+
+type TabType = "all" | "followers" | "followees";
 
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [tab, setTab] = useState<TabType>("all");
+  const { loginUser } = useLoginUser(); // 現在ログインしているユーザー情報取得
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadUsers = async () => {
+      setLoading(true);
       try {
-        const data = await fetchUserList();
+        let data: User[] = [];
+        if (tab === "all") {
+          data = await fetchUserList();
+        } else if (tab === "followers" && loginUser) {
+          data = await getFollowers(loginUser.id);
+        } else if (tab === "followees" && loginUser) {
+          data = await getFollowees(loginUser.id);
+        }
         setUsers(data);
       } catch (error) {
         console.error("ユーザー一覧の取得に失敗しました:", error);
@@ -20,7 +34,7 @@ const UserList: React.FC = () => {
       }
     };
     loadUsers();
-  }, []);
+  }, [tab, loginUser]);
 
   const handleSelectUser = (userId: number) => {
     navigate(`/user/${userId}/collection-sets`);
@@ -30,10 +44,38 @@ const UserList: React.FC = () => {
     <div className="max-w-xl mx-auto p-6 mt-3 bg-white shadow-md rounded-lg">
       <h1 className="text-2xl font-bold text-gray-800 mb-4">👤 ユーザー一覧</h1>
 
+      <div className="flex mb-4 space-x-4">
+        <button
+          className={`px-4 py-2 rounded ${tab === "all" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          onClick={() => setTab("all")}
+        >
+          全ユーザー
+        </button>
+        {loginUser && (
+          <div>
+            <button
+              className={`px-4 py-2 rounded ${tab === "followees" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+              onClick={() => setTab("followees")}
+              disabled={!loginUser}
+            >
+              フォロー中
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${tab === "followers" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+              onClick={() => setTab("followers")}
+              disabled={!loginUser}
+            >
+              フォロワー
+            </button>
+          </div>
+        )}
+        
+      </div>
+
       {loading ? (
         <p className="text-gray-500 text-center">🔄 ロード中...</p>
       ) : users.length === 0 ? (
-        <p className="text-gray-500 text-center">あなたが一番乗りです！</p>
+        <p className="text-gray-500 text-center">データが見つかりませんでした</p>
       ) : (
         <ul className="space-y-2">
           {users.map((user) => (

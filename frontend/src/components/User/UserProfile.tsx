@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import useUser from "./useUser";
 import { updateUser, changePassword, deleteUser } from "../../api/UserAPI"; // API関数をインポート
 import { logout } from "../../api/AuthAPI";
 import { useNavigate } from "react-router-dom"; 
+import { useLoginUser } from "../../hooks/useLoginUser";
+import { handleError } from "../../api/handleAPIError";
 
 const UserProfile: React.FC = () => {
-  const { user, loading, error } = useUser(); // useUser フックを使用
+  const {loginUser, loading, errorMessage} = useLoginUser();
   const [editMode, setEditMode] = useState(false);
-  const [username, setUsername] = useState(user?.username || "");
+  const [username, setUsername] = useState(loginUser?.username || "");
   const [newPassword, setNewPassword] = useState("");
   const [oldPassword, setOldPassword] = useState("");
   const [feedback, setFeedback] = useState("");
@@ -21,10 +22,10 @@ const UserProfile: React.FC = () => {
     );
   }
 
-  if (error) {
+  if (errorMessage) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl text-red-600">{error}</p>
+        <p className="text-xl text-red-600">{errorMessage}</p>
       </div>
     );
   }
@@ -35,8 +36,8 @@ const UserProfile: React.FC = () => {
       await updateUser({ username: username });
       setFeedback("ユーザー情報を更新しました！");
       setEditMode(false);
-    } catch (error) {
-      setFeedback("ユーザー情報の更新に失敗しました");
+    } catch (error: unknown) {
+      setFeedback(handleError(error));
     }
   };
 
@@ -47,8 +48,8 @@ const UserProfile: React.FC = () => {
       setFeedback("パスワードを変更しました！");
       setOldPassword("");
       setNewPassword("");
-    } catch (error) {
-      setFeedback("パスワード変更に失敗しました");
+    } catch (error: unknown) {
+      setFeedback(handleError(error));
     }
   };
 
@@ -62,7 +63,7 @@ const UserProfile: React.FC = () => {
         navigate("/login");
         // ログアウト処理をここで追加
       } catch (error) {
-        setFeedback("アカウント削除に失敗しました");
+        setFeedback(handleError(error));
       }
     }
   };
@@ -73,7 +74,7 @@ const UserProfile: React.FC = () => {
       setFeedback("ログアウトしました！");
       navigate("/login"); // ✅ ログアウト後、ログインページへリダイレクト
     } catch (error) {
-      setFeedback("ログアウトに失敗しました");
+      setFeedback(handleError(error));
     }
   };
 
@@ -82,7 +83,7 @@ const UserProfile: React.FC = () => {
       <h1 className="text-3xl font-semibold text-gray-900 mb-4">ユーザー情報</h1>
 
       <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center mb-4">
-        <span className="text-2xl text-white">{user?.username[0]}</span>
+        <span className="text-2xl text-white">{loginUser?.username[0]}</span>
       </div>
 
       {/* フィードバックメッセージ */}
@@ -110,7 +111,7 @@ const UserProfile: React.FC = () => {
         ) : (
           <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-md">
             <p className="text-lg font-medium text-gray-700">ユーザー名</p>
-            <p className="text-lg text-gray-900">{user?.username}</p>
+            <p className="text-lg text-gray-900">{loginUser?.username}</p>
           </div>
         )}
 

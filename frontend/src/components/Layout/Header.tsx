@@ -48,6 +48,9 @@ const HeaderWithHamburgerMenu = () => {
           <a href="/user" className="block text-lg font-medium hover:text-blue-400 transition duration-200">
             アカウント
           </a>
+          <a href="/quiz/resume" className="block text-lg font-medium hover:text-blue-400 transition duration-200">
+            中断したクイズ
+          </a>
         </nav>
       </div>
 

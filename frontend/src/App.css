@@ -40,3 +40,19 @@
 .read-the-docs {
   color: #888;
 }
+
+html {
+  font-size: 16px; /* デフォルト（PC） */
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14px; /* タブレットやスマホ */
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 12px; /* さらに小さいスマホ */
+  }
+}

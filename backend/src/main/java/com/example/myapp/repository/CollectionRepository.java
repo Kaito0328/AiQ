@@ -14,6 +14,7 @@ public interface CollectionRepository extends JpaRepository<Collection, Long> {
     List<Collection> findAllByIdIn(List<Long> id);
 
     Optional<Collection> findByCollectionSetAndName(CollectionSet collectionSet, String name);
+    boolean existsByCollectionSetAndName(CollectionSet collectionSet, String name);
 
     // collectionSetIdがリスト内の値に一致するCollectionを取得
     List<Collection> findAllByCollectionSetIdInOrderByNameAsc(List<Long> collectionSetIds);

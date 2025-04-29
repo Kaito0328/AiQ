@@ -14,7 +14,7 @@ export const getLoginUser = async (): Promise<User> => {
 };
 
 export const getOfficialUser = async (): Promise<User> => {
-  const response = await fetchFromAPI(`${USER_ENDPOINT}/official`, { method: 'GET' });
+  const response = await fetchFromAPI(`${USER_ENDPOINT}/official`, { method: 'GET' }, true);
   return response.json();
 };
 

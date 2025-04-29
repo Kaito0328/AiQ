@@ -29,5 +29,20 @@ export const useUser = (userId: string | undefined) => {
     fetchUser();
   }, [userId, user, setUser]);
 
-  return { user, loading, errorMessage, setUser };
+  
+  const onFollowStatusChange = (follow: boolean) => {
+    if (!user) return;
+  
+    const updatedFollowerCount = follow
+      ? user.followerCount + 1
+      : user.followerCount - 1;
+  
+    setUser({
+      ...user,
+      following: follow,
+      followerCount: Math.max(0, updatedFollowerCount),
+    });
+  };
+
+  return { user, loading, errorMessage, setUser, onFollowStatusChange };
 };

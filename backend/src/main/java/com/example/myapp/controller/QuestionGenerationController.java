@@ -6,13 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.example.myapp.service.GeminiService;
-import com.example.myapp.util.PermissionCheck;
 import com.example.myapp.service.QuestionService;
 import com.example.myapp.service.CollectionService;
 import com.example.myapp.service.CsvUploadService;
 import com.example.myapp.service.UserService;
+import com.example.myapp.util.ListTransformUtil;
 import com.example.myapp.model.User;
 import com.example.myapp.model.Collection;
+import com.example.myapp.model.Question;
 import com.example.myapp.dto.AiQuestionRequest;
 import com.example.myapp.dto.Item.BatchResponse.BatchUpsertResponse;
 import com.example.myapp.dto.Item.Question.QuestionInput;
@@ -65,16 +66,17 @@ public class QuestionGenerationController {
             @RequestPart("file") MultipartFile file) {
 
         User user = UserService.getLoginUser(customUserDetails, true);
-        Collection collection = collectionService.findById(collectionId);
-        PermissionCheck.checkManagePermission(user, collection);
+        Collection collection = collectionService.getManageCollection(collectionId, user);
 
         List<CreateRequest<QuestionInput>> questionCreateRequests =
                 csvUploadService.parseCsvFile(file);
 
 
-        BatchUpsertResponse<QuestionOutput> questionOutputs =
+        BatchUpsertResponse<Question> upSertResponse =
                 questionService.batchUpsertQuestion(collection, null, questionCreateRequests, user);
-        return ResponseEntity.ok(questionOutputs);
+        
+        List<QuestionOutput> questionOutputs = ListTransformUtil.toQuestionOutputs(upSertResponse.successItems()); 
+        return ResponseEntity.ok(new BatchUpsertResponse<QuestionOutput>(questionOutputs, upSertResponse.failedCreateItems(), upSertResponse.failedUpdateItems()));
     }
 
     @PostMapping("/collection/{collectionId}/ai")
@@ -84,8 +86,7 @@ public class QuestionGenerationController {
             @RequestBody AiQuestionRequest request) {
 
         User user = UserService.getLoginUser(customUserDetails, true);
-        Collection collection = collectionService.findById(collectionId);
-        PermissionCheck.checkManagePermission(user, collection);
+        Collection collection = collectionService.getManageCollection(collectionId, user);
 
         // 非同期処理を実行
         CompletableFuture
@@ -96,8 +97,11 @@ public class QuestionGenerationController {
                         asyncExecutor)
                 .thenApply(CompletableFuture::join) // 非同期処理を適切に継続
                 .thenAccept(questionCreateRequests -> {
-                    BatchUpsertResponse<QuestionOutput> response = questionService
+                        BatchUpsertResponse<Question> upSertResponse = questionService
                             .batchUpsertQuestion(collection, null, questionCreateRequests, user);
+                
+                        List<QuestionOutput> questionOutputs = ListTransformUtil.toQuestionOutputs(upSertResponse.successItems()); 
+                        BatchUpsertResponse<QuestionOutput> response = new BatchUpsertResponse<QuestionOutput>(questionOutputs, upSertResponse.failedCreateItems(), upSertResponse.failedUpdateItems());
 
                     try {
                         String jsonResponse = new ObjectMapper().writeValueAsString(response);

@@ -9,6 +9,7 @@ import com.example.myapp.model.User;
 
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
+    boolean existsByUsername(String username);
 
     @Query("""
         SELECT us.user FROM UserStats us

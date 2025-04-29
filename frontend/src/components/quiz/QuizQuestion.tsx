@@ -1,85 +1,95 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Question } from '../../types/question';
 
 interface QuizQuestionProps {
-  question: string; // クイズの問題
-  questionId: number;
-  onAnswerSubmit: (userAnswer: string) => void; // 解答後に呼び出すコールバック
-  hint: string;
-  getNextHint: (questionId: number) => void;
+  question: Question;
+  userAnswer: string;
+  onUserAnswerChange: (userAnswer: string) => void;
+  onSubmitAnswer: (userAnswer: string) => void;
 }
 
-const QuizQuestion: React.FC<QuizQuestionProps> = ({
-  question,
-  questionId,
-  onAnswerSubmit,
-  hint,
-  getNextHint,
-}) => {
-  const [userAnswer, setUserAnswer] = useState('');
-  const [showHint, setShowHint] = useState(false); // ヒントの表示状態
-  const answerInputRef = useRef<HTMLInputElement>(null);
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserAnswer(event.target.value);
-  };
-
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    onAnswerSubmit(userAnswer);
-    setUserAnswer(''); // 解答後に入力欄をリセット
-  };
-
-  const handleHintRequest = () => {
-    getNextHint(questionId);
-    setShowHint(true);
-
-    if (answerInputRef.current) {
-      answerInputRef.current.focus();
-    }
-  };
+const QuizQuestion: React.FC<QuizQuestionProps> = ({ question, userAnswer, onUserAnswerChange, onSubmitAnswer }) => {
+  const [hint, setHint] = useState('');
+  const [showHint, setShowHint] = useState(false);
+  const answerRef = useRef<HTMLInputElement>(null);
+  const isSubmitting = useRef(false);
 
   useEffect(() => {
-    if (answerInputRef.current) {
-      answerInputRef.current.focus();
-    }
-    setShowHint(false); // 新しい問題が来たらヒントを非表示にする
+    onUserAnswerChange('');
+    setHint('');
+    setShowHint(false);
+    isSubmitting.current = false;
+    answerRef.current?.focus();
   }, [question]);
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.repeat) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!isSubmitting.current) {
+        isSubmitting.current = true;
+        onSubmitAnswer(userAnswer.trim());
+        answerRef.current?.blur(); 
+      }
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-t from-blue-300 to-white p-6">
-      {/* 質問エリア */}
-      <div className="bg-white shadow-2xl rounded-xl p-10 w-full max-w-xl text-center transform transition-transform hover:scale-105 duration-300">
-        <p className="text-4xl font-semibold text-gray-800 mb-6">{question}</p>
+    <div className="h-screen w-screen bg-gradient-to-br from-indigo-200 via-purple-100 to-white flex items-center justify-center px-4">
+      <div className="bg-white shadow-2xl rounded-3xl px-8 py-10 w-120 max-w-2xl text-center transition-transform transform hover:scale-105 duration-300">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8 max-w-prose mx-auto text-left md:text-center">
+          {question.questionText}
+        </h1>
 
-        {/* ヒントエリア */}
-        <div className="mt-4">
-          {showHint && (
-            <p className="text-lg text-gray-600 transition-opacity duration-500 opacity-100">{hint}</p>
-          )}
-          <button
-            onClick={handleHintRequest}
-            className="mt-4 px-8 py-3 text-lg font-semibold bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none transition-all ease-in-out transform hover:scale-110"
-          >
-            ヒントを要求
-          </button>
-        </div>
+        {showHint && (
+          <div className="mb-6 text-base md:text-lg text-blue-600 font-semibold animate-pulse">
+            {hint}
+          </div>
+        )}
 
-        {/* 回答フォーム */}
-        <form onSubmit={handleSubmit} className="mt-8">
+        <form
+          className="flex flex-col items-center space-y-6"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!isSubmitting.current) {
+              isSubmitting.current = true;
+              onSubmitAnswer(userAnswer.trim());
+              answerRef.current?.blur();
+            }
+          }}
+        >
           <input
-            ref={answerInputRef}
+            ref={answerRef}
             type="text"
             value={userAnswer}
-            onChange={handleChange}
-            placeholder="答えを入力"
-            className="w-full p-4 border-2 border-gray-300 rounded-full text-lg focus:ring-2 focus:ring-blue-500 focus:outline-none mb-6 shadow-xl transition-all ease-in-out"
+            onChange={(e) => onUserAnswerChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="ここに答えを入力..."
+            className="w-full max-w-md px-6 py-4 border-2 border-gray-300 rounded-full text-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none shadow-lg transition-all"
           />
-          <button
-            type="submit"
-            className="w-full mt-4 px-8 py-4 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition-all ease-in-out transform hover:scale-110"
-          >
-            解答
-          </button>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <button
+              type="button"
+              onClick={() => {
+                if (hint.length < question.correctAnswer.length) {
+                  setHint((h) => h + question.correctAnswer[h.length]);
+                  setShowHint(true);
+                  answerRef.current?.focus();
+                }
+              }}
+              className="px-6 py-3 bg-yellow-400 text-white font-bold rounded-full hover:bg-yellow-500 transition-transform transform hover:scale-110"
+            >
+              ヒントを見る
+            </button>
+
+            <button
+              type="submit"
+              className="px-8 py-3 bg-green-500 text-white font-bold rounded-full hover:bg-green-600 transition-transform transform hover:scale-110"
+            >
+              解答する
+            </button>
+          </div>
         </form>
       </div>
     </div>

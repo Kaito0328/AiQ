@@ -1,6 +1,8 @@
 package com.example.myapp.initializer;
 
+import com.example.myapp.auth.OfficialUserManager;
 import com.example.myapp.dto.Item.Collection.CollectionInput;
+import com.example.myapp.dto.Item.CollectionSet.CollectionSetInput;
 import com.example.myapp.dto.Item.Question.QuestionInput;
 import com.example.myapp.dto.Item.Request.CreateRequest;
 import com.example.myapp.model.Collection;
@@ -9,7 +11,6 @@ import com.example.myapp.model.User;
 import com.example.myapp.service.CollectionService;
 import com.example.myapp.service.CollectionSetService;
 import com.example.myapp.service.QuestionService;
-import com.example.myapp.service.UserService;
 import com.example.myapp.util.CsvParser;
 import org.springframework.stereotype.Component;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class CsvImporter {
@@ -42,24 +44,33 @@ public class CsvImporter {
         File[] collectionSetDirs = dataRoot.listFiles(File::isDirectory);
 
         if (collectionSetDirs != null) {
-            User officialUser = UserService.getOfficialUser();
+            User officialUser = OfficialUserManager.getOfficialUser();
 
             for (File collectionSetDir : collectionSetDirs) {
-                CollectionSet collectionSet = collectionSetService
-                        .getOrCreateCollectionSet(collectionSetDir.getName(), officialUser);
+                String collectionSetName = collectionSetDir.getName();
+                Optional<CollectionSet> collectionSetOpt = collectionSetService
+                        .findByUserAndName(officialUser, collectionSetName);
+                CollectionSet collectionSet;
+                    
+                if (!collectionSetOpt.isPresent()) {
+                    CollectionSetInput collectionSetInput = new CollectionSetInput(collectionSetName);
+                    collectionSet = collectionSetService.createCollectionSet(collectionSetInput, officialUser);
+                } else {
+                    collectionSet = collectionSetOpt.get();
+                }
+                
                 collectionSetService.changeVisibility(collectionSet, true);
 
                 File[] csvFiles = collectionSetDir.listFiles((dir, name) -> name.endsWith(".csv"));
                 if (csvFiles != null) {
                     for (File csvFile : csvFiles) {
                         String collectionName = csvFile.getName().replace(".csv", "");
-                        CollectionInput collectionInput = new CollectionInput(collectionName, true);
-                        Collection collection = new Collection(collectionInput, collectionSet);
 
-                        if (collectionService.isDuplicate(collection))
+                        if (collectionService.alreadyExists(collectionSet, collectionName))
                             continue;
 
-                        collection = collectionService.save(collection);
+                        CollectionInput collectionInput = new CollectionInput(collectionName, true);
+                        Collection collection = collectionService.createCollection(collectionInput, collectionSet, officialUser);
 
                         InputStream inputStream = new FileInputStream(csvFile);
                         try {

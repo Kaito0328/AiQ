@@ -41,7 +41,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         if (id != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = userService.findById(id);
+            User user = userService.getUserById(id);
             System.out.println(user.getUsername());
             CustomUserDetails custom_user = new CustomUserDetails(user);
             if (jwtUtil.validateToken(jwt, custom_user)) {

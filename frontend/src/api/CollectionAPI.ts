@@ -24,6 +24,12 @@ export const getCollectionsByUserId = async (userId: number): Promise<Collection
   return response.json();
 };
 
+// ユーザーのお気に入り一覧取得
+export const getFavoriteCollections = async (userId: number): Promise<Collection[]> => {
+  const response = await fetchFromAPI(`/collections/user/${userId}/favorites`, {}, true);
+  return response.json();
+};
+
 export const createCollection = async (
   collectionSetId: number,
   request: CollectionInput,

@@ -1,7 +1,7 @@
 package com.example.myapp.model;
 
 import jakarta.persistence.*;
-import com.example.myapp.service.UserService;
+import com.example.myapp.auth.OfficialUserManager;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,6 +20,10 @@ public class User extends BaseTimeEntity {
     private String email;
     private String password;
 
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_stats_id", nullable = false)
+    private UserStats userStats;
+
     public User() {}
 
     public User(Long id, String username) {
@@ -28,7 +32,7 @@ public class User extends BaseTimeEntity {
     }
 
     public boolean isOfficial() {
-        return this.id.equals(UserService.getOfficialUserId());
+        return this.id.equals(OfficialUserManager.getOfficialUserId());
     }
 
     @Override

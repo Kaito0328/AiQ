@@ -33,36 +33,33 @@ dependencies {
 
     // Jakarta
     implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
 
     // Lombok
-    implementation 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     // QueryDSL
-    implementation "com.querydsl:querydsl-jpa:5.0.0"
-    annotationProcessor "com.querydsl:querydsl-apt:5.0.0"
-    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
-    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jakarta"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api:3.0.0"
 
     // Dev & Test
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-def querydslDir = "$buildDir/generated/querydsl"
-
-tasks.withType(JavaCompile).configureEach {
-    options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
-}
-
+// Qクラスの出力先を IDE に認識させる
 sourceSets {
     main {
         java {
-            srcDirs = ['src/main/java', querydslDir]
+            // QueryDSL Qクラスのデフォルト生成先を追加
+            srcDirs += "$buildDir/generated/sources/annotationProcessor/java/main"
         }
     }
 }
+
+// 生成物は annotationProcessor に任せるため、generateQueryDSL タスクは削除
+// compileJava.dependsOn や clean タスクでの削除も不要
 
 tasks.named('test') {
     useJUnitPlatform()

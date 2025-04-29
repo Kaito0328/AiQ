@@ -1,5 +1,7 @@
 package com.example.myapp.model;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,8 +21,9 @@ public class AnswerHistory extends BaseCreatedTimeEntity {
     private User user; // ユーザーとのリレーション
 
     @ManyToOne
-    @JoinColumn(name = "quiz_id", nullable = false)
-    private Quiz quiz; // クイズとのリレーション
+    @JoinColumn(name = "quiz_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    private CasualQuiz quiz;
 
     @ManyToOne
     @JoinColumn(name = "question_id", nullable = false)
@@ -35,7 +38,7 @@ public class AnswerHistory extends BaseCreatedTimeEntity {
     // 🔹 コンストラクタ
     public AnswerHistory() {}
 
-    public AnswerHistory(User user, Question question, Quiz quiz, String userAnswer, boolean isCorrect) {
+    public AnswerHistory(User user, Question question, CasualQuiz quiz, String userAnswer, boolean isCorrect) {
         this.user = user;
         this.question = question;
         this.quiz = quiz;

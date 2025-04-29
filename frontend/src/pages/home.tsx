@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBook, FaUsers, FaUser } from "react-icons/fa";
-import { getCollectionsByUserId } from "../api/CollectionAPI";
+import { getFavoriteCollections } from "../api/CollectionAPI";
 import { Collection } from "../types/collection";
 import { useLoginUser } from "../hooks/useLoginUser";
 import { useOfficialUser } from "../hooks/useOfficialUser";
@@ -20,7 +20,7 @@ const Home: React.FC = () => {
     const fetchCollections = async () => {
       if (loginUser) {
         try {
-          const userCollections = await getCollectionsByUserId(loginUser.id);
+          const userCollections = await getFavoriteCollections(loginUser.id);
           setCollections(userCollections);
         } catch (err) {
           console.error("コレクションの取得に失敗しました", err);
@@ -117,7 +117,7 @@ const Home: React.FC = () => {
                 <div
                   key={collection.id}
                   className="relative flex flex-col justify-between p-6 bg-white shadow-xl rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
-                  onClick={() => navigate(`/user/${loginUser.id}/collections/${collection.id}/questions`)}
+                  onClick={() => navigate(`/user/${collection.userId}/collection/${collection.id}/questions`)}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 opacity-10 rounded-xl"></div>
 

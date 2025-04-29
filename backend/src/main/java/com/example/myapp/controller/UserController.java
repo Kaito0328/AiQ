@@ -5,13 +5,11 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import com.example.myapp.model.User;
+import com.example.myapp.service.FollowService;
 import com.example.myapp.service.UserService;
-import com.example.myapp.util.ListTransformUtil;
 import com.example.myapp.JWT.CustomUserDetails;
+import com.example.myapp.auth.OfficialUserManager;
 import com.example.myapp.dto.ChangePasswordRequest;
 import com.example.myapp.dto.UserOutput;
 import com.example.myapp.exception.CustomException;
@@ -25,11 +23,14 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private FollowService followService;
+
     @GetMapping
     public ResponseEntity<UserOutput> getLoginUser(
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, true);
-        return ResponseEntity.ok(new UserOutput(user, user));
+        return ResponseEntity.ok(new UserOutput(user, user, false, false));
     }
 
     @PutMapping
@@ -66,19 +67,32 @@ public class UserController {
     }
 
     @GetMapping("/official")
-    public ResponseEntity<UserOutput> getOfficialUser() {
-        return ResponseEntity.ok(new UserOutput(UserService.getOfficialUser()));
+    public ResponseEntity<UserOutput> getOfficialUser(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        User user = UserService.getLoginUser(customUserDetails, false);
+        User officialUser = userService.getUserById(OfficialUserManager.getOfficialUserId());
+        boolean following = false;
+        boolean followed = false;
+
+        if (user != null) {
+            following = followService.isFollowing(officialUser, user);
+            followed = followService.isFollowed(officialUser, user);
+
+            System.out.println(following);
+            System.out.println(followed);
+        }
+        return ResponseEntity.ok(new UserOutput(officialUser, user, following, followed));
     }
 
     @GetMapping("/users")
     public ResponseEntity<List<UserOutput>> getAllUsers(
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-        List<User> users = userService.findAll();
+        List<User> users = userService.getAllUsers();
         User loginUser = UserService.getLoginUser(customUserDetails, false);
-        List<UserOutput> userDTOs = ListTransformUtil.toUserOutputs(users, loginUser);
 
-        userDTOs = userDTOs.stream().filter(userDTO -> !userDTO.official() && !userDTO.self())
-                .collect(Collectors.toList());
+        List<UserOutput> userDTOs = users.stream().map(
+            user -> new UserOutput(user, loginUser, followService.isFollowing(user, loginUser), followService.isFollowed(user, loginUser))
+        ).filter(userDTO -> !userDTO.official() && !userDTO.self()).collect(Collectors.toList());
+        
         return ResponseEntity.ok(userDTOs);
     }
 
@@ -92,7 +106,9 @@ public class UserController {
         }
 
         User loginUser = UserService.getLoginUser(customUserDetails, false);
-        UserOutput userDTO = new UserOutput(user, loginUser);
+        boolean isFollowing = followService.isFollowing(user, loginUser);
+        boolean isFollowed = followService.isFollowed(user, loginUser);
+        UserOutput userDTO = new UserOutput(user, loginUser, isFollowing, isFollowed);
         return ResponseEntity.ok(userDTO);
     }
 
@@ -105,7 +121,7 @@ public class UserController {
 
     @GetMapping("/id-only/official")
     public ResponseEntity<Long> getOfficialUserId() {
-        return ResponseEntity.ok(UserService.getOfficialUser().getId());
+        return ResponseEntity.ok(OfficialUserManager.getOfficialUserId());
     }
 
 }

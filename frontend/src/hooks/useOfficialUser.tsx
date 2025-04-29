@@ -11,24 +11,14 @@ export const useOfficialUser = () => {
   useEffect(() => {
     
     if (officialUser !== null) return;
-
-    const localOfficialUser = localStorage.getItem("officialUser");
-    if (localOfficialUser !== null) {
-        const user  = JSON.parse(localOfficialUser);
-        if ( user !== null ) {
-            setOfficialUser(user)
-            setLoading(false);
-            return;
-        }
-    }
-
+    
     const fetchOfficialUser = async () => {
       setLoading(true);
       try {
         const res = await getOfficialUser();
+        console.log(res);
         setOfficialUser(res);
         setErrorMessage(null);
-        localStorage.setItem("officialUser", JSON.stringify(res));
       } catch (err: unknown) {
         setErrorMessage(handleError(err));
       } finally {

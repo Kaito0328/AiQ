@@ -79,9 +79,12 @@ export const deleteQuestion = async (id: number): Promise<Question> => {
   return response.json();
 };
 
-export const deleteQuestions = async (ids: number[]): Promise<BatchDeleteResponse<Question>> => {
+export const deleteQuestions = async (
+  collectionId: number,
+  ids: number[],
+): Promise<BatchDeleteResponse<Question>> => {
   const response = await fetchFromAPI(
-    `questions`,
+    `/questions/collection/${collectionId}`,
     {
       method: 'DELETE',
       body: JSON.stringify(ids),

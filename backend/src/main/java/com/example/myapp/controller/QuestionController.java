@@ -19,9 +19,11 @@ import com.example.myapp.dto.Item.Question.QuestionInput;
 import com.example.myapp.dto.Item.Question.QuestionOutput;
 import com.example.myapp.dto.Item.Request.BatchUpsertRequest;
 import com.example.myapp.model.Collection;
+import com.example.myapp.model.Question;
 import com.example.myapp.service.CollectionService;
 import com.example.myapp.service.QuestionService;
 import com.example.myapp.service.UserService;
+import com.example.myapp.util.ListTransformUtil;
 import java.util.List;
 
 
@@ -46,9 +48,9 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User viewer = UserService.getLoginUser(customUserDetails, false);
 
-        QuestionOutput questionDTO = questionService.getQuestion(id, viewer);
+        Question question = questionService.getViewQuestion(id, viewer);
 
-        return ResponseEntity.ok(questionDTO);
+        return ResponseEntity.ok(new QuestionOutput(question));
     }
 
     @GetMapping("/questions/")
@@ -56,9 +58,9 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User viewer = UserService.getLoginUser(customUserDetails, false);
 
-        List<QuestionOutput> questionDTOs = questionService.getQuestions(ids, viewer);
+        List<Question> questions = questionService.getViewQuestions(ids, viewer);
 
-        return ResponseEntity.ok(questionDTOs);
+        return ResponseEntity.ok(ListTransformUtil.toQuestionOutputs(questions));
     }
 
     @GetMapping("/questions/collection/{collectionId}")
@@ -66,11 +68,11 @@ public class QuestionController {
             @PathVariable Long collectionId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, false);
-        Collection collection = collectionService.findById(collectionId);
+        Collection collection = collectionService.getViewCollection(collectionId, user);
 
-        List<QuestionOutput> questionDTOs =
+        List<Question> questions =
                 questionService.getQuestionsByCollection(collection, user);
-        return ResponseEntity.ok(questionDTOs);
+        return ResponseEntity.ok(ListTransformUtil.toQuestionOutputs(questions));
     }
 
     @PostMapping("/question/collection/{collectionId}")
@@ -79,24 +81,12 @@ public class QuestionController {
             @RequestBody QuestionInput questionInput,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, true);
-        Collection collection = collectionService.findById(collectionId);
+        Collection collection = collectionService.getManageCollection(collectionId, user);
 
-        QuestionOutput questionDTO =
+        Question question =
                 questionService.createQuestion(questionInput, collection, user);
-        return ResponseEntity.ok(questionDTO);
+        return ResponseEntity.ok(new QuestionOutput(question));
     }
-
-    // @PostMapping("/questions/collection/{collectionId}")
-    // public ResponseEntity<List<QuestionOutput>> createQuestions(@PathVariable Long collectionId,
-    // @RequestBody List<QuestionInput> questionInputs,
-    // @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-    // User user = UserService.getLoginUser(customUserDetails, true);
-    // Collection collection = collectionService.findById(collectionId);
-
-    // List<QuestionOutput> questionDTOs =
-    // questionService.createQuestions(questionInputs, collection, user);
-    // return ResponseEntity.ok(questionDTOs);
-    // }
 
     @PatchMapping("/question/{id}")
     public ResponseEntity<QuestionOutput> updateQuestion(@PathVariable Long id,
@@ -104,8 +94,8 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, true);
 
-        QuestionOutput questionDTO = questionService.updateQuestion(id, questionInput, user);
-        return ResponseEntity.ok(questionDTO);
+        Question question = questionService.updateQuestion(id, questionInput, user);
+        return ResponseEntity.ok(new QuestionOutput(question));
     }
 
     @PostMapping("/questions/collection/{collectionId}")
@@ -114,43 +104,39 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, true);
 
-        Collection collection = collectionService.findById(collectionId);
+        Collection collection = collectionService.getManageCollection(collectionId, user);
 
-        BatchUpsertResponse<QuestionOutput> updatedCollectionSets =
+        BatchUpsertResponse<Question> upSertResponse =
                 questionService.batchUpsertQuestion(collection, request.updatesRequest(),
                         request.createsRequest(), user);
+        
+        List<QuestionOutput> questionOutputs = ListTransformUtil.toQuestionOutputs(upSertResponse.successItems()); 
 
-        return ResponseEntity.ok(updatedCollectionSets);
+        return ResponseEntity.ok(new BatchUpsertResponse<QuestionOutput>(questionOutputs, upSertResponse.failedCreateItems(), upSertResponse.failedUpdateItems()));
     }
-
-    // @PatchMapping("/questions")
-    // public ResponseEntity<List<QuestionOutput>> updateQuestions(
-    // @RequestBody List<QuestionInputWithId> questionInputWithIds,
-    // @AuthenticationPrincipal CustomUserDetails customUserDetails) {
-    // User user = UserService.getLoginUser(customUserDetails, true);
-
-    // List<QuestionOutput> questionDTOs =
-    // questionService.updateQuestions(questionInputWithIds, user);
-    // return ResponseEntity.ok(questionDTOs);
-    // }
 
     @DeleteMapping("/question/{id}")
     public ResponseEntity<QuestionOutput> deleteQuestion(@PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, true);
 
-        QuestionOutput questionDTO = questionService.deleteQuestion(id, user);
-        return ResponseEntity.ok(questionDTO);
+        Question question = questionService.deleteQuestion(id, user);
+        return ResponseEntity.ok(new QuestionOutput(question));
     }
 
-    @DeleteMapping("/questions")
+    @DeleteMapping("/questions/collection/{collectionId}")
     public ResponseEntity<BatchDeleteResponse<QuestionOutput>> deleteQuestions(
-            @RequestBody List<Long> questionIds,
+            @RequestBody List<Long> questionIds,  @PathVariable Long collectionId,
             @AuthenticationPrincipal CustomUserDetails customUserDetails) {
         User user = UserService.getLoginUser(customUserDetails, true);
+        
+        Collection collection = collectionService.getManageCollection(collectionId, user);
 
-        BatchDeleteResponse<QuestionOutput> batchDeleteResponse =
-                questionService.deleteQuestions(questionIds, user);
-        return ResponseEntity.ok(batchDeleteResponse);
+        BatchDeleteResponse<Question> deleteResponse =
+                questionService.deleteQuestions(collection, questionIds, user);
+
+        List<QuestionOutput> questionOutputs = ListTransformUtil.toQuestionOutputs(deleteResponse.successItems()); 
+
+        return ResponseEntity.ok(new BatchDeleteResponse<QuestionOutput>(questionOutputs, deleteResponse.failedItems()));
     }
 }

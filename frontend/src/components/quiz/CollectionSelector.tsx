@@ -35,10 +35,6 @@ const CollectionSelector: React.FC<Props> = ({ userId, onSelectionChange }) => {
     fetchData();
   }, [userId]);
 
-  useEffect(() => {
-    onSelectionChange(selectedCollections);
-  }, [selectedCollections, onSelectionChange]);
-
   const isCollectionSelected = (id: number) => selectedCollections.includes(id);
 
   const handleSetChange = (set: CollectionSet) => {
@@ -91,6 +87,13 @@ const CollectionSelector: React.FC<Props> = ({ userId, onSelectionChange }) => {
           </div>
         </div>
       ))}
+            <button
+        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+        onClick={() => onSelectionChange(selectedCollections)}
+      >
+        選択を決定
+      </button>
+
     </div>
   );
 };

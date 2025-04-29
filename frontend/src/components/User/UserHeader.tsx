@@ -1,16 +1,32 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaPlay, FaExclamationTriangle } from "react-icons/fa";
+import { FaEdit, FaPlay, FaExclamationTriangle, FaUserPlus, FaUserCheck } from "react-icons/fa";
 import { User } from "../../types/user";
+import { followUser, unfollowUser } from "../../api/Follow";
+import { useLoginUser } from "../../hooks/useLoginUser";
 
 interface UserHeaderProps {
   user: User | null;
   loading?: boolean;
   errorMessage?: string | null;
+  onFollowStatusChange: (follow: boolean) => void;
 }
 
-const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage }) => {
+// ...省略（インポートなど）
+
+const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage, onFollowStatusChange }) => {
   const navigate = useNavigate();
+  const { loginUser } = useLoginUser();
+
+  const handleFollowToggle = async () => {
+    if (user?.following) {
+      await unfollowUser(user.id);
+      onFollowStatusChange(false);
+    } else {
+      await followUser(user!.id);
+      onFollowStatusChange(true);
+    }
+  };
 
   if (loading) {
     return (
@@ -38,7 +54,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage }) 
   }
 
   const handleNavigateToQuizOption = () => {
-    navigate(`/quiz-option/${user.id}`);
+    navigate(`/quiz/option/${user.id}`);
   };
 
   return (
@@ -49,16 +65,41 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage }) 
           <h1 className="text-2xl font-semibold text-gray-800">
             {user.official ? "✅ 公式ユーザー" : user.username}
           </h1>
+          <div className="flex space-x-6 mt-2 text-sm text-gray-600">
+            <p>フォロワー: {user.followerCount}</p>
+            <p>フォロー中: {user.followingCount}</p>
+          </div>
         </div>
       </div>
 
-      {/* ボタン群 */}
       <div className="mt-6 flex space-x-4">
-        {user.self && (
+        {loginUser && user.self && (
           <button className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition">
             <FaEdit className="mr-2" /> プロフィール編集
           </button>
         )}
+
+        {/* フォローボタン：ログインユーザーかつ他人 */}
+        {loginUser && !user.self && (
+          <button
+            className={`flex items-center px-4 py-2 rounded-lg shadow-md transition transform hover:scale-110 ${
+              user.following ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
+            }`}
+            onClick={handleFollowToggle}
+          >
+            {user.following ? (
+              <>
+                <FaUserCheck className="mr-2" /> フォロー中
+              </>
+            ) : (
+              <>
+                <FaUserPlus className="mr-2" /> フォロー
+              </>
+            )}
+          </button>
+        )}
+
+        {/* クイズ開始ボタン：常に表示 */}
         <button
           className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition transform hover:scale-110"
           onClick={handleNavigateToQuizOption}

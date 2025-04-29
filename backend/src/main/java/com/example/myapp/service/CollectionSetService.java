@@ -5,7 +5,6 @@ import com.example.myapp.dto.Item.BatchResponse.BatchUpsertResponse;
 import com.example.myapp.dto.Item.BatchResponse.FailedCreateItem;
 import com.example.myapp.dto.Item.BatchResponse.FailedItem;
 import com.example.myapp.dto.Item.CollectionSet.CollectionSetInput;
-import com.example.myapp.dto.Item.CollectionSet.CollectionSetOutput;
 import com.example.myapp.dto.Item.Request.CreateRequest;
 import com.example.myapp.dto.Item.Request.UpdateRequest;
 import com.example.myapp.exception.CustomException;
@@ -32,106 +31,59 @@ public class CollectionSetService {
     public CollectionSetService(CollectionSetRepository collectionSetRepository) {
         this.collectionSetRepository = collectionSetRepository;
     }
-
-    private List<ErrorDetail> getValidationErrors(CollectionSet collectionSet) {
-        List<ErrorCode> errorCodes = new ArrayList<>();
-        if (isDuplicate(collectionSet))
-            errorCodes.add(ErrorCode.DUPLICATE_COLLECTIONSET);
-        if (collectionSet.getName() == null || collectionSet.getName() == "")
-            errorCodes.add(ErrorCode.COLLECTIONSET_NAME_EMPTY);
-
-        return ListTransformUtil.toErrorDetails(errorCodes);
-    }
-
-    private void checkValidation(CollectionSet collectionSet) {
-        checkDuplicate(collectionSet);
-
-        if (collectionSet.getName() == null || collectionSet.getName() == "")
-            throw new CustomException(ErrorCode.COLLECTIONSET_NAME_EMPTY);
-    }
     
-  public boolean isDuplicate(CollectionSet collectionSet) {
-    return collectionSetRepository
-    .findByUserAndName(collectionSet.getUser(), collectionSet.getName())
-        .map(existing -> {
-          // 引数の collection に id があり、かつそれが一致しているなら重複ではない
-          if (collectionSet.getId() != null && collectionSet.getId().equals(existing.getId())) {
-            return false;
-          }
-          return true; // IDが一致しない場合は別物なので重複扱い
-        })
-        .orElse(false); // 存在しなければ重複ではない
-  }
-
-    private void checkDuplicate(CollectionSet collectionSet) {
-        if (isDuplicate(collectionSet))
-            throw new CustomException(ErrorCode.DUPLICATE_COLLECTIONSET);
+    public Optional<CollectionSet> findByUserAndName(User user, String collectionSetName) {
+        return collectionSetRepository.findByUserAndName(user, collectionSetName);
     }
 
-    private CollectionSet applyUpdates(CollectionSet collectionSet,
-            CollectionSetInput collectionSetInput) {
-
-        if (collectionSetInput.name() != null)
-            collectionSet.setName(collectionSetInput.name());
-
+    public CollectionSet getViewCollectionSet(Long id, User user) {
+        CollectionSet collectionSet = getCollectionSetById(id);
+        PermissionCheck.checkViewPermission(user, collectionSet);
         return collectionSet;
     }
 
-    public CollectionSet findCollectionSetById(Long id) {
-        return collectionSetRepository.findById(id)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COLLECTIONSET));
+    public CollectionSet getManageCollectionSet(Long id, User user) {
+        CollectionSet collectionSet = getCollectionSetById(id);
+        PermissionCheck.checkManagePermission(user, collectionSet);
+        return collectionSet;
     }
 
-    public CollectionSetOutput getCollectionSet(Long id, User user) {
-        CollectionSet collectionSet = findCollectionSetById(id);
-        PermissionCheck.checkViewPermission(user, collectionSet);
-        return new CollectionSetOutput(collectionSet);
+    public List<CollectionSet> getViewCollectionSetsByUser(User owner, User user) {
+
+        List<CollectionSet> collectionSets = collectionSetRepository.findAllByUser(owner);
+        collectionSets = PermissionCheck.filterCollectionSetsByViewPermission(user, collectionSets);
+
+        return collectionSets;
     }
 
-    public List<CollectionSet> findCollectionSetsByUser(User owner) {
-        return collectionSetRepository.findAllByUser(owner);
-    }
-
-    public List<CollectionSetOutput> getCollectionSetsByUser(User owner, User user) {
-
-        List<CollectionSet> collectionSets = findCollectionSetsByUser(owner);
-        System.out.println("collectionSets: " + collectionSets);
-        collectionSets =
-                PermissionCheck.filterCollectionSetsByViewPermission(user, collectionSets);
-        System.out.println("collectionSets2: " + collectionSets);
-
-        return ListTransformUtil.toCollectionSetOutputs(collectionSets);
-    }
-
-    public CollectionSetOutput createCollectionSet(CollectionSetInput collectionSetInput,
+    //引き数のUserは権限確認済みを保証
+    public CollectionSet createCollectionSet(CollectionSetInput collectionSetInput,
             User user) {
         CollectionSet collectionSet = new CollectionSet(collectionSetInput, user);
 
         checkValidation(collectionSet);
         collectionSet = collectionSetRepository.save(collectionSet);
-        return new CollectionSetOutput(collectionSet);
+        return collectionSet;
     }
 
-    public CollectionSetOutput updateCollectionSet(Long id, CollectionSetInput collectionSetInput,
+    public CollectionSet updateCollectionSet(Long id, CollectionSetInput collectionSetInput,
             User user) {
-        CollectionSet collectionSet = findCollectionSetById(id);
-        PermissionCheck.checkManagePermission(user, collectionSet);
+        CollectionSet collectionSet = getManageCollectionSet(id, user);
 
         collectionSet = applyUpdates(collectionSet, collectionSetInput);
         checkValidation(collectionSet);
-        collectionSetRepository.save(collectionSet);
+        collectionSet = collectionSetRepository.save(collectionSet);
 
-        return new CollectionSetOutput(collectionSet);
+        return collectionSet;
     }
 
-    public BatchUpsertResponse<CollectionSetOutput> batchUpsertCollection(User user,
+    //引き数のUserは権限確認済み
+    public BatchUpsertResponse<CollectionSet> batchUpsertCollection(User user,
             List<UpdateRequest<CollectionSetInput>> updateRequests,
             List<CreateRequest<CollectionSetInput>> createRequests, User loginUser) {
         List<CollectionSet> upsertCollections = new ArrayList<>();
         List<FailedCreateItem> failedCreates = new ArrayList<>();
         List<FailedItem> failedUpdates = new ArrayList<>();
-
-        PermissionCheck.checkManagePermission(loginUser, user);
 
         if (createRequests != null) {
             for (CreateRequest<CollectionSetInput> createRequest : createRequests) {
@@ -153,17 +105,17 @@ public class CollectionSetService {
 
                 Optional<CollectionSet> optCollectionSet = collectionSetRepository.findById(id);
                 if (!optCollectionSet.isPresent()) {
-                    failedUpdates.add(new FailedItem(id, ErrorCode.NOT_FOUND_COLLECTION));
+                    failedUpdates.add(new FailedItem(id, ErrorCode.NOT_FOUND_COLLECTION_SET));
                     continue;
                 }
-                CollectionSet collectionSet = optCollectionSet.get();
 
+                CollectionSet collectionSet = optCollectionSet.get();
                 if (!collectionSet.getUser().equals(user)) {
                     failedUpdates.add(new FailedItem(id, ErrorCode.INVALID_PARENT));
                     continue;
                 }
-                collectionSet = applyUpdates(collectionSet, updateRequest.input());
 
+                collectionSet = applyUpdates(collectionSet, updateRequest.input());
                 List<ErrorDetail> errorCodes = getValidationErrors(collectionSet);
                 if (!errorCodes.isEmpty()) {
                     failedUpdates.add(new FailedItem(id, errorCodes));
@@ -175,22 +127,20 @@ public class CollectionSetService {
         }
 
         upsertCollections = collectionSetRepository.saveAll(upsertCollections);
-        List<CollectionSetOutput> collectionSetOutputs =
-                ListTransformUtil.toCollectionSetOutputs(upsertCollections);
 
-        return new BatchUpsertResponse<CollectionSetOutput>(collectionSetOutputs, failedCreates,
+        return new BatchUpsertResponse<CollectionSet>(upsertCollections, failedCreates,
                 failedUpdates);
     }
 
-    public CollectionSetOutput deleteCollectionSet(Long id, User user) {
-        CollectionSet collectionSet = findCollectionSetById(id);
-        PermissionCheck.checkManagePermission(user, collectionSet);
+    public CollectionSet deleteCollectionSet(Long id, User user) {
+        CollectionSet collectionSet = getManageCollectionSet(id, user);
+
         collectionSetRepository.delete(collectionSet);
 
-        return new CollectionSetOutput(collectionSet);
+        return collectionSet;
     }
 
-    public BatchDeleteResponse<CollectionSetOutput> deleteCollectionSets(List<Long> ids,
+    public BatchDeleteResponse<CollectionSet> deleteCollectionSets(List<Long> ids,
             User user) {
         List<CollectionSet> deleteCollectionSets = new ArrayList<>();
         List<FailedItem> failedItems = new ArrayList<>();
@@ -199,29 +149,23 @@ public class CollectionSetService {
             for (Long id : ids) {
                 Optional<CollectionSet> optCollection = collectionSetRepository.findById(id);
                 if (!optCollection.isPresent()) {
-                    failedItems.add(new FailedItem(id, ErrorCode.NOT_FOUND_COLLECTION));
+                    failedItems.add(new FailedItem(id, ErrorCode.NOT_FOUND_COLLECTION_SET));
                     continue;
                 }
 
-                CollectionSet collection = optCollection.get();
-
-                if (!PermissionCheck.hasManagePermission(user, collection)) {
-                    failedItems.add(new FailedItem(id, ErrorCode.NOT_HAVE_MANAGE_PERMISSION));
+                CollectionSet collectionSet = optCollection.get();
+                if (!collectionSet.getUser().equals(user)) {
+                    failedItems.add(new FailedItem(id, ErrorCode.INVALID_PARENT));
                     continue;
                 }
-                deleteCollectionSets.add(collection);
+
+                deleteCollectionSets.add(collectionSet);
             }
         }
 
         collectionSetRepository.deleteAll(deleteCollectionSets);
-        List<CollectionSetOutput> collectionSetOutputs =
-                ListTransformUtil.toCollectionSetOutputs(deleteCollectionSets);
-        return new BatchDeleteResponse<CollectionSetOutput>(collectionSetOutputs, failedItems);
-    }
 
-    public CollectionSet getOrCreateCollectionSet(String name, User user) {
-        return collectionSetRepository.findByUserAndName(user, name)
-                .orElseGet(() -> collectionSetRepository.save(new CollectionSet(name, user)));
+        return new BatchDeleteResponse<CollectionSet>(deleteCollectionSets, failedItems);
     }
 
     public void changeVisibility(CollectionSet collectionSet, boolean isPublic) {
@@ -240,90 +184,73 @@ public class CollectionSetService {
         collectionSetRepository.save(collectionSet);
     }
 
-    // public List<CollectionSetOutput> createCollectionSets(
-    // List<CollectionSetInput> collectionSetInputs, User user) {
+    //collectionsはすべてcollectionSet配下にあることが保証されているとする。
+    public void changeVisibility(CollectionSet collectionSet, List<Collection> collections) {
+        if (collectionSet.isOpen()) return;
 
-    // List<CollectionSetOutput> collectionSetOutputs = new ArrayList<>();
+        boolean hasOpenCollection = collections.stream().anyMatch(Collection::isOpen);
+        if (hasOpenCollection) {
+            collectionSet.setOpen(true);
+            collectionSetRepository.save(collectionSet);
+        }
 
-    // for (CollectionSetInput collectionSetInput : collectionSetInputs) {
-    // CollectionSet collectionSet = new CollectionSet(collectionSetInput, user);
+        collectionSetRepository.save(collectionSet);
+    }
 
-    // List<ErrorCode> errorCodes = getValidationErrors(collectionSet);
-    // if (!errorCodes.isEmpty()) {
-    // collectionSetOutputs.add(new CollectionSetOutput(collectionSetInput, errorCodes));
-    // continue;
-    // }
 
-    // collectionSet = collectionSetRepository.save(collectionSet);
-    // collectionSetOutputs.add(new CollectionSetOutput(collectionSet, true));
-    // }
-    // return collectionSetOutputs;
-    // }
+    //以下private関数
 
-    // public List<CollectionSetOutput> updateCollectionSets(
-    // List<CollectionSetInputWithId> collectionSetInputWithIds, User user) {
-    // List<CollectionSet> updateCollectionSets = new ArrayList<>();
-    // List<CollectionSetOutput> collectionSetOutputs = new ArrayList<>();
+    
+    private Optional<CollectionSet> findCollectionSetById(Long id) {
+        return collectionSetRepository.findById(id);
+    }
 
-    // for (CollectionSetInputWithId collectionSetInputWithId : collectionSetInputWithIds) {
-    // Long id = collectionSetInputWithId.getId();
-    // CollectionSetInput collectionSetInput =
-    // collectionSetInputWithId.getCollectionSetInput();
+    private CollectionSet getCollectionSetById(Long id) {
+        return findCollectionSetById(id)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_COLLECTION_SET));
+    }
 
-    // Optional<CollectionSet> optCollectionSet = collectionSetRepository.findById(id);
-    // if (!optCollectionSet.isPresent()) {
-    // collectionSetOutputs
-    // .add(new CollectionSetOutput(id, ErrorCode.NOT_FOUND_COLLECTIONSET));
-    // continue;
-    // }
+    private CollectionSet applyUpdates(CollectionSet collectionSet,
+            CollectionSetInput collectionSetInput) {
 
-    // CollectionSet collectionSet = optCollectionSet.get();
+        if (collectionSetInput.name() != null)
+            collectionSet.setName(collectionSetInput.name());
 
-    // if (!PermissionCheck.hasManagePermission(user, collectionSet)) {
-    // collectionSetOutputs
-    // .add(new CollectionSetOutput(id, ErrorCode.NOT_HAVE_MANAGE_PERMISSION));
-    // continue;
-    // }
+        return collectionSet;
+    }
 
-    // collectionSet = applyUpdates(collectionSet, collectionSetInput);
+    private boolean isDuplicate(CollectionSet collectionSet) {
+        return collectionSetRepository
+        .findByUserAndName(collectionSet.getUser(), collectionSet.getName())
+            .map(existing -> {
+            // 引数の collection に id があり、かつそれが一致しているなら重複ではない
+            if (collectionSet.getId() != null && collectionSet.getId().equals(existing.getId())) {
+                return false;
+            }
+            return true; // IDが一致しない場合は別物なので重複扱い
+            })
+            .orElse(false); // 存在しなければ重複ではない
+    }
 
-    // List<ErrorCode> errorCodes = getValidationErrors(collectionSet);
-    // if (!errorCodes.isEmpty()) {
-    // collectionSetOutputs.add(new CollectionSetOutput(collectionSetInput, errorCodes));
-    // continue;
-    // }
+    private void checkDuplicate(CollectionSet collectionSet) {
+        if (isDuplicate(collectionSet))
+            throw new CustomException(ErrorCode.DUPLICATE_COLLECTION_SET);
+    }
 
-    // collectionSetOutputs.add(new CollectionSetOutput(collectionSet, true));
-    // updateCollectionSets.add(collectionSet);
-    // }
+    private List<ErrorDetail> getValidationErrors(CollectionSet collectionSet) {
+        List<ErrorCode> errorCodes = new ArrayList<>();
+        if (isDuplicate(collectionSet))
+            errorCodes.add(ErrorCode.DUPLICATE_COLLECTION_SET);
+        if (collectionSet.getName() == null || collectionSet.getName() == "")
+            errorCodes.add(ErrorCode.COLLECTION_SET_NAME_EMPTY);
 
-    // collectionSetRepository.saveAll(updateCollectionSets);return collectionSetOutputs;
+        return ListTransformUtil.toErrorDetails(errorCodes);
+    }
 
-    // }
+    private void checkValidation(CollectionSet collectionSet) {
+        checkDuplicate(collectionSet);
 
-    // public List<CollectionSet> filterCollectionSets(User viewer,
-    // List<CollectionSet> collectionSets) {
-    // return collectionSets.stream().filter(collectionSet -> {
-    // return UserService.hasViewPermission(viewer, collectionSet);
-    // }).collect(Collectors.toList());
-    // }
-
-    // public List<Collection> getCollectionsByUser(User viewer, User owner) {
-    // List<CollectionSet> collectionSets = getCollectionSetsByUser(viewer, owner);
-
-    // return collectionSets.stream()
-    // .flatMap(collectionSet -> collectionSet.getCollections().stream())
-    // .collect(Collectors.toList());
-    // }
-
-    // public List<CollectionSetResponse> getCollectionSets() {
-    // List<CollectionSet> sets = collectionSetRepository.findAll();
-
-    // return sets.stream().map(set -> {
-    // List<Long> sortedCollectionIds =
-    // collectionRepository.findByCollectionSetIdOrderByNameAsc(set.getId()).stream()
-    // .map(Collection::getId).collect(Collectors.toList());
-    // return new CollectionSetResponse(set.getId(), set.getName(), sortedCollectionIds);
-    // }).collect(Collectors.toList());
-    // }
+        if (collectionSet.getName() == null || collectionSet.getName() == "")
+            throw new CustomException(ErrorCode.COLLECTION_SET_NAME_EMPTY);
+    }
 }

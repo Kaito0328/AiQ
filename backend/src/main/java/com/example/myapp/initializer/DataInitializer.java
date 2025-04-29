@@ -2,7 +2,7 @@ package com.example.myapp.initializer;
 
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
-import com.example.myapp.service.UserService;
+import com.example.myapp.auth.OfficialUserManager;
 import org.springframework.boot.ApplicationArguments;
 import java.io.IOException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class DataInitializer implements ApplicationRunner {
 
     @Autowired
-    private UserService userService;
+    private OfficialUserManager officialUserManager;
 
     @Autowired
     private CsvImporter csvImporter;
@@ -21,7 +21,7 @@ public class DataInitializer implements ApplicationRunner {
         System.out.println("=== Data Initialization Started ===");
 
         // 1. 公式ユーザーを作成
-        userService.saveOfficialUser();
+        officialUserManager.initOfficialUser();
         System.out.println("Official user initialized.");
 
         // CSVデータのインポート（エラーハンドリング付き）

@@ -1,62 +1,63 @@
 import { fetchFromAPI } from './api';
-import { QuestionAnswerResponse } from '../types/types';
-import { Quiz, QuizAnswerRequest, QuizAnswerResponse } from '../types/quiz';
+import {
+  AnswerRequest,
+  CasualQuiz,
+  QuizRequest,
+  QuizStartResponse,
+  QuizResumeResponse,
+} from '../types/quiz';
 
-export const checkAnswer = async (id: number, userAnswer: string): Promise<QuizAnswerResponse> => {
-  const response = await fetchFromAPI(
-    `/quiz/${id}/check`,
+export const submitAnswer = async (quizId: number, answer: AnswerRequest): Promise<void> => {
+  await fetchFromAPI(
+    `/quiz/${quizId}/submit`,
     {
       method: 'POST',
-      body: JSON.stringify({ userAnswer }),
+      body: JSON.stringify(answer),
+    },
+    true,
+  );
+};
+
+export const startCasualQuiz = async (quizRequest: QuizRequest): Promise<QuizStartResponse> => {
+  const response = await fetchFromAPI(
+    '/quiz/start',
+    {
+      method: 'POST', // もしPOSTで送るなら 'POST' にし、body を付与
+      body: JSON.stringify(quizRequest),
     },
     true,
   );
   return response.json();
 };
 
-export const checkAnswers = async (
-  request: QuizAnswerRequest[],
-): Promise<QuestionAnswerResponse[]> => {
-  const response = await fetchFromAPI(
-    `/quizs/check`,
+export const deleteQuiz = async (quizId: number): Promise<void> => {
+  await fetchFromAPI(
+    `/quiz/${quizId}`,
     {
-      method: 'POST',
-      body: JSON.stringify({ request }),
+      method: 'DELETE',
     },
     true,
   );
-  return response.json();
 };
 
-export const getNextHint = async (questionId: number, index: number): Promise<string> => {
+export const getResumableQuizzes = async (): Promise<CasualQuiz[]> => {
   const response = await fetchFromAPI(
-    `/quiz/${questionId}/hint?index=${index}`,
-    { method: 'GET' },
-    true,
-  );
-  return response.text();
-};
-
-export const getQuestionIds = async (
-  collectionIds: number[],
-  order: string,
-  limit: number,
-): Promise<Quiz[]> => {
-  const params = new URLSearchParams();
-  params.append('collectionIds', collectionIds.join(','));
-  params.append('order', order); // 'asc', 'desc', 'random'
-  params.append('limit', limit.toString());
-
-  // クエリパラメータをURLに付加
-  const url = `/quizs/questions?${params.toString()}`;
-
-  const response = await fetchFromAPI(
-    url,
+    '/quiz/resumes',
     {
       method: 'GET',
     },
     true,
   );
+  return response.json();
+};
 
-  return await response.json();
+export const resumeQuiz = async (quizId: number): Promise<QuizResumeResponse> => {
+  const response = await fetchFromAPI(
+    `/quiz/${quizId}/resume`,
+    {
+      method: 'GET',
+    },
+    true,
+  );
+  return response.json();
 };
