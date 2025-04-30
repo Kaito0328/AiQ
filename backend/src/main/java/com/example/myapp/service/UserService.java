@@ -64,10 +64,17 @@ public class UserService implements UserDetailsService {
         if (userRepository.findByUsername(username).isPresent()) {
             throw new CustomException(ErrorCode.DUPLICATE_USER);
         }
-        String hashedPassword = passwordEncoder.encode(password);
+
         User user = new User();
+        if (password != null) {
+            String hashedPassword = passwordEncoder.encode(password);
+            user.setPassword(hashedPassword);
+        } else {
+            user.setPassword(null);
+        }
+
         user.setUsername(username);
-        user.setPassword(hashedPassword);
+
 
         user = userRepository.save(initUser((user)));
         return user;
