@@ -1,17 +1,28 @@
 import { useContext, useEffect, useState } from "react";
 import { UserContext as UserContext } from "../contexts/UserContext";
 import { handleError } from "../api/handleAPIError";
-import { getUserById } from "../api/UserAPI"; // ← userId 指定で取得するAPIを想定
+import { getUserById } from "../api/UserAPI";
+import { User } from "../types/user";
 
-export const useUser = (userId: string | undefined) => {
+export const useUser = (
+  userId?: number,
+  initialUser?: User
+) => {
   const { user, setUser } = useContext(UserContext);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // 初期ユーザーを渡されたらセット
   useEffect(() => {
-    if (userId === undefined) return;
-    if (userId === null || user?.id === Number(userId)) return;
+    if (initialUser) {
+      setUser(initialUser);
+    }
+  }, [initialUser, setUser]);
 
+  // IDから取得する処理
+  useEffect(() => {
+    if (userId === undefined || userId === null) return;
+    if (user?.id === userId) return;
 
     const fetchUser = async () => {
       setLoading(true);
@@ -29,14 +40,14 @@ export const useUser = (userId: string | undefined) => {
     fetchUser();
   }, [userId, user, setUser]);
 
-  
+  // 外部からフォロー状態を更新する関数
   const onFollowStatusChange = (follow: boolean) => {
     if (!user) return;
-  
+
     const updatedFollowerCount = follow
       ? user.followerCount + 1
       : user.followerCount - 1;
-  
+
     setUser({
       ...user,
       following: follow,
@@ -44,5 +55,11 @@ export const useUser = (userId: string | undefined) => {
     });
   };
 
-  return { user, loading, errorMessage, setUser, onFollowStatusChange };
+  return {
+    user,
+    loading,
+    errorMessage,
+    setUser,
+    onFollowStatusChange
+  };
 };

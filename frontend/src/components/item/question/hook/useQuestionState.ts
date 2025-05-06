@@ -4,6 +4,8 @@ import { ErrorCode } from '../../../../types/error';
 
 export const useQuestionState = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
   const [pendingCreations, setPendingCreations] = useState<QuestionInput[]>([]);
   const [pendingUpdates, setPendingUpdates] = useState<{ id: number; updated: QuestionInput }[]>(
     [],
@@ -16,6 +18,10 @@ export const useQuestionState = () => {
   return {
     questions,
     setQuestions,
+    loading,
+    setLoading,
+    errorMessage,
+    setErrorMessage,
     pendingCreations,
     setPendingCreations,
     pendingUpdates,

@@ -76,6 +76,7 @@ public class QuizService {
         CasualQuiz quiz = new CasualQuiz();
         quiz.setUser(user);
         quiz.setQuestions(questions);
+        quiz.setTotalQuestions(questions.size());
         quiz.setFilterTypes(ListTransformUtil.toFilterTypes(request.filters()));
         quiz.setSortKeys(ListTransformUtil.toSortKeys(request.sorts()));
         quiz.setCollectionNames(collectionNames);

@@ -1,9 +1,10 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AnswerHistory } from '../../../types/answerHistory';
-import ScoreSummary from './ScoreSummary';
-import AnswerList from './AnswerList';
-import { Question } from '../../../types/question';
+import { AnswerHistory } from '../../types/answerHistory';
+import ScoreSummary from '../../components/quiz/score/ScoreSummary';
+import AnswerList from '../../components/quiz/score/AnswerList';
+import { Question } from '../../types/question';
+import Paths from '../../routes/Paths';
 
 
 const ScorePage: React.FC = () => {
@@ -20,16 +21,16 @@ const ScorePage: React.FC = () => {
       .filter(ans => !ans.correct)
       .map(ans => ans.question);
 
-    navigate('/quiz', { state: { questions: incorrectQuestions } });
+    navigate(Paths.QUIZ, { state: { questions: incorrectQuestions } });
   };
 
   const handleRetryAll = () => {
     const allQuestions: Question[] = userAnswers.map(ans => ans.question);
-    navigate('/quiz', { state: { questions: allQuestions } });
+    navigate(Paths.QUIZ, { state: { questions: allQuestions } });
   };
 
   const handleGoHome = () => {
-    navigate('/');
+    navigate(Paths.HOME);
   };
 
   if (!userAnswers || userAnswers.length === 0) {

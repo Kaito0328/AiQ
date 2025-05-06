@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Result from './Result';
-import QuizQuestion from './QuizQuestion';
+import Result from '../../components/quiz/Result';
+import QuizQuestion from '../../components/quiz/QuizQuestion';
 import { CasualQuiz } from '../../types/quiz';
 import { Question } from '../../types/question';
 import { submitAnswer } from '../../api/QuizAPI';
 import { AnswerHistory } from '../../types/answerHistory';
+import Paths from '../../routes/Paths';
 
 const QuizPage: React.FC = () => {
   const location = useLocation();
@@ -39,7 +40,7 @@ const QuizPage: React.FC = () => {
     const correct = judgeAnswer(userAnswerText, q.correctAnswer);
 
     setIsCorrect(correct);
-    const userAnswer: AnswerHistory = {question: q, userAnswer: userAnswerText, correct};
+    const userAnswer: AnswerHistory = { question: q, userAnswer: userAnswerText, correct };
 
     setUserAnswers((prev) => [...prev, userAnswer]);
     if (quiz) {
@@ -77,21 +78,26 @@ const QuizPage: React.FC = () => {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isCorrect, handleAnswer, handleNext]);
 
-  
-  // ── 完了表示 ───────────────────────────────────────
   useEffect(() => {
     if (isFinished) {
       navigate('/quiz/score', { state: { userAnswers } });
     }
   }, [isFinished, navigate, userAnswers]);
 
-  // ── stateなし・questionsなし対応 ─────────────────────────────────
+  // ── stateなし・questionsなし対応 ──────────────────────────────
   if (!state || questions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <h2 className="text-2xl font-bold mb-4">クイズデータがありません</h2>
-        <p className="text-gray-600 mb-6">クイズをスタート画面から始めてください。</p>
-        {/* ここに「トップへ戻る」ボタンとかも追加できる */}
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 to-white px-4">
+        <div className="bg-white shadow-md rounded-lg p-8 max-w-md text-center">
+          <h2 className="mt-7 text-2xl font-bold mb-2 text-gray-800">クイズデータが見つかりません</h2>
+          <p className="text-gray-600 mb-6">クイズはスタート画面から始めてください。</p>
+          <button
+            onClick={() => navigate(Paths.HOME)}
+            className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition"
+          >
+            ホームに戻る
+          </button>
+        </div>
       </div>
     );
   }
@@ -99,23 +105,24 @@ const QuizPage: React.FC = () => {
   const currentQuestion = questions[currentIndex];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 w-full">
-      {isCorrect !== null ? (
-        <Result
-          isCorrect={isCorrect}
-          correctAnswer={currentQuestion.correctAnswer}
-          description={currentQuestion.descriptionText}
-          onNext={handleNext}
-        />
-      ) : (
-        <QuizQuestion
-          question={currentQuestion}
-          userAnswer={userAnswerText}
-          onUserAnswerChange={setUserAnswer}
-          onSubmitAnswer={handleAnswer}
-        />
-      )}
-    </div>
+      <div>
+        {isCorrect !== null ? (
+          <Result
+            isCorrect={isCorrect}
+            correctAnswer={currentQuestion.correctAnswer}
+            description={currentQuestion.descriptionText}
+            onNext={handleNext}
+          />
+        ) : (
+          <QuizQuestion
+            question={currentQuestion}
+            userAnswer={userAnswerText}
+            onUserAnswerChange={setUserAnswer}
+            onSubmitAnswer={handleAnswer}
+          />
+        )}
+      </div>
+
   );
 };
 

@@ -7,10 +7,12 @@ import { BatchDeleteResponse, BatchUpsertResponse } from '../../../../types/batc
 import { ErrorCode } from '../../../../types/error';
 import { useCollectionSetState } from './useCollectionSetState';
 import { CollectionSet } from '../../../../types/collectionSet';
+import { handleError } from '../../../../api/handleAPIError';
 
 export const useCollectionSetActions = (state: ReturnType<typeof useCollectionSetState>) => {
   const {
     setCollectionSets,
+    setErrorMessage,
     pendingCreations,
     setPendingCreations,
     pendingUpdates,
@@ -57,6 +59,7 @@ export const useCollectionSetActions = (state: ReturnType<typeof useCollectionSe
       );
       console.log(res);
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error('保存中にエラーが発生しました', e);
     }
   };
@@ -68,6 +71,7 @@ export const useCollectionSetActions = (state: ReturnType<typeof useCollectionSe
       await deleteCollectionSet(id);
       setCollectionSets((prev) => prev.filter((col) => col.id !== id));
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error('削除失敗:', e);
     }
   };
@@ -83,6 +87,7 @@ export const useCollectionSetActions = (state: ReturnType<typeof useCollectionSe
 
       return res;
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error('一括削除失敗:', e);
       return { successItems: [], failedItems: [] };
     }

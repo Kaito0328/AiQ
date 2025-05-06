@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import Loading from './Loading';
+import Loading from '../../components/quiz/Loading';
 import { startCasualQuiz } from '../../api/QuizAPI';
 import { CasualQuiz, QuizRequest } from '../../types/quiz';
 import { Question } from '../../types/question';
+import './QuizStartPage.css'; // CSS追加！
 
 const QuizStartPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -13,7 +14,9 @@ const QuizStartPage: React.FC = () => {
   const [quiz, setQuiz] = useState<CasualQuiz | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [fadeOut, setFadeOut] = useState(false);
   const fetchedRef = useRef(false);
+
   useEffect(() => {
     if (fetchedRef.current) return;
     fetchedRef.current = true;
@@ -39,32 +42,37 @@ const QuizStartPage: React.FC = () => {
 
   const handleStartQuiz = () => {
     if (!quiz) return;
+    setFadeOut(true); // フェードアウト開始
 
-    navigate('/quiz', {
-      state: {
-        quiz,
-        questions,
-      },
-    });
+    setTimeout(() => {
+      navigate('/quiz', {
+        state: {
+          quiz,
+          questions,
+        },
+      });
+    }, 800); // アニメーションに合わせて遅延
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-emerald-100 to-emerald-300">
         <Loading />
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-2xl font-bold mb-8">クイズの準備ができました！</h1>
-      <button
-        onClick={handleStartQuiz}
-        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded"
-      >
-        クイズを開始する
-      </button>
+    <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 to-emerald-300 transition-all duration-700 ${fadeOut ? 'tv-fade-out' : 'tv-fade-in'}`}>
+      <div className="bg-white p-10 rounded-xl shadow-xl text-center max-w-md w-full animate-fade-in">
+        <h1 className="text-3xl font-bold text-emerald-700 mb-6">クイズの準備ができました！</h1>
+        <button
+          onClick={handleStartQuiz}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          クイズを開始する
+        </button>
+      </div>
     </div>
   );
 };

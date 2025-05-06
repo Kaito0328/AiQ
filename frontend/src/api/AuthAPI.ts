@@ -15,12 +15,12 @@ export const logout = (): void => {
   localStorage.removeItem('token');
 };
 
-export const register = async (request: AuthRequest): Promise<boolean> => {
+export const register = async (request: AuthRequest): Promise<AuthResponse> => {
   const response = await fetchFromAPI('/auth/register', {
     method: 'POST',
     body: JSON.stringify(request), // ユーザー名とパスワードを送信
   });
-
-  if (response.ok) return true;
-  return false;
+  const data = await response.json();
+  localStorage.setItem('token', data.token);
+  return data;
 };

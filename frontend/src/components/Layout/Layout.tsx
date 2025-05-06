@@ -18,7 +18,7 @@ const Layout = ({ children }: LayoutProps) => {
         className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-500  to-black text-white items-center justify-between px-4 shadow-md z-10 "      >
         <Header />
       </header>
-      <main style={{ paddingTop: `${HEADER_HEIGHT}vh` }} className="h-full w-full bg-gradient-to-t from-yellow-200 to-white">
+      <main style={{ paddingTop: `${HEADER_HEIGHT}vh` }} className="h-full w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700">
         {children}
         <Outlet />
       </main>

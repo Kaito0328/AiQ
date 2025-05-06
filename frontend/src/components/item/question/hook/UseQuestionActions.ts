@@ -9,6 +9,7 @@ import { BatchDeleteResponse, BatchUpsertResponse } from '../../../../types/batc
 import { ErrorCode } from '../../../../types/error';
 import { useQuestionState } from './useQuestionState';
 import { useCallback } from 'react';
+import { handleError } from '../../../../api/handleAPIError';
 
 export const useQuestionActions = (
   collectionId: number,
@@ -17,6 +18,8 @@ export const useQuestionActions = (
   const {
     questions,
     setQuestions,
+    setLoading,
+    setErrorMessage,
     pendingCreations,
     setPendingCreations,
     pendingUpdates,
@@ -68,6 +71,7 @@ export const useQuestionActions = (
       );
       console.log(res);
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error('保存中にエラーが発生しました', e);
     }
   };
@@ -90,10 +94,13 @@ export const useQuestionActions = (
   const handleGetQuestion = useCallback(
     async (collectionId: number) => {
       try {
+        setLoading(true);
         const res = await getQuestionsByCollectionId(collectionId);
+        setLoading(false);
         setQuestions(res);
         mergeAnswerVisibilityMap(res);
       } catch (e) {
+        setErrorMessage(handleError(e));
         console.error('質問の取得に失敗しました:', e);
       }
     },
@@ -112,6 +119,7 @@ export const useQuestionActions = (
         return newMap;
       });
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error('削除失敗:', e);
     }
   };
@@ -136,6 +144,7 @@ export const useQuestionActions = (
 
       return res;
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error('一括削除失敗:', e);
       return { successItems: [], failedItems: [] };
     }

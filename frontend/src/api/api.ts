@@ -5,6 +5,8 @@ export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localho
 // https://mechanical-annabel-t-tech-f1b7cf63.koyeb.app
 const API_ENDPOINT = '/api';
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const fetchFromAPI = async (
   endpoint: string,
   options: RequestInit = {},
@@ -24,6 +26,7 @@ export const fetchFromAPI = async (
   }
 
   try {
+    // await sleep(3000);
     const response = await fetch(`${API_BASE_URL}${API_ENDPOINT}${endpoint}`, {
       ...options,
       headers,

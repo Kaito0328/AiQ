@@ -4,7 +4,7 @@ import { useCollectionSetActions } from "./hook/useCollectionSetActions";
 import { useCollectionSetLocalActions } from "./hook/useCollectionSetLocalActions";
 import { useCollectionSetState } from "./hook/useCollectionSetState";
 import CollectionSetItem from "./CollectionSetItem";
-import EditableItemList from "../layout/ItemList"; // 汎用リスト
+import ItemList from "../layout/ItemList"; // 汎用リスト
 
 interface Props {
   userId: number;
@@ -26,10 +26,14 @@ const CollectionSetList: React.FC<Props> = ({ userId, isOwner }) => {
 
   useEffect(() => {
     if (!userId) return;
+
     (async () => {
+      state.setLoading(true);
       const res = await getCollectionSetsByUserId(userId);
       initLocalCollectionSet(res);
+      state.setLoading(false);
     })();
+
   }, [userId, initLocalCollectionSet]);
 
   const handleCreateDelete = (index: number) => {
@@ -42,8 +46,10 @@ const CollectionSetList: React.FC<Props> = ({ userId, isOwner }) => {
   };
 
   return (
-    <EditableItemList
+    <ItemList
       items={state.collectionSets}
+      loading={state.loading}
+      errorMessage={state.errorMessage}
       pendingCreations={state.pendingCreations}
       selectedIds={state.selectedIds}
       isSelecting={isSelecting}

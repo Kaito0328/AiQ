@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaEdit, FaSave, FaTimes, FaLock, FaLockOpen } from "react-icons/fa";
+import { FaEdit, FaSave, FaTimes, FaLock, FaLockOpen, FaBook } from "react-icons/fa";
 import { Collection } from "../../../types/collection";
 import { updateCollection } from "../../../api/CollectionAPI";
 
@@ -77,14 +77,16 @@ const CollectionHeader: React.FC<Props> = ({ collection, isOwner }) => {
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
         </div>
       ) : (
-        <div className="flex justify-between items-start">
-          <div>
-            <h2 className="text-xl font-semibold">{name}</h2>
-            <p className="text-sm text-gray-600 flex items-center mt-1">
-              {open ? <FaLockOpen className="mr-1" /> : <FaLock className="mr-1" />}
-              {open ? "公開中" : "非公開"}
-            </p>
-          </div>
+        <div className="flex items-start">
+            <FaBook className="text-yellow-600 text-3xl mr-4" />
+            <h2 className="text-xl font-semibold mr-5">{name}</h2>
+            {isOwner && (
+              <p className="text-sm text-gray-600 flex items-center mt-1">
+                {open ? <FaLockOpen className="mr-1" /> : <FaLock className="mr-1" />}
+                {open ? "公開中" : "非公開"}
+              </p>
+            )}
+
           {isOwner && (
             <button
               className="bg-blue-500 text-white px-3 py-1.5 rounded-lg hover:bg-blue-600"

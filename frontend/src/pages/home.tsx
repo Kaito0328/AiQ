@@ -6,15 +6,20 @@ import { Collection } from "../types/collection";
 import { useLoginUser } from "../hooks/useLoginUser";
 import { useOfficialUser } from "../hooks/useOfficialUser";
 import { UserContext } from "../contexts/UserContext";
+import LoadingIndicator from "../components/item/layout/LoadingIndicator";
+import Paths from "../routes/Paths";
+import { generatePath } from "react-router-dom";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [showWelcome, setShowWelcome] = useState(true);
 
-  const { loginUser, loading: loginLoading } = useLoginUser();
-  const { officialUser } = useOfficialUser();
+  const { loginUser, loading: loginLoading} = useLoginUser();
+  const { officialUser, loading: officialLoading } = useOfficialUser();
   const { setUser } = useContext(UserContext);
+
+  const [collectionsLoading, setCollectionsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCollections = async () => {
@@ -24,10 +29,14 @@ const Home: React.FC = () => {
           setCollections(userCollections);
         } catch (err) {
           console.error("コレクションの取得に失敗しました", err);
+        } finally {
+          setCollectionsLoading(false);
         }
+      } else {
+        setCollectionsLoading(false);
       }
     };
-
+  
     fetchCollections();
   }, [loginUser]);
 
@@ -38,7 +47,7 @@ const Home: React.FC = () => {
 
   const handleNavigate = (type: "official" | "self" | "user") => {
     if (type === "user") {
-      navigate("/user-list");
+      navigate(Paths.USER_LIST);
     } else {
 
       let userId;
@@ -50,12 +59,18 @@ const Home: React.FC = () => {
         setUser(officialUser);
       }
       if (userId !== undefined && userId !== null) {
-        navigate(`/user/${userId}/collection-sets`);
+        navigate(generatePath(Paths.COLLECTION_SET_PAGE, { userId: String(userId) }));
       } else {
         console.error("ユーザーIDが取得できていません");
       }
     }
   };
+
+  useEffect(() => {
+    if (loginLoading || officialLoading) {
+      navigate(Paths.TOP);
+    }
+  }, [loginLoading, officialLoading, navigate]);
 
   const options = [
     { label: "公式の問題解答", icon: <FaBook />, color: "bg-blue-500", type: "official" },
@@ -80,7 +95,7 @@ const Home: React.FC = () => {
       {!loginUser && !loginLoading && (
         <div className="flex justify-end mt-5 w-full px-5">
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate(Paths.LOGIN)}
             className="px-5 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
           >
             ログイン
@@ -109,28 +124,35 @@ const Home: React.FC = () => {
       {loginUser && (
         <div className="mt-16 w-full px-6">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-            あなたのコレクション
+            あなたのお気に入りコレクション
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-[90%] max-w-5xl mx-auto">
-            {collections.length > 0 ? (
-              collections.map((collection) => (
-                <div
-                  key={collection.id}
-                  className="relative flex flex-col justify-between p-6 bg-white shadow-xl rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
-                  onClick={() => navigate(`/user/${collection.userId}/collection/${collection.id}/questions`)}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 opacity-10 rounded-xl"></div>
-
-                  <FaBook className="text-5xl text-purple-500 mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900">{collection.name}</h3>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-600 text-center w-full">
-                まだコレクションがありません
-              </p>
-            )}
-          </div>
+          {collectionsLoading ? (
+            <div className="flex justify-center">
+              <LoadingIndicator text="コレクションを読み込み中..." />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-[90%] max-w-5xl mx-auto">
+              {collections.length > 0 ? (
+                collections.map((collection) => (
+                  <div
+                    key={collection.id}
+                    className="relative flex flex-col justify-between p-6 bg-white shadow-xl rounded-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 cursor-pointer"
+                    onClick={() =>
+                      navigate(`/user/${collection.userId}/collection/${collection.id}/questions`)
+                    }
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 opacity-10 rounded-xl"></div>
+                    <FaBook className="text-5xl text-purple-500 mb-4" />
+                    <h3 className="text-xl font-semibold text-gray-900">{collection.name}</h3>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-600 text-center w-full">
+                  まだコレクションがありません
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

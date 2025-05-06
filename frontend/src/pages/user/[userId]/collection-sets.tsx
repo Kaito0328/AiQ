@@ -9,7 +9,7 @@ import SectionTitle from "../../../components/item/layout/SectionTitle";
 
 const CollectionSetPage: React.FC = () => {
   const { userId } = useParams();
-  const { user, loading, errorMessage, onFollowStatusChange } = useUser(userId);
+  const { user, loading, errorMessage, onFollowStatusChange } = useUser(Number(userId));
 
   return (
     <PageContainer backgroundClassName="bg-gradient-to-br from-green-100 to-green-300">
@@ -24,7 +24,7 @@ const CollectionSetPage: React.FC = () => {
       {user && (
         <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
           <SectionTitle>コレクションセット一覧</SectionTitle>
-          <div className="grid gap-6 md:grid-cols-2">
+          <div>
             <CollectionSetList
               userId={Number(user.id)}
               isOwner={user.self}

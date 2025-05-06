@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { CollectionSet, CollectionSetInput } from "../../../types/collectionSet";
 import { ErrorCode } from "../../../types/error";
 import { handleAPIError } from "../../../api/handleAPIError";
-import { FaCheck, FaEdit, FaTrash } from "react-icons/fa";
+import { FaCheck, FaEdit, FaTrash, FaFolder } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
@@ -72,6 +72,7 @@ const CollectionSetItem: React.FC<Props> = ({
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-center space-x-3 cursor-pointer" onClick={handleNavigate}>
+            <FaFolder className="text-pink-600" />
               <span className="text-lg font-semibold text-blue-600 hover:underline break-all">
                 {name}
               </span>

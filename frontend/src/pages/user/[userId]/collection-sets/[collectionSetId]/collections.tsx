@@ -16,7 +16,7 @@ interface CollectionPageProps {
 
 const CollectionPage: React.FC<CollectionPageProps> = ({ collectionSet: propCollectionSet }) => {
   const { collectionSetId, userId } = useParams();
-  const { user, loading, errorMessage, onFollowStatusChange } = useUser(userId);
+  const { user, loading, errorMessage, onFollowStatusChange } = useUser(Number(userId));
   const [collectionSet, setCollectionSet] = useState<CollectionSet | undefined>(propCollectionSet);
 
   useEffect(() => {

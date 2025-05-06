@@ -3,6 +3,7 @@ import { Collection } from '../../../../types/collection';
 import { BatchDeleteResponse, BatchUpsertResponse } from '../../../../types/batchResponse';
 import { ErrorCode } from '../../../../types/error';
 import { useCollectionState } from './useCollectionState';
+import { handleError } from '../../../../api/handleAPIError';
 
 export const useCollectionActions = (
   collectionSetId: number,
@@ -10,6 +11,7 @@ export const useCollectionActions = (
 ) => {
   const {
     setCollections,
+    setErrorMessage,
     pendingCreations,
     setPendingCreations,
     pendingUpdates,
@@ -58,6 +60,7 @@ export const useCollectionActions = (
           prev.filter((item) => res.failedUpdateItems.some((f) => f.id === item.id)),
         );
       } catch (e) {
+        setErrorMessage(handleError(e));
         console.error('保存中にエラーが発生しました', e);
       }
 
@@ -70,6 +73,7 @@ export const useCollectionActions = (
       await deleteCollection(id);
       setCollections(prev => prev.filter(col => col.id !== id));
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error("削除失敗:", e);
     }
   };
@@ -85,6 +89,7 @@ export const useCollectionActions = (
 
       return res;
     } catch (e) {
+      setErrorMessage(handleError(e));
       console.error("一括削除失敗:", e);
       return { successItems: [], failedItems: [] };
     }

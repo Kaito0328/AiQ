@@ -6,7 +6,7 @@ import { useCollectionLocalActions } from "./hook/useCollectionLocalActions";
 import { useCollectionState } from "./hook/useCollectionState";
 import { useLoginUser } from "../../../hooks/useLoginUser";
 import CollectionItem from "./CollectionItem";
-import EditableItemList from "../layout/ItemList"; // 追加：共通化されたList
+import ItemList from "../layout/ItemList"; // 追加：共通化されたList
 import { useCallback } from "react";
 
 interface Props {
@@ -33,7 +33,9 @@ const CollectionList: React.FC<Props> = ({ collectionSetId, userId, isOwner }) =
   // 初期ロード
   useEffect(() => {
     (async () => {
+      state.setLoading(true);
       const res = await getCollectionsByCollectionSetId(collectionSetId);
+      state.setLoading(false);
       initLocalCollection(res);
     })();
   }, [collectionSetId, initLocalCollection]);
@@ -80,8 +82,10 @@ const CollectionList: React.FC<Props> = ({ collectionSetId, userId, isOwner }) =
   );
 
   return (
-    <EditableItemList<Collection, CollectionInput>
+    <ItemList<Collection, CollectionInput>
       items={state.collections}
+      loading={state.loading}
+      errorMessage={state.errorMessage}
       pendingCreations={state.pendingCreations}
       selectedIds={state.selectedIds}
       isSelecting={isSelecting}

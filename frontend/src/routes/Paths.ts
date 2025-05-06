@@ -1,16 +1,19 @@
 const Paths = {
-  HOME: '/',
-  LOGIN: '/login',
-  REGISTER: '/register',
-  QUIZ_OPTION: '/quiz/option/:userId',
-  QUIZ: '/quiz',
+  TOP: '/',
+  HOME: '/home',
+  LOGIN: '/auth/login',
+  REGISTER: '/auth/register',
+  QUIZ_OPTION: '/user/:userId/quiz-option',
+  QUIZ: '/quiz/',
   QUIZ_SCORE: '/quiz/score',
   QUIZ_START: '/quiz/start',
+  RESUMABLE_QUIZZES_LIST: '/quiz/resume',
   COLLECTION_PAGE: '/user/:userId/collection-set/:collectionSetId/collections',
   QUESTION_PAGE: '/user/:userId/collection/:collectionId/questions',
-  USER_LIST: '/user-list',
+  FAVORITE_COLLECTION_PAGE: '/user/:userId/favorite/collections',
+  USER_LIST: '/user/list',
+  USER_PROFILE: '/user/profile',
   COLLECTION_SET_PAGE: '/user/:userId/collection-sets',
-  RESUMABLE_QUIZZES_LIST: '/quiz/resume',
 };
 
 export default Paths;

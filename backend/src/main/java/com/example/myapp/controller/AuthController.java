@@ -21,9 +21,10 @@ public class AuthController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody AuthRequest request) {
-        userService.registerUser(request.username(), request.password());
-        return ResponseEntity.ok("ユーザー登録成功");
+    public ResponseEntity<AuthResponse> register(@RequestBody AuthRequest request) {
+        User user = userService.registerUser(request.username(), request.password());
+        String token = jwtUtil.generateToken(user);
+        return ResponseEntity.ok(new AuthResponse(token));
     }
 
     @PostMapping("/login")

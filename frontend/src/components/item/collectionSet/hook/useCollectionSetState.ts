@@ -4,6 +4,8 @@ import { CollectionSet, CollectionSetInput } from '../../../../types/collectionS
 
 export const useCollectionSetState = () => {
   const [collectionSets, setCollectionSets] = useState<CollectionSet[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
   const [pendingCreations, setPendingCreations] = useState<CollectionSetInput[]>([]);
   const [pendingUpdates, setPendingUpdates] = useState<
     { id: number; updated: CollectionSetInput }[]
@@ -15,6 +17,10 @@ export const useCollectionSetState = () => {
   return {
     collectionSets,
     setCollectionSets,
+    loading,
+    setLoading,
+    errorMessage,
+    setErrorMessage,
     pendingCreations,
     setPendingCreations,
     pendingUpdates,

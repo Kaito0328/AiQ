@@ -1,9 +1,10 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { generatePath, useNavigate } from "react-router-dom";
 import { FaEdit, FaPlay, FaExclamationTriangle, FaUserPlus, FaUserCheck } from "react-icons/fa";
 import { User } from "../../types/user";
 import { followUser, unfollowUser } from "../../api/Follow";
 import { useLoginUser } from "../../hooks/useLoginUser";
+import Paths from "../../routes/Paths";
 
 interface UserHeaderProps {
   user: User | null;
@@ -54,7 +55,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage, on
   }
 
   const handleNavigateToQuizOption = () => {
-    navigate(`/quiz/option/${user.id}`);
+    navigate(generatePath(Paths.QUIZ_OPTION, {userId: user.id}));
   };
 
   return (

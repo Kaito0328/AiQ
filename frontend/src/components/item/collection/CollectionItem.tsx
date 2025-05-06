@@ -8,6 +8,7 @@ import {
   FaCheck,
   FaLock,
   FaLockOpen,
+  FaBook,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
@@ -126,6 +127,7 @@ const CollectionItem: React.FC<Props> = ({
           {/* 左：コレクション名 & 公開状態 */}
           <div className="flex-1 min-w-0 pr-4">
             <div className="flex items-center space-x-3 cursor-pointer" onClick={handleNavigate}>
+            <FaBook className="text-xl text-yellow-500 group-hover:text-gray-700 transition" />
               <span className="text-lg font-semibold text-blue-600 hover:underline break-all">
                 {name}
               </span>

@@ -16,7 +16,7 @@ interface QuestionPageProps {
 
 const QuestionPage: React.FC<QuestionPageProps> = ({ collection: propCollection }) => {
   const { userId, collectionId } = useParams<{ userId: string; collectionId: string }>();
-  const { user, loading, errorMessage, onFollowStatusChange } = useUser(userId);
+  const { user, loading, errorMessage, onFollowStatusChange } = useUser(Number(userId));
   const [collection, setCollection] = useState<Collection | undefined>(propCollection);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ const QuestionPage: React.FC<QuestionPageProps> = ({ collection: propCollection 
       </SectionCard>
 
       {/* 問題一覧セクション */}
-      <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
+      <SectionCard className="bg-white/80 rounded-2xl">
         <SectionTitle>問題一覧</SectionTitle>
         <QuestionList 
           collectionId={Number(collectionId)} 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaEdit, FaSave, FaTimes, FaTrash, FaSpinner } from "react-icons/fa";
+import { FaEdit, FaSave, FaTimes, FaTrash, FaSpinner, FaFolder } from "react-icons/fa";
 import { CollectionSet } from "../../../types/collectionSet";
 import { updateCollectionSet, deleteCollectionSet } from "../../../api/CollectionSetAPI";
 import { useNavigate } from "react-router-dom";
@@ -88,7 +88,8 @@ const CollectionSetHeader: React.FC<Props> = ({ collectionSet, isOwner, onDelete
           </div>
         </div>
       ) : (
-        <div className="flex justify-between items-start">
+        <div className="flex items-start">
+          <FaFolder className="text-pink-600 text-3xl mr-4" />
           <h2 className="text-2xl font-semibold text-gray-800 break-words">{name}</h2>
           {isOwner && (
             <div className="flex gap-2">

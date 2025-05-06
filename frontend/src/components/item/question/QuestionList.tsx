@@ -4,7 +4,7 @@ interface Props {
   isOwner: boolean;
 }
 
-import EditableItemList from "../layout/ItemList";
+import ItemList from "../layout/ItemList";
 import QuestionItem from "./QuestionItem";
 import { useState, useEffect } from "react";
 import { useQuestionState } from "./hook/useQuestionState";
@@ -67,7 +67,7 @@ const QuestionList: React.FC<Props> = ({ collectionId, userId, isOwner }) => {
   };
 
   return (
-    <div className="pb-32">
+    <div>
       <div className="flex space-x-4 mb-4">
         <button
           className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300 ease-in-out transform hover:scale-105"
@@ -84,8 +84,10 @@ const QuestionList: React.FC<Props> = ({ collectionId, userId, isOwner }) => {
         </button>
       </div>
 
-      <EditableItemList
+      <ItemList
         items={state.questions}
+        loading={state.loading}
+        errorMessage={state.errorMessage}
         pendingCreations={state.pendingCreations}
         selectedIds={state.selectedIds}
         isSelecting={isSelecting}
@@ -129,11 +131,12 @@ const QuestionList: React.FC<Props> = ({ collectionId, userId, isOwner }) => {
           />
         )}
       />
-
-      <QuestionModal
-        collectionId={collectionId}
-        onComplete={onComplete}
-      />
+      <div className="fixed bottom-9 left-10 z-100">
+        <QuestionModal
+          collectionId={collectionId}
+          onComplete={onComplete}
+        />
+      </div>
     </div>
   );
 };
