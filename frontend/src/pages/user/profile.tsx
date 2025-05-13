@@ -1,59 +1,56 @@
 import React, { useState } from "react";
-import { updateUser, changePassword, deleteUser } from "../../api/UserAPI"; // API関数をインポート
+import { updateUser, changePassword, deleteUser } from "../../api/UserAPI";
 import { logout } from "../../api/AuthAPI";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import { useLoginUser } from "../../hooks/useLoginUser";
 import { handleError } from "../../api/handleAPIError";
+import PasswordChangeForm from "./../../components/User/PasswordChangeForm"; // 🔄 新規作成したフォームをインポート
+import LogoutButton from "../../components/User/LogoutButton";
+import DeleteAccountButton from "../../components/User/DeleteAccountButton";
+import UserInfoCard from "../../components/User/UserInfoCard";
 
 const UserProfile: React.FC = () => {
-  const {loginUser, loading, errorMessage} = useLoginUser();
-  const [editMode, setEditMode] = useState(false);
-  const [username, setUsername] = useState(loginUser?.username || "");
-  const [newPassword, setNewPassword] = useState("");
-  const [oldPassword, setOldPassword] = useState("");
+  const { loginUser, setLoginUser, loading, errorMessage } = useLoginUser();
   const [feedback, setFeedback] = useState("");
   const navigate = useNavigate();
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl text-gray-600">Loading...</p>
-      </div>
-    );
+    return <div className="flex justify-center items-center min-h-screen"><p>Loading...</p></div>;
   }
 
   if (errorMessage) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="text-xl text-red-600">{errorMessage}</p>
-      </div>
-    );
+    return <div className="flex justify-center items-center min-h-screen"><p>{errorMessage}</p></div>;
   }
 
-  // ユーザー情報更新処理
-  const handleUpdateUser = async () => {
+  const handleUpdateUser = async (
+    username: string,
+    onSuccess?: () => void
+  ) => {
     try {
-      await updateUser({ username: username });
+      await updateUser({ username });
       setFeedback("ユーザー情報を更新しました！");
-      setEditMode(false);
-    } catch (error: unknown) {
+      setLoginUser((loginUser ? {...loginUser, username }: null));
+      onSuccess?.();
+
+    } catch (error) {
       setFeedback(handleError(error));
     }
   };
 
-  // パスワード変更処理
-  const handleChangePassword = async () => {
+  const handleChangePassword = async (
+    oldPassword: string,
+    newPassword: string,
+    onSuccess?: () => void
+  ) => {
     try {
       await changePassword(oldPassword, newPassword);
       setFeedback("パスワードを変更しました！");
-      setOldPassword("");
-      setNewPassword("");
-    } catch (error: unknown) {
+      onSuccess?.();
+    } catch (error) {
       setFeedback(handleError(error));
     }
   };
 
-  // アカウント削除処理
   const handleDeleteAccount = async () => {
     if (confirm("本当にアカウントを削除しますか？この操作は取り消せません。")) {
       try {
@@ -61,7 +58,6 @@ const UserProfile: React.FC = () => {
         setFeedback("アカウントを削除しました");
         logout();
         navigate("/login");
-        // ログアウト処理をここで追加
       } catch (error) {
         setFeedback(handleError(error));
       }
@@ -72,7 +68,7 @@ const UserProfile: React.FC = () => {
     try {
       logout();
       setFeedback("ログアウトしました！");
-      navigate("/login"); // ✅ ログアウト後、ログインページへリダイレクト
+      navigate("/login");
     } catch (error) {
       setFeedback(handleError(error));
     }
@@ -86,82 +82,15 @@ const UserProfile: React.FC = () => {
         <span className="text-2xl text-white">{loginUser?.username[0]}</span>
       </div>
 
-      {/* フィードバックメッセージ */}
       {feedback && <p className="text-center text-green-600 mb-4">{feedback}</p>}
 
-      {/* ユーザー情報編集フォーム */}
-      <div className="space-y-4 w-full">
-        {editMode ? (
-          <>
-            <div className="flex flex-col bg-gray-50 p-4 rounded-lg shadow-md">
-              <label className="text-lg font-medium text-gray-700">ユーザー名</label>
-              <input
-                className="border rounded-lg p-2"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-              />
-            </div>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg w-full"
-              onClick={handleUpdateUser}
-            >
-              保存
-            </button>
-          </>
-        ) : (
-          <div className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-md">
-            <p className="text-lg font-medium text-gray-700">ユーザー名</p>
-            <p className="text-lg text-gray-900">{loginUser?.username}</p>
-          </div>
-        )}
+    <UserInfoCard onUpdateUser={handleUpdateUser} loginUser={loginUser} />
 
-        <button
-          className="bg-gray-500 text-white px-4 py-2 rounded-lg w-full"
-          onClick={() => setEditMode(!editMode)}
-        >
-          {editMode ? "キャンセル" : "編集"}
-        </button>
-      </div>
+      <PasswordChangeForm onChangePassword={handleChangePassword} />
 
-      {/* パスワード変更フォーム */}
-      <div className="mt-8 w-full">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">パスワード変更</h2>
-        <input
-          className="border rounded-lg p-2 w-full mb-2"
-          type="password"
-          placeholder="現在のパスワード"
-          value={oldPassword}
-          onChange={(e) => setOldPassword(e.target.value)}
-        />
-        <input
-          className="border rounded-lg p-2 w-full mb-4"
-          type="password"
-          placeholder="新しいパスワード"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-        />
-        <button
-          className="bg-green-500 text-white px-4 py-2 rounded-lg w-full"
-          onClick={handleChangePassword}
-        >
-          パスワード変更
-        </button>
+        <LogoutButton handleLogout={handleLogout} />
 
-        <button
-        className="bg-gray-700 text-white px-4 py-2 rounded-lg w-full mt-4"
-        onClick={handleLogout}
-      >
-        ログアウト
-      </button>
-      </div>
-
-      {/* アカウント削除ボタン */}
-      <button
-        className="bg-red-500 text-white px-4 py-2 rounded-lg w-full mt-8"
-        onClick={handleDeleteAccount}
-      >
-        アカウント削除
-      </button>
+        <DeleteAccountButton handleDeleteAccount={handleDeleteAccount} />
     </div>
   );
 };

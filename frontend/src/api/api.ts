@@ -26,7 +26,7 @@ export const fetchFromAPI = async (
   }
 
   try {
-    // await sleep(3000);
+    await sleep(1000);
     const response = await fetch(`${API_BASE_URL}${API_ENDPOINT}${endpoint}`, {
       ...options,
       headers,

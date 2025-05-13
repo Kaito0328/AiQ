@@ -1,5 +1,5 @@
 import ActionButtons from "./ActionButtons";
-import LoadingIndicator from "./LoadingIndicator";
+import LoadingIndicator from "../../Loading/Loading";
 
 interface ItemListProps<TItem, TInput> {
   items: TItem[];

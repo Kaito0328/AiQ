@@ -4,14 +4,14 @@ import { useLoginUser } from "../../../hooks/useLoginUser";
 import CollectionItem from "./CollectionItem";
 import { useCallback } from "react";
 import { getFavoriteCollections } from "../../../api/CollectionAPI";
-import LoadingIndicator from "../layout/LoadingIndicator";
+import LoadingIndicator from "../../Loading/Loading";
 
 interface Props {
   userId: number;
   isOwner: boolean;
 }
 
-const CollectionList: React.FC<Props> = ({ userId, isOwner }) => {
+const FavoriteCollectionList: React.FC<Props> = ({ userId, isOwner }) => {
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
   const { loginUser } = useLoginUser();
@@ -61,4 +61,4 @@ const CollectionList: React.FC<Props> = ({ userId, isOwner }) => {
   );
 };
 
-export default CollectionList;
+export default FavoriteCollectionList;

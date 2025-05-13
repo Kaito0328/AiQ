@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLoginUser } from "../hooks/useLoginUser";
 import { useOfficialUser } from "../hooks/useOfficialUser";
 import Paths from "../routes/Paths";
+import LoadingButton from "../components/common/button/LoadingButton";
 
 const TopPage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,22 +36,19 @@ const TopPage: React.FC = () => {
         あなた専用のクイズ学習アプリ。<br />知識を深め、成績を記録して成長を実感しよう。
       </p>
 
-      {/* スタートボタン */}
-      <button
+  
+      <div className="mt-10">
+        <LoadingButton
         onClick={handleStart}
-        disabled={!ready}
-        className={`mt-10 px-8 py-3 font-semibold rounded-full shadow-lg transition transform duration-200
-          ${ready
-            ? "bg-white text-purple-600 hover:bg-purple-100 hover:scale-105"
-            : "bg-gray-400 text-gray-200 cursor-not-allowed"}`}
-      >
-        {ready ? "はじめる" : (
-          <div className="flex items-center justify-center space-x-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            <span>読み込み中...</span>
-          </div>
-        )}
-      </button>
+        loading={!ready}
+        label="はじめる"
+        loadingText="読み込み中..."
+        fullWidth={true}
+        color="white"
+        rounded="full"
+      />
+      </div>
+
 
       {/* フッター */}
       <div className="absolute bottom-4 text-xs text-white/50">

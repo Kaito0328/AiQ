@@ -16,7 +16,7 @@ import {
 import { IoArrowRedoSharp } from "react-icons/io5";
 import { generatePath, useNavigate } from "react-router-dom";
 import Paths from "../../routes/Paths";
-import LoadingIndicator from "../item/layout/LoadingIndicator";
+import LoadingIndicator from "../Loading/Loading";
 
 type Props = {
   userId: number;

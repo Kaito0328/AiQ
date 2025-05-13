@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import CollectionList from "../../../../components/item/favorite-collection/FavoriteCollectionList";
+import FavoriteCollectionList from "../../../../components/item/favorite-collection/FavoriteCollectionList";
 import { useUser } from "../../../../hooks/useUser";
 import UserHeader from "../../../../components/User/UserHeader";
 import { CollectionSet } from "../../../../types/collectionSet";
@@ -40,7 +40,7 @@ const FavoriteCollectionPage: React.FC<CollectionPageProps> = ({ collectionSet: 
       {/* コレクション一覧 */}
       <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
         <SectionTitle>コレクション一覧</SectionTitle>
-        <CollectionList 
+        <FavoriteCollectionList 
           isOwner={user?.self ?? false}
           userId={Number(user?.id)}
         />

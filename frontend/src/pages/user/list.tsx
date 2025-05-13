@@ -4,7 +4,7 @@ import { fetchUserList } from "../../api/UserAPI";
 import { getFollowees, getFollowers } from "../../api/Follow";
 import { User } from "../../types/user";
 import { useLoginUser } from "../../hooks/useLoginUser";
-import LoadingIndicator from "../../components/item/layout/LoadingIndicator";
+import LoadingIndicator from "../../components/Loading/Loading";
 import { useUser } from "../../hooks/useUser";
 import Paths from "../../routes/Paths";
 
