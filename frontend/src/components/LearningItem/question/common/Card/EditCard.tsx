@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import QuestionTextInput from "../Input/QuestionTextInput";
 import QuestionDescriptionInput from "../Input/QuestionDescriptionInput";
 import EditCompleteDeleteButtons from "../../../common/Buttons/EditCompleteDeleteButtons";
-import CorrectAnswerInput from "../Input/CorrectAnswerInput";
+import CorrectAnswerInput from "../Input/CorretAnswerInput";
 import { Question, QuestionInput } from "../../../../../types/question";
 
 interface Props {

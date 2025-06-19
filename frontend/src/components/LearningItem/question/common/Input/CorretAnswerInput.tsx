@@ -1,7 +1,6 @@
 import React from "react";
 import ItemInput from "../../../common/Input/ItemInput";
-import Text from "../../../../baseComponents/Text";
-import { TextColorKey } from "../../../../../types/color";
+import BaseLabel from "../../../../baseComponents/BaseLabel";
 
 interface Props {
   correctAnswer?: string;
@@ -16,12 +15,11 @@ const CorrectAnswerInput: React.FC<Props> = ({
 
   return (
     <div>
-      <Text
-        text="解答"
-        textColorKey={TextColorKey.Success}
+      <BaseLabel
+        label="解答"
       />
       <ItemInput
-        placeholder="正解を入力"
+        placeholder="コレクションセットの説明を入力"
         defaultValue={correctAnswer}
         onInput={onCorrectAnswerInput}
       />

@@ -47,7 +47,6 @@ const PasswordChangeForm: React.FC<{
             パスワード変更
           </button>
           <BaseButton
-            color={ThemeColor.Gray}
             onClick={() => setEditMode(false)}
             label="キャンセル"
 
@@ -57,7 +56,6 @@ const PasswordChangeForm: React.FC<{
         <BaseButton
             onClick={() => setEditMode(true)}
             label="パスワードを変更する"
-            color={ThemeColor.Gray}
         />
       )}
     </div>
