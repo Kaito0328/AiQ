@@ -1,6 +1,7 @@
+import { ColorKey } from "../../../../../style/colorStyle";
+import { FontWeightKey } from "../../../../../style/fontWeight";
 import { SizeKey } from "../../../../../style/size";
-import { TextColorKey } from "../../../../../types/color";
-import Text from "../../../../baseComponents/Text";
+import BaseLabel from "../../../../baseComponents/BaseLabel";
 
 interface Props {
   correctAnswer?: string;
@@ -8,10 +9,18 @@ interface Props {
 
 const CorrectAnswerText: React.FC<Props> = ({ correctAnswer }) => (
   <div className="flex">
-    <Text
-      text={correctAnswer}
-      sizeKey={SizeKey.LG}
-      textColorKey={TextColorKey.Success}
+    <BaseLabel
+      label={correctAnswer}
+      style={{
+        color: {
+          colorKey: ColorKey.Success
+        },
+        size: {
+          sizeKey: SizeKey.LG
+        },
+        fontWeightKey: FontWeightKey.Bold
+      }}
+
     />
   </div>
 );
