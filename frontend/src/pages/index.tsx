@@ -4,6 +4,9 @@ import { useLoginUser } from "../hooks/useLoginUser";
 import { useOfficialUser } from "../hooks/useOfficialUser";
 import Paths from "../routes/Paths";
 import LoadingButton from "../components/common/button/LoadingButton";
+import { SizeKey } from "../style/size";
+import { RoundKey } from "../style/rounded";
+import { CoreColorKey } from "../types/color";
 
 const TopPage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,9 +46,9 @@ const TopPage: React.FC = () => {
         loading={!ready}
         label="はじめる"
         loadingText="読み込み中..."
-        fullWidth={true}
-        color="white"
-        rounded="full"
+        sizeKey = {SizeKey.SM}
+        colorKey = {CoreColorKey.Primary}
+        roundKey = {RoundKey.Md}
       />
       </div>
 

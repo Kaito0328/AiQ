@@ -1,81 +1,75 @@
 import React from "react";
-import clsx from "clsx";
+import { SizeKey } from "../../../style/size";
+import { RoundKey } from "../../../style/rounded";
+import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
+import BaseButton from "./BaseButton";
+import { PartialComponentStyle } from "../../../style/style";
+
+type LoadingButtonStyle = {
+  colorKey: ColorKey;
+  size: {
+    sizeKey: SizeKey;
+    full_width: boolean; 
+  },
+  roundKey: RoundKey;
+};
+
+const defaultStyle: LoadingButtonStyle = {
+  colorKey: ColorKey.Primary,
+  size: {
+    sizeKey: SizeKey.MD,
+    full_width: false,
+  },
+  roundKey: RoundKey.Md
+}
 
 type Props = {
   onClick: () => void;
   label: string;
+  title?: string;
+  icon?: React.ReactNode;
   loading: boolean;
   loadingText?: string;
-  size?: "sm" | "md" | "lg";
-  color?: "indigo" | "emerald" | "gray" | "red" | "white";
-  rounded?: "sm" | "md" | "lg" | "full";
-  fullWidth?: boolean;
-  className?: string;
-};
-
-const sizeMap = {
-  sm: "py-1 px-4 text-sm",
-  md: "py-2 px-6 text-base",
-  lg: "py-3 px-8 text-lg",
-};
-
-const roundedMap = {
-  sm: "rounded",
-  md: "rounded-md",
-  lg: "rounded-lg",
-  full: "rounded-full",
-};
-
-const colorMap = {
-  indigo: {
-    base: "bg-indigo-600 text-white hover:bg-indigo-700",
-    loading: "bg-indigo-300 text-white cursor-not-allowed",
-  },
-  emerald: {
-    base: "bg-emerald-600 text-white hover:bg-emerald-700",
-    loading: "bg-emerald-300 text-white cursor-not-allowed",
-  },
-  gray: {
-    base: "bg-gray-600 text-white hover:bg-gray-700",
-    loading: "bg-gray-300 text-white cursor-not-allowed",
-  },
-  red: {
-    base: "bg-red-600 text-white hover:bg-red-700",
-    loading: "bg-red-300 text-white cursor-not-allowed",
-  },
-  white: {
-    base: "bg-white text-purple-600 shadow-lg hover:bg-purple-100 hover:scale-105 transform duration-200",
-    loading: "bg-gray-400 text-gray-200 cursor-not-allowed",
-  },
+  style?: Partial<LoadingButtonStyle>;
+  bg_color: boolean;
 };
 
 const LoadingButton: React.FC<Props> = ({
   onClick,
   label,
+  title,
+  icon,
   loading,
   loadingText,
-  size = "md",
-  color = "indigo",
-  rounded = "md",
-  fullWidth = true,
-  className = "",
+  style,
+  bg_color = true
 }) => {
-  const styles = colorMap[color];
+  const mergedStyle = {...defaultStyle, ...style};
+  const colorVariants = [ColorVariantKey.Hover];
+  if (loading) colorVariants.push(ColorVariantKey.Loading);
+  const colorProperties = [ColorPropertyKey.Bg, ColorPropertyKey.Label];
+
+  const classStyle: PartialComponentStyle = {
+    color: {
+      colorKey: mergedStyle.colorKey,
+      properties: colorProperties,
+      variants: colorVariants,
+    },
+    size: mergedStyle.size,
+    roundKey: mergedStyle.roundKey,
+  }
+
+
   return (
-    <button
+    <BaseButton
       onClick={onClick}
+      label={loading ? loadingText ?? `${label}中...` : label}
+      title={title}
+      icon={icon}
+      style={classStyle}
       disabled={loading}
-      className={clsx(
-        "font-semibold transition",
-        sizeMap[size],
-        roundedMap[rounded],
-        fullWidth && "w-full",
-        loading ? styles.loading : styles.base,
-        className
-      )}
-    >
-      {loading ? loadingText ?? `${label}中...` : label}
-    </button>
+      bg_color={bg_color}
+    />
   );
 };
 

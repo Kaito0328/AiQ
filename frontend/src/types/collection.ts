@@ -13,3 +13,8 @@ export interface CollectionInput {
   open?: boolean;
   descriptionText?: string;
 }
+
+export interface DisplayCollection {
+  collection: Collection;
+  isVisible: boolean;
+}

@@ -13,7 +13,7 @@ import Home from '../pages/home';
 import TopPage from '../pages';
 import CollectionPage from '../pages/user/[userId]/collection-sets/[collectionSetId]/collections';
 import QuestionPage from '../pages/user/[userId]/collections/[collectionId]/questions';
-import UserList from '../pages/user/list';
+import UserListPage from '../pages/user/list';
 import UserProfile from '../pages/user/profile';
 import ResumableQuizzesList from '../pages/quiz/resume';
 import CollectionSetPage from '../pages/user/[userId]/collection-sets';
@@ -40,7 +40,7 @@ const AppRoutes: React.FC = () => {
         <Route path={Paths.FAVORITE_COLLECTION_PAGE} element={<FavoriteCollectionPage />} />
         <Route path={Paths.QUESTION_PAGE} element={<QuestionPage />} />
 
-        <Route path={Paths.USER_LIST} element={<UserList />} />
+        <Route path={Paths.USER_LIST} element={<UserListPage />} />
         <Route path={Paths.USER_PROFILE} element={<UserProfile />} />
       </Route>
     </Routes>

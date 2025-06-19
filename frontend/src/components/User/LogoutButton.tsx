@@ -1,14 +1,11 @@
 import React from "react";
-import Button from "../common/button/Button";
-import { ThemeColor } from "../../style/color";
+import BaseButton from "../common/button/BaseButton";
 
 const LogoutButton: React.FC<{ handleLogout: () => void }> = ({ handleLogout }) => {
   return (
-    <Button
+    <BaseButton
       onClick={handleLogout}
       label="ログアウト"
-      color={ThemeColor.Gray}
-      className="mt-4 w-full"
     />
   );
 };

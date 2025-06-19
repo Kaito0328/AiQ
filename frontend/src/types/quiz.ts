@@ -43,10 +43,22 @@ export type QuizResumeResponse = {
   answers: AnswerHistory[];
 };
 
-export type FilterType = 'WRONG_COUNT' | 'NOT_SOLVED';
+export enum FilterType {
+  WRONG_COUNT = 'WRONG_COUNT',
+  NOT_SOLVED = 'NOT_SOLVED',
+}
 
-export type SortKey = 'ID' | 'RANDOM' | 'WRONG' | 'ACCURACY';
-export type SortDirection = 'ASC' | 'DESC';
+export enum SortKey {
+  ID = 'ID',
+  RANDOM = 'RANDOM',
+  WRONG = 'WRONG',
+  ACCURACY = 'ACCURACY',
+}
+
+export enum SortDirection {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
 
 export const filterTypeLabels: Record<FilterType, string> = {
   WRONG_COUNT: '間違えた回数',
@@ -67,7 +79,7 @@ export type FilterCondition = {
 
 export type SortCondition = {
   key: SortKey;
-  direction: SortDirection;
+  direction?: SortDirection;
 };
 
 export type QuizRequest = {

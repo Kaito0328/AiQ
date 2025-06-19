@@ -1,10 +1,20 @@
 import React from "react";
 import { generatePath, useNavigate } from "react-router-dom";
-import { FaEdit, FaPlay, FaExclamationTriangle, FaUserPlus, FaUserCheck } from "react-icons/fa";
+import { FaExclamationTriangle } from "react-icons/fa";
 import { User } from "../../types/user";
 import { followUser, unfollowUser } from "../../api/Follow";
 import { useLoginUser } from "../../hooks/useLoginUser";
 import Paths from "../../routes/Paths";
+import FollowButton from "./common/FollowButton";
+import QuizStartButton from "./common/QuizStarButton";
+import ProfileEditButton from "./common/ProfileEditButton";
+import Text from "../baseComponents/Text";
+import BaseLabel from "../baseComponents/BaseLabel";
+import { SizeKey } from "../../style/size";
+import { FontWeightKey } from "../../style/fontWeight";
+import BaseCard from "../containerComponents/BaseCard";
+import { ShadowKey } from "../../style/shadow";
+import { ColorKey, ColorPropertyKey } from "../../style/colorStyle";
 
 interface UserHeaderProps {
   user: User | null;
@@ -59,56 +69,104 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage, on
   };
 
   return (
-    <div className="max-w-lg mx-auto mt-3 bg-white p-6 rounded-xl shadow-lg transform transition-all hover:scale-105 hover:shadow-2xl border border-gray-200">
-      {/* ユーザー情報 */}
-      <div className="flex items-center space-x-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-gray-800">
-            {user.official ? "✅ 公式ユーザー" : user.username}
-          </h1>
-          <div className="flex space-x-6 mt-2 text-sm text-gray-600">
-            <p>フォロワー: {user.followerCount}</p>
-            <p>フォロー中: {user.followingCount}</p>
+    <BaseCard
+    style={{
+      size: {
+        sizeKey: SizeKey.XL,
+        full_width: false
+      },
+      shadow: {
+        shadowKey: ShadowKey.LG
+      }
+
+    }}
+    >
+      <div className="flex flex-col items-center">
+        <div className="flex items-center w-full justify-center">
+          <div className="w-full">
+            <div className="font-bold">
+              <BaseLabel
+                label={user.official ? "公式ユーザー" : user.username}
+                style={{
+                  color: {
+                    colorKey: ColorKey.Base,
+                    properties: [ColorPropertyKey.Label],
+                    variants: []
+                  },
+                  size: {
+                    sizeKey: SizeKey.LG
+                  },
+                  fontWeightKey: FontWeightKey.Bold
+                }}
+              />
+            </div>
+            <div className="flex mt-2 gap-5">
+              <div className="flex gap-2">
+                  <Text
+                    text={"" + user.followerCount}
+                    style={{
+                      fontWeightKey: FontWeightKey.Bold
+                    }}
+                  />  
+                
+                <Text
+                  text={"フォロワー"}
+                  style={{
+                    color: {
+                      colorKey: ColorKey.Secondary
+                    },
+                  }}
+                />
+
+              </div>
+              <div className="flex items-center gap-2">
+                <Text
+                  text={"" + user.followingCount}
+                  style={{
+                    fontWeightKey: FontWeightKey.Bold
+                  }}
+                />  
+                
+                <Text
+                  text={"フォロー"}
+                  style={{
+                    color: {
+                      colorKey: ColorKey.Secondary
+                    },
+                  }}
+                />
+
+              </div>
+            </div>
           </div>
         </div>
+
+        <div className="mt-6 flex space-x-6">
+          {loginUser &&  (
+            <div>
+              { user.self ? (
+                <ProfileEditButton
+                  navigateProfile={() => navigate(Paths.USER_PROFILE)}
+                />
+              ) : (
+                <FollowButton
+                  handleFollow={handleFollowToggle}
+                  isFollowing={user.following}
+                />
+              )}
+            </div>
+          )}
+          <div>
+            <QuizStartButton
+              navigateQuizStart={handleNavigateToQuizOption}
+            />
+          </div>
+
+        </div>
+
       </div>
-
-      <div className="mt-6 flex space-x-4">
-        {loginUser && user.self && (
-          <button className="flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition">
-            <FaEdit className="mr-2" /> プロフィール編集
-          </button>
-        )}
-
-        {/* フォローボタン：ログインユーザーかつ他人 */}
-        {loginUser && !user.self && (
-          <button
-            className={`flex items-center px-4 py-2 rounded-lg shadow-md transition transform hover:scale-110 ${
-              user.following ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600'
-            }`}
-            onClick={handleFollowToggle}
-          >
-            {user.following ? (
-              <>
-                <FaUserCheck className="mr-2" /> フォロー中
-              </>
-            ) : (
-              <>
-                <FaUserPlus className="mr-2" /> フォロー
-              </>
-            )}
-          </button>
-        )}
-
-        {/* クイズ開始ボタン：常に表示 */}
-        <button
-          className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition transform hover:scale-110"
-          onClick={handleNavigateToQuizOption}
-        >
-          <FaPlay className="mr-2" /> クイズを開始
-        </button>
-      </div>
-    </div>
+      
+    </BaseCard>
   );
 };
 

@@ -1,24 +1,24 @@
-2025-05-13T04:35:47.173Z  INFO 1734 --- [restartedMain] com.example.myapp.MyApplication          : Starting MyApplication using Java 21.0.6 with PID 1734 (/workspace/backend/build/classes/java/main started by root in /workspace/backend)
-2025-05-13T04:35:47.185Z DEBUG 1734 --- [restartedMain] com.example.myapp.MyApplication          : Running with Spring Boot v3.2.2, Spring v6.1.3
-2025-05-13T04:35:47.186Z  INFO 1734 --- [restartedMain] com.example.myapp.MyApplication          : No active profile set, falling back to 1 default profile: "default"
-2025-05-13T04:35:47.221Z  INFO 1734 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2025-05-13T04:35:47.222Z  INFO 1734 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2025-05-13T04:35:47.563Z  INFO 1734 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-05-13T04:35:47.605Z  INFO 1734 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 35 ms. Found 10 JPA repository interfaces.
-2025-05-13T04:35:48.205Z  INFO 1734 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
-2025-05-13T04:35:48.212Z  INFO 1734 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2025-05-13T04:35:48.212Z  INFO 1734 --- [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.18]
-2025-05-13T04:35:48.245Z  INFO 1734 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2025-05-13T04:35:48.246Z  INFO 1734 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1024 ms
-2025-05-13T04:35:48.326Z  INFO 1734 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-05-13T04:35:48.373Z  INFO 1734 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
-2025-05-13T04:35:48.397Z  INFO 1734 --- [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-05-13T04:35:48.577Z  INFO 1734 --- [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-05-13T04:35:48.595Z  INFO 1734 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-05-13T04:35:48.731Z  INFO 1734 --- [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@5ffbde03
-2025-05-13T04:35:48.732Z  INFO 1734 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-05-13T04:35:49.502Z  INFO 1734 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-05-13T04:35:49.605Z  WARN 1734 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_collection_names add constraint FKdcfvtptmh2u4dnx861t2xkwws foreign key (quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_collection_names" violates foreign key constraint "fkdcfvtptmh2u4dnx861t2xkwws"
+2025-06-19T08:10:45.854Z  INFO 8931 --- [restartedMain] com.example.myapp.MyApplication          : Starting MyApplication using Java 21.0.6 with PID 8931 (/workspace/backend/build/classes/java/main started by root in /workspace/backend)
+2025-06-19T08:10:45.864Z DEBUG 8931 --- [restartedMain] com.example.myapp.MyApplication          : Running with Spring Boot v3.2.2, Spring v6.1.3
+2025-06-19T08:10:45.864Z  INFO 8931 --- [restartedMain] com.example.myapp.MyApplication          : No active profile set, falling back to 1 default profile: "default"
+2025-06-19T08:10:45.906Z  INFO 8931 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2025-06-19T08:10:45.906Z  INFO 8931 --- [restartedMain] .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2025-06-19T08:10:46.236Z  INFO 8931 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-19T08:10:46.278Z  INFO 8931 --- [restartedMain] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 36 ms. Found 10 JPA repository interfaces.
+2025-06-19T08:10:46.813Z  INFO 8931 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2025-06-19T08:10:46.821Z  INFO 8931 --- [restartedMain] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2025-06-19T08:10:46.822Z  INFO 8931 --- [restartedMain] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.18]
+2025-06-19T08:10:46.853Z  INFO 8931 --- [restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2025-06-19T08:10:46.853Z  INFO 8931 --- [restartedMain] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 946 ms
+2025-06-19T08:10:46.934Z  INFO 8931 --- [restartedMain] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-19T08:10:46.981Z  INFO 8931 --- [restartedMain] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.4.1.Final
+2025-06-19T08:10:47.006Z  INFO 8931 --- [restartedMain] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-06-19T08:10:47.172Z  INFO 8931 --- [restartedMain] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-19T08:10:47.193Z  INFO 8931 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-06-19T08:10:47.316Z  INFO 8931 --- [restartedMain] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@53c9e068
+2025-06-19T08:10:47.317Z  INFO 8931 --- [restartedMain] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-06-19T08:10:48.047Z  INFO 8931 --- [restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-19T08:10:48.167Z  WARN 8931 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_collection_names add constraint FKdcfvtptmh2u4dnx861t2xkwws foreign key (quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_collection_names" violates foreign key constraint "fkdcfvtptmh2u4dnx861t2xkwws"
   Detail: Key (quiz_id)=(151) is not present in table "casual_quiz".]
 
 org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table if exists casual_quiz_collection_names add constraint FKdcfvtptmh2u4dnx861t2xkwws foreign key (quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_collection_names" violates foreign key constraint "fkdcfvtptmh2u4dnx861t2xkwws"
@@ -165,7 +165,7 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.4.1.Final.jar:6.4.1.Final]
 	... 125 common frames omitted
 
-2025-05-13T04:35:49.617Z  WARN 1734 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_questions add constraint FK50k4h1ii5i7g5ygcfu85380xe foreign key (question_id) references questions" via JDBC [ERROR: insert or update on table "casual_quiz_questions" violates foreign key constraint "fk50k4h1ii5i7g5ygcfu85380xe"
+2025-06-19T08:10:48.178Z  WARN 8931 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_questions add constraint FK50k4h1ii5i7g5ygcfu85380xe foreign key (question_id) references questions" via JDBC [ERROR: insert or update on table "casual_quiz_questions" violates foreign key constraint "fk50k4h1ii5i7g5ygcfu85380xe"
   Detail: Key (question_id)=(1912) is not present in table "questions".]
 
 org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table if exists casual_quiz_questions add constraint FK50k4h1ii5i7g5ygcfu85380xe foreign key (question_id) references questions" via JDBC [ERROR: insert or update on table "casual_quiz_questions" violates foreign key constraint "fk50k4h1ii5i7g5ygcfu85380xe"
@@ -312,7 +312,7 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.4.1.Final.jar:6.4.1.Final]
 	... 125 common frames omitted
 
-2025-05-13T04:35:49.619Z  WARN 1734 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_questions add constraint FK11nqe88xhd8qvs2o3vd4xqkk1 foreign key (quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_questions" violates foreign key constraint "fk11nqe88xhd8qvs2o3vd4xqkk1"
+2025-06-19T08:10:48.180Z  WARN 8931 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_questions add constraint FK11nqe88xhd8qvs2o3vd4xqkk1 foreign key (quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_questions" violates foreign key constraint "fk11nqe88xhd8qvs2o3vd4xqkk1"
   Detail: Key (quiz_id)=(6) is not present in table "casual_quiz".]
 
 org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table if exists casual_quiz_questions add constraint FK11nqe88xhd8qvs2o3vd4xqkk1 foreign key (quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_questions" violates foreign key constraint "fk11nqe88xhd8qvs2o3vd4xqkk1"
@@ -459,7 +459,7 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.4.1.Final.jar:6.4.1.Final]
 	... 125 common frames omitted
 
-2025-05-13T04:35:49.630Z  WARN 1734 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_filter_types add constraint FKeektoo4ev2ih14hgiapj90ey0 foreign key (casual_quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_filter_types" violates foreign key constraint "fkeektoo4ev2ih14hgiapj90ey0"
+2025-06-19T08:10:48.189Z  WARN 8931 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_filter_types add constraint FKeektoo4ev2ih14hgiapj90ey0 foreign key (casual_quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_filter_types" violates foreign key constraint "fkeektoo4ev2ih14hgiapj90ey0"
   Detail: Key (casual_quiz_id)=(152) is not present in table "casual_quiz".]
 
 org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table if exists casual_quiz_filter_types add constraint FKeektoo4ev2ih14hgiapj90ey0 foreign key (casual_quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_filter_types" violates foreign key constraint "fkeektoo4ev2ih14hgiapj90ey0"
@@ -606,7 +606,7 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.4.1.Final.jar:6.4.1.Final]
 	... 125 common frames omitted
 
-2025-05-13T04:35:49.636Z  WARN 1734 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_sort_keys add constraint FK13nwkjhlier82u42vd6bweewb foreign key (casual_quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_sort_keys" violates foreign key constraint "fk13nwkjhlier82u42vd6bweewb"
+2025-06-19T08:10:48.194Z  WARN 8931 --- [restartedMain] o.h.t.s.i.ExceptionHandlerLoggedImpl     : GenerationTarget encountered exception accepting command : Error executing DDL "alter table if exists casual_quiz_sort_keys add constraint FK13nwkjhlier82u42vd6bweewb foreign key (casual_quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_sort_keys" violates foreign key constraint "fk13nwkjhlier82u42vd6bweewb"
   Detail: Key (casual_quiz_id)=(152) is not present in table "casual_quiz".]
 
 org.hibernate.tool.schema.spi.CommandAcceptanceException: Error executing DDL "alter table if exists casual_quiz_sort_keys add constraint FK13nwkjhlier82u42vd6bweewb foreign key (casual_quiz_id) references casual_quiz" via JDBC [ERROR: insert or update on table "casual_quiz_sort_keys" violates foreign key constraint "fk13nwkjhlier82u42vd6bweewb"
@@ -753,167 +753,415 @@ Caused by: org.postgresql.util.PSQLException: ERROR: insert or update on table "
 	at org.hibernate.tool.schema.internal.exec.GenerationTargetToDatabase.accept(GenerationTargetToDatabase.java:80) ~[hibernate-core-6.4.1.Final.jar:6.4.1.Final]
 	... 125 common frames omitted
 
-2025-05-13T04:35:49.710Z  INFO 1734 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-05-13T04:35:49.835Z  INFO 1734 --- [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2025-05-13T04:35:50.095Z DEBUG 1734 --- [restartedMain] com.example.myapp.JWT.JwtRequestFilter   : Filter 'jwtRequestFilter' configured for use
-2025-05-13T04:35:50.357Z DEBUG 1734 --- [restartedMain] swordEncoderAuthenticationManagerBuilder : No authenticationProviders and no parentAuthenticationManager defined. Returning null.
-2025-05-13T04:35:50.494Z  INFO 1734 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@2a006e75, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@26399f27, org.springframework.security.web.context.SecurityContextHolderFilter@64850ef2, org.springframework.security.web.header.HeaderWriterFilter@17fc5a88, org.springframework.web.filter.CorsFilter@4c9ee215, org.springframework.security.web.authentication.logout.LogoutFilter@3068493c, com.example.myapp.JWT.JwtRequestFilter@7b497bf2, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@d0e4fc9, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@ffd5baa, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@669d7a29, org.springframework.security.web.session.SessionManagementFilter@5244ade8, org.springframework.security.web.access.ExceptionTranslationFilter@69c38f4f, org.springframework.security.web.access.intercept.AuthorizationFilter@33ab3cc1]
-2025-05-13T04:35:50.607Z  INFO 1734 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2025-05-13T04:35:50.625Z  INFO 1734 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
-2025-05-13T04:35:50.630Z  INFO 1734 --- [restartedMain] com.example.myapp.MyApplication          : Started MyApplication in 3.762 seconds (process running for 4.157)
-2025-05-13T04:35:55.868Z  INFO 1734 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2025-05-13T04:35:55.868Z  INFO 1734 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2025-05-13T04:35:55.869Z  INFO 1734 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2025-05-13T04:35:55.879Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
-2025-05-13T04:35:55.879Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
-2025-05-13T04:35:55.879Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T04:35:55.879Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T04:35:55.892Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T04:35:55.892Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T04:35:55.930Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T04:35:55.930Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T04:35:55.964Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T04:35:55.964Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T04:35:55.968Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T04:35:55.968Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T04:35:58.094Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
-2025-05-13T04:35:58.094Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
-2025-05-13T04:35:58.097Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T04:35:58.102Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T04:35:58.138Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T04:35:58.142Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:04:37.159Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/1
-2025-05-13T05:04:37.159Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/1
-2025-05-13T05:04:37.171Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
-2025-05-13T05:04:37.204Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
-2025-05-13T05:04:37.239Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
-2025-05-13T05:04:37.241Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
-2025-05-13T05:04:40.186Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:04:40.191Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:04:40.211Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:04:40.214Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:05:17.235Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/users
-2025-05-13T05:05:17.235Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/users
-2025-05-13T05:05:17.238Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/user/users
-2025-05-13T05:05:17.246Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/user/users
-2025-05-13T05:05:17.265Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/user/users
-2025-05-13T05:05:17.268Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/user/users
-2025-05-13T05:05:19.178Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/2/followees
-2025-05-13T05:05:19.181Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/user/2/followees
-2025-05-13T05:05:19.186Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/user/2/followees
-2025-05-13T05:05:21.810Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/2/followers
-2025-05-13T05:05:21.813Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user/2/followers
-2025-05-13T05:05:21.817Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user/2/followers
-2025-05-13T05:05:47.378Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:05:47.392Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:05:47.402Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:05:47.405Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:09:25.921Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:09:25.928Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:09:25.939Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:09:25.942Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:09:26.727Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
-2025-05-13T05:09:26.737Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
-2025-05-13T05:09:26.744Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
-2025-05-13T05:09:26.746Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
-2025-05-13T05:09:31.232Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:09:31.237Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:09:31.245Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T05:09:31.248Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T05:09:31.852Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
-2025-05-13T05:09:31.852Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
-2025-05-13T05:09:31.854Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
-2025-05-13T05:09:31.860Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
-2025-05-13T05:09:31.864Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
-2025-05-13T05:09:31.868Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
-2025-05-13T05:10:04.262Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/3
-2025-05-13T05:10:04.262Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-set/3
-2025-05-13T05:10:04.264Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/3
-2025-05-13T05:10:04.265Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-set/3
-2025-05-13T05:10:04.265Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
-2025-05-13T05:10:04.265Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
-2025-05-13T05:10:04.268Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
-2025-05-13T05:10:04.269Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
-2025-05-13T05:10:04.274Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
-2025-05-13T05:10:04.276Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
-2025-05-13T05:10:04.284Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
-2025-05-13T05:10:04.287Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
-2025-05-13T05:10:23.783Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/15
-2025-05-13T05:10:23.783Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/15
-2025-05-13T05:10:23.783Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/15
-2025-05-13T05:10:23.783Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/15
-2025-05-13T05:10:23.786Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/15
-2025-05-13T05:10:23.786Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/15
-2025-05-13T05:10:23.789Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/15
-2025-05-13T05:10:23.790Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/15
-2025-05-13T05:10:23.798Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/15
-2025-05-13T05:10:23.800Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/15
-2025-05-13T05:10:23.817Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/15
-2025-05-13T05:10:23.821Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/15
-2025-05-13T05:58:37.650Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
-2025-05-13T05:58:37.650Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
-2025-05-13T05:58:37.666Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T05:58:37.713Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T05:58:37.724Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T05:58:37.728Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T05:58:41.463Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T05:58:41.469Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T05:58:41.473Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T05:58:41.475Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T06:02:54.655Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T06:02:54.657Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T06:02:54.657Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T06:02:54.659Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T06:02:54.660Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:02:54.665Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-05-13T06:02:54.665Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:02:54.676Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:02:54.677Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-05-13T06:02:54.677Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:02:54.681Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:02:54.681Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-05-13T06:02:54.681Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:02:54.684Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:02:54.685Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-05-13T06:02:54.685Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:03:04.063Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/auth/login
-2025-05-13T06:03:04.066Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /api/auth/login
-2025-05-13T06:03:04.067Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
-2025-05-13T06:03:04.067Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /api/auth/login
-2025-05-13T06:03:05.375Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T06:03:05.376Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T06:03:05.375Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
-2025-05-13T06:03:05.378Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:03:05.380Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T06:03:05.382Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T06:03:05.384Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T06:03:05.389Z DEBUG 1734 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:03:05.396Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:03:05.397Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T06:03:05.398Z DEBUG 1734 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:03:05.400Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T06:03:05.401Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/user
-2025-05-13T06:03:05.402Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:03:05.403Z DEBUG 1734 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/user
-2025-05-13T06:03:05.405Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:03:05.410Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
-2025-05-13T06:03:05.412Z DEBUG 1734 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
-2025-05-13T06:03:06.920Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
-2025-05-13T06:03:06.920Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
-2025-05-13T06:03:06.923Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T06:03:06.926Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T06:03:06.937Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T06:03:06.939Z DEBUG 1734 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T06:04:55.130Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing PUT /api/user
-2025-05-13T06:04:55.140Z DEBUG 1734 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured PUT /api/user
-2025-05-13T06:22:05.003Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing PUT /api/user
-2025-05-13T06:22:05.011Z DEBUG 1734 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured PUT /api/user
-2025-05-13T06:22:16.907Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T06:22:16.913Z DEBUG 1734 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T06:22:16.928Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
-2025-05-13T06:22:16.930Z DEBUG 1734 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
-2025-05-13T06:24:57.034Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing PUT /api/user
-2025-05-13T06:24:57.049Z DEBUG 1734 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured PUT /api/user
-2025-05-13T06:25:07.017Z  INFO 1734 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2025-05-13T06:25:07.027Z  INFO 1734 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
-2025-05-13T06:25:07.030Z  INFO 1734 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2025-06-19T08:10:48.259Z  INFO 8931 --- [restartedMain] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-19T08:10:48.394Z  INFO 8931 --- [restartedMain] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-19T08:10:48.689Z DEBUG 8931 --- [restartedMain] com.example.myapp.JWT.JwtRequestFilter   : Filter 'jwtRequestFilter' configured for use
+2025-06-19T08:10:48.997Z DEBUG 8931 --- [restartedMain] swordEncoderAuthenticationManagerBuilder : No authenticationProviders and no parentAuthenticationManager defined. Returning null.
+2025-06-19T08:10:49.157Z  INFO 8931 --- [restartedMain] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@3497b48, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@223a1dbf, org.springframework.security.web.context.SecurityContextHolderFilter@20fcc74d, org.springframework.security.web.header.HeaderWriterFilter@93c26f1, org.springframework.web.filter.CorsFilter@730e3ae1, org.springframework.security.web.authentication.logout.LogoutFilter@5aad3b03, com.example.myapp.JWT.JwtRequestFilter@2531cea2, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@3dd5ccbb, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@13337512, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@75810610, org.springframework.security.web.session.SessionManagementFilter@42508b29, org.springframework.security.web.access.ExceptionTranslationFilter@592e0088, org.springframework.security.web.access.intercept.AuthorizationFilter@6c97be5f]
+2025-06-19T08:10:49.293Z  INFO 8931 --- [restartedMain] o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2025-06-19T08:10:49.313Z  INFO 8931 --- [restartedMain] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2025-06-19T08:10:49.318Z  INFO 8931 --- [restartedMain] com.example.myapp.MyApplication          : Started MyApplication in 3.759 seconds (process running for 4.141)
+2025-06-19T08:15:19.797Z  INFO 8931 --- [http-nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-19T08:15:19.798Z  INFO 8931 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2025-06-19T08:15:19.800Z  INFO 8931 --- [http-nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2025-06-19T08:15:19.811Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T08:15:19.811Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T08:15:19.811Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T08:15:19.811Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T08:15:19.811Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T08:15:19.811Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T08:15:19.827Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T08:15:19.828Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T08:15:19.828Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T08:15:19.829Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T08:15:19.875Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T08:15:19.875Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T08:15:19.911Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T08:15:19.912Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T08:15:19.915Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T08:15:19.915Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T08:15:19.916Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T08:15:19.919Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T08:15:19.920Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T08:15:19.921Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T08:15:19.922Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T08:15:19.923Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T08:15:19.926Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T08:15:19.929Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T08:15:24.577Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
+2025-06-19T08:15:24.577Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
+2025-06-19T08:15:24.580Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T08:15:24.584Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T08:15:24.606Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T08:15:24.609Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T08:15:35.487Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
+2025-06-19T08:15:35.487Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
+2025-06-19T08:15:35.490Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T08:15:35.494Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T08:15:35.502Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T08:15:35.508Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T08:16:01.572Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T08:16:01.577Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T08:16:01.583Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T08:16:01.585Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T08:16:02.587Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/4
+2025-06-19T08:16:02.587Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/3
+2025-06-19T08:16:02.590Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T08:16:02.590Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T08:16:02.594Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T08:16:02.594Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T08:16:02.601Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T08:16:02.603Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T08:16:02.611Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T08:16:02.613Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T08:16:03.616Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T08:16:03.621Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T08:16:03.630Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T08:16:03.632Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T08:16:16.403Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/start
+2025-06-19T08:16:16.406Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/start
+2025-06-19T08:16:16.411Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/start
+2025-06-19T08:16:21.821Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/start
+2025-06-19T08:16:21.825Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/start
+2025-06-19T08:16:23.502Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T08:16:23.506Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T08:16:23.511Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T08:16:23.514Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T08:16:24.517Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T08:16:24.517Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T08:16:24.520Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T08:16:24.520Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T08:16:24.525Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T08:16:24.527Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T08:16:24.532Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T08:16:24.534Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T08:16:25.537Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T08:16:25.541Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T08:16:25.548Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T08:16:25.550Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T08:16:32.972Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/start
+2025-06-19T08:16:32.976Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/start
+2025-06-19T08:16:42.488Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/57/submit
+2025-06-19T08:16:42.491Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/57/submit
+2025-06-19T08:16:42.494Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/57/submit
+2025-06-19T09:44:43.227Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/57/submit
+2025-06-19T09:44:43.233Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/57/submit
+2025-06-19T09:44:43.258Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/57/submit
+2025-06-19T09:45:59.495Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/57/submit
+2025-06-19T09:45:59.501Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/57/submit
+2025-06-19T09:46:55.501Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/57/submit
+2025-06-19T09:46:55.504Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/57/submit
+2025-06-19T09:48:01.247Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/57/submit
+2025-06-19T09:48:01.251Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/57/submit
+2025-06-19T09:52:49.333Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/57/submit
+2025-06-19T09:52:49.340Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/57/submit
+2025-06-19T09:53:43.636Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/start
+2025-06-19T09:53:43.639Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/start
+2025-06-19T09:53:43.642Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/start
+2025-06-19T10:05:33.550Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/58/submit
+2025-06-19T10:05:33.552Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:05:33.556Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:05:37.620Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:05:37.623Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:22:38.895Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:22:38.916Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:22:47.670Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:22:47.674Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:24:34.195Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:24:34.200Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:24:39.922Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:24:39.925Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:24:40.653Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:24:40.656Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:24:43.122Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:24:43.125Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:35:48.874Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:35:48.883Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:35:50.445Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/58/submit
+2025-06-19T10:35:50.448Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/58/submit
+2025-06-19T10:35:55.051Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T10:35:55.053Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T10:35:55.058Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T10:35:55.058Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T10:35:55.058Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T10:35:55.059Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T10:35:55.059Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T10:35:55.060Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T10:35:55.062Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T10:35:55.063Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T10:35:55.065Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T10:35:55.067Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T10:35:55.069Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T10:35:55.070Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T10:35:55.072Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T10:35:55.074Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T10:35:55.074Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T10:35:55.076Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T10:35:55.082Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T10:35:55.084Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T10:35:55.089Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T10:35:55.091Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T10:35:57.430Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
+2025-06-19T10:35:57.431Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
+2025-06-19T10:35:57.433Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T10:35:57.436Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T10:35:57.446Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T10:35:57.448Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T10:35:58.423Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
+2025-06-19T10:35:58.423Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
+2025-06-19T10:35:58.426Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T10:35:58.429Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T10:35:58.434Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T10:35:58.436Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T10:36:00.333Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T10:36:00.337Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T10:36:00.343Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T10:36:00.345Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T10:36:01.348Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/4
+2025-06-19T10:36:01.348Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/3
+2025-06-19T10:36:01.351Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T10:36:01.351Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T10:36:01.354Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T10:36:01.354Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T10:36:01.360Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T10:36:01.363Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T10:36:01.369Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T10:36:01.371Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T10:36:02.373Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T10:36:02.376Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T10:36:02.384Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T10:36:02.386Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T10:36:10.119Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/start
+2025-06-19T10:36:10.121Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/start
+2025-06-19T10:36:19.794Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/59/submit
+2025-06-19T10:36:19.797Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:36:19.800Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T10:37:18.222Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:37:18.225Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T10:37:32.778Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:37:32.781Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T10:42:56.884Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:42:56.888Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T10:42:58.126Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:42:58.129Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T10:42:59.134Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:42:59.137Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T10:59:07.316Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T10:59:07.323Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T12:22:25.454Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/59/submit
+2025-06-19T12:22:25.472Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T12:22:25.526Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T12:22:29.260Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T12:22:29.264Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T12:30:05.247Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/59/submit
+2025-06-19T12:30:05.253Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/59/submit
+2025-06-19T12:49:17.418Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
+2025-06-19T12:49:17.418Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/user/2/favorites
+2025-06-19T12:49:17.426Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T12:49:17.452Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T12:49:17.489Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T12:49:17.493Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T12:49:27.745Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/1
+2025-06-19T12:49:27.745Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/1
+2025-06-19T12:49:27.751Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
+2025-06-19T12:49:27.754Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
+2025-06-19T12:49:27.761Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
+2025-06-19T12:49:27.764Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
+2025-06-19T12:49:29.966Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-set/1
+2025-06-19T12:49:29.966Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/1
+2025-06-19T12:49:29.968Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/1
+2025-06-19T12:49:29.969Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-set/1
+2025-06-19T12:49:29.970Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/1
+2025-06-19T12:49:29.970Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/1
+2025-06-19T12:49:29.972Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/1
+2025-06-19T12:49:29.974Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/1
+2025-06-19T12:49:29.986Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/1
+2025-06-19T12:49:29.988Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/1
+2025-06-19T12:49:30.001Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/1
+2025-06-19T12:49:30.004Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/1
+2025-06-19T12:49:32.472Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/10
+2025-06-19T12:49:32.472Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/10
+2025-06-19T12:49:32.472Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/10
+2025-06-19T12:49:32.472Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/10
+2025-06-19T12:49:32.475Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/10
+2025-06-19T12:49:32.475Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/10
+2025-06-19T12:49:32.479Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/10
+2025-06-19T12:49:32.479Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/10
+2025-06-19T12:49:32.496Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/10
+2025-06-19T12:49:32.499Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/10
+2025-06-19T12:49:32.520Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/10
+2025-06-19T12:49:32.521Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/10
+2025-06-19T12:50:08.187Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/1
+2025-06-19T12:50:08.187Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/1
+2025-06-19T12:50:08.190Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/1
+2025-06-19T12:50:08.190Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/1
+2025-06-19T12:50:08.192Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/1
+2025-06-19T12:50:08.195Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/1
+2025-06-19T12:50:08.203Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/1
+2025-06-19T12:50:08.205Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/1
+2025-06-19T12:50:11.369Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
+2025-06-19T12:50:11.372Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
+2025-06-19T12:50:11.377Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/1
+2025-06-19T12:50:11.378Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/1
+2025-06-19T12:50:12.676Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T12:50:12.679Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T12:50:12.684Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T12:50:12.686Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T12:50:13.397Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
+2025-06-19T12:50:13.397Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-sets/user/2
+2025-06-19T12:50:13.399Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T12:50:13.402Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T12:50:13.406Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T12:50:13.408Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T12:50:15.642Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-set/3
+2025-06-19T12:50:15.642Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/3
+2025-06-19T12:50:15.642Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/3
+2025-06-19T12:50:15.642Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection-set/3
+2025-06-19T12:50:15.649Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-06-19T12:50:15.650Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T12:50:15.652Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T12:50:15.652Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-06-19T12:50:15.655Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-06-19T12:50:15.659Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-06-19T12:50:15.665Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T12:50:15.667Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T12:50:17.777Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/16
+2025-06-19T12:50:17.777Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/16
+2025-06-19T12:50:17.777Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/16
+2025-06-19T12:50:17.777Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/16
+2025-06-19T12:50:17.780Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/16
+2025-06-19T12:50:17.780Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/16
+2025-06-19T12:50:17.783Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/16
+2025-06-19T12:50:17.783Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/16
+2025-06-19T12:50:17.786Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/16
+2025-06-19T12:50:17.787Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/16
+2025-06-19T12:50:17.787Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/16
+2025-06-19T12:50:17.788Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/16
+2025-06-19T12:50:30.534Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/generate/collection/16/ai
+2025-06-19T12:50:30.536Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /api/generate/collection/16/ai
+2025-06-19T12:50:30.539Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /api/generate/collection/16/ai
+2025-06-19T12:50:30.561Z  INFO 8931 --- [pool-2-thread-1] .s.a.AnnotationAsyncExecutionInterceptor : No task executor bean found for async processing: no bean of type TaskExecutor and no bean named 'taskExecutor' either
+2025-06-19T12:50:30.578Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /ws
+2025-06-19T12:50:30.580Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2025-06-19T12:50:30.581Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.s.w.session.SessionManagementFilter  : Request requested invalid session id 33C784A0D31CCA922FEAB642CE321A51
+2025-06-19T12:50:30.581Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /ws
+2025-06-19T12:50:39.707Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-06-19T12:50:39.707Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T12:50:39.710Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T12:50:39.710Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-06-19T12:50:39.717Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T12:50:39.718Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-06-19T12:50:39.719Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T12:50:39.719Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-06-19T12:50:42.302Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/15
+2025-06-19T12:50:42.302Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/15
+2025-06-19T12:50:42.302Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/questions/collection/15
+2025-06-19T12:50:42.302Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collection/15
+2025-06-19T12:50:42.309Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/15
+2025-06-19T12:50:42.310Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/15
+2025-06-19T12:50:42.312Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/15
+2025-06-19T12:50:42.312Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/15
+2025-06-19T12:50:42.315Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/15
+2025-06-19T12:50:42.317Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/15
+2025-06-19T12:50:42.317Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/15
+2025-06-19T12:50:42.318Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/15
+2025-06-19T12:51:09.594Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T12:51:09.597Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T12:51:09.604Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T12:51:09.606Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T12:51:10.608Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T12:51:10.608Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/collections/collection-set/4
+2025-06-19T12:51:10.611Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T12:51:10.615Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T12:51:10.616Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T12:51:10.619Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T12:51:10.620Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/4
+2025-06-19T12:51:10.621Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T12:51:10.621Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/4
+2025-06-19T12:51:11.623Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T12:51:11.625Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T12:51:11.632Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T12:51:11.634Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T12:51:15.575Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/start
+2025-06-19T12:51:15.578Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/start
+2025-06-19T12:51:15.580Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/start
+2025-06-19T12:51:26.479Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/quiz/60/submit
+2025-06-19T12:51:26.481Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:51:26.488Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:51:43.102Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:51:43.109Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:51:53.430Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:51:53.432Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:51:57.033Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:51:57.040Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:52:04.143Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:52:04.145Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:52:16.880Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:52:16.882Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:52:19.845Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:52:19.847Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:52:27.723Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:52:27.725Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:52:48.523Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:52:48.526Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T12:52:51.361Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing POST /api/quiz/60/submit
+2025-06-19T12:52:51.363Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured POST /api/quiz/60/submit
+2025-06-19T13:42:57.730Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T13:42:57.730Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T13:42:57.730Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T13:42:57.730Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T13:42:57.730Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T13:42:57.730Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T13:42:57.744Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user
+2025-06-19T13:42:57.744Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing OPTIONS /api/user/official
+2025-06-19T13:42:57.745Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T13:42:57.747Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T13:42:57.799Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T13:42:57.799Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T13:42:57.817Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T13:42:57.819Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T13:42:57.821Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T13:42:57.823Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T13:42:57.825Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/user
+2025-06-19T13:42:57.826Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/user
+2025-06-19T13:42:57.832Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T13:42:57.834Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T13:42:57.838Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T13:42:57.840Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T13:42:57.843Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/user/official
+2025-06-19T13:42:57.844Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/user/official
+2025-06-19T13:43:03.090Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T13:43:03.092Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T13:43:03.110Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T13:43:03.111Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T13:44:07.926Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T13:44:07.929Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T13:44:07.938Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T13:44:07.939Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T13:44:09.212Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T13:44:09.215Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T13:44:09.222Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/user/2/favorites
+2025-06-19T13:44:09.223Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/user/2/favorites
+2025-06-19T13:44:30.554Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T13:44:30.557Z DEBUG 8931 --- [http-nio-8080-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T13:44:30.562Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-sets/user/2
+2025-06-19T13:44:30.564Z DEBUG 8931 --- [http-nio-8080-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-sets/user/2
+2025-06-19T13:44:43.590Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T13:44:43.590Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-06-19T13:44:43.592Z DEBUG 8931 --- [http-nio-8080-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-06-19T13:44:43.592Z DEBUG 8931 --- [http-nio-8080-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T13:44:43.596Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /api/collection-set/3
+2025-06-19T13:44:43.597Z DEBUG 8931 --- [http-nio-8080-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /api/collection-set/3
+2025-06-19T13:44:43.607Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /api/collections/collection-set/3
+2025-06-19T13:44:43.609Z DEBUG 8931 --- [http-nio-8080-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /api/collections/collection-set/3
+2025-06-19T13:44:54.664Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/15
+2025-06-19T13:44:54.664Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/15
+2025-06-19T13:44:54.667Z DEBUG 8931 --- [http-nio-8080-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/15
+2025-06-19T13:44:54.667Z DEBUG 8931 --- [http-nio-8080-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/15
+2025-06-19T13:44:54.671Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /api/collection/15
+2025-06-19T13:44:54.673Z DEBUG 8931 --- [http-nio-8080-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /api/collection/15
+2025-06-19T13:44:54.685Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /api/questions/collection/15
+2025-06-19T13:44:54.686Z DEBUG 8931 --- [http-nio-8080-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /api/questions/collection/15
+2025-06-19T13:45:59.589Z  INFO 8931 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-06-19T13:45:59.602Z  INFO 8931 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-06-19T13:45:59.607Z  INFO 8931 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

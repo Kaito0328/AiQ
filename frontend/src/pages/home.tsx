@@ -1,22 +1,17 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaBook, FaUsers, FaUser } from "react-icons/fa";
 import { useLoginUser } from "../hooks/useLoginUser";
 import { useOfficialUser } from "../hooks/useOfficialUser";
 import { UserContext } from "../contexts/UserContext";
 import Paths from "../routes/Paths";
 import { generatePath } from "react-router-dom";
-import FavoriteCollectionList from "../components/item/favorite-collection/FavoriteCollectionList";
-import SectionCard from "../components/common/sectionCard/sectionCard";
-import { ThemeColor } from "../style/color";
-import WelcomeBanner from "../components/common/bannar/WelcomeBannar";
-import Button from "../components/common/button/Button";
-
-enum UserType {
-Official = "official",
-Self = "self",
-Users = "users",
-}
+import FavoriteCollectionList from "../components/LearningItem/collection/favorite-collection/FavoriteCollectionList";
+import WelcomeBanner from "../components/home/WelcomeBannar";
+import BaseButton from "../components/common/button/BaseButton";
+import HomeSectionCards from "../components/home/HomeSectionCards";
+import { RoundKey } from "../style/rounded";
+import { SizeKey } from "../style/size";
+import { ColorKey } from "../style/colorStyle";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -31,37 +26,27 @@ const Home: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  const navigateUsers = () => {
+    navigate(Paths.USER_LIST);
+  }
 
-  const handleNavigate = (type: UserType) => {
-    if (type === UserType.Users) {
-      navigate(Paths.USER_LIST);
+  const navigateOfficialUser = () => {
+    setUser(officialUser);
+    if (officialUser) {
+      navigate(generatePath(Paths.COLLECTION_SET_PAGE, { userId: String(officialUser.id) }));
     } else {
-
-      let userId;
-      if (type === UserType.Self) {
-        userId = loginUser?.id;
-        setUser(loginUser);
-      } else if (type === UserType.Official) {
-        userId = officialUser?.id;
-        setUser(officialUser);
-      }
-      if (userId !== undefined && userId !== null) {
-        navigate(generatePath(Paths.COLLECTION_SET_PAGE, { userId: String(userId) }));
-      } else {
-        console.error("ユーザーIDが取得できていません");
-      }
+      console.error("公式ユーザーが取得できていません");
     }
   };
 
-  const options = [
-    { label: "公式の問題解答", icon: <FaBook />, color: ThemeColor.Emerald, type: UserType.Official },
-    { label: "自分の問題解答", icon: <FaUser />, color: ThemeColor.Indigo, type: UserType.Self },
-    { label: "他ユーザーの問題解答", icon: <FaUsers />, color: ThemeColor.Gray, type: UserType.Users },
-  ];
-
-  const visibleOptions = options.filter(
-    (option) => option.type !== UserType.Users || loginUser !== null
-  );
+  const navigateLoginUser = () => {
+    setUser(loginUser);
+    if (loginUser) {
+      navigate(generatePath(Paths.COLLECTION_SET_PAGE, { userId: String(loginUser.id) }));
+    } else {
+      console.error("ログインユーザーが取得できていません");
+    }
+  };
 
     useEffect(() => {
     if (loginLoading || officialLoading) {
@@ -70,7 +55,7 @@ const Home: React.FC = () => {
   }, [loginLoading, officialLoading, navigate]);
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 font-sans w-full">
+    <div className="flex flex-col items-center min-h-screen font-sans w-full">
       {showWelcome && (
         <WelcomeBanner
           username={loginUser ? loginUser.username : undefined}
@@ -79,32 +64,28 @@ const Home: React.FC = () => {
 
       {!loginUser && !loginLoading && (
         <div className="flex justify-end mt-5 w-full px-5">
-          <Button
+          <BaseButton
             onClick={() => navigate(Paths.LOGIN)}
             label="ログイン"
-            size="md"
-            color="indigo"
-            rounded="md"
-            fullWidth={false}
+            style={{
+              color: {
+                colorKey: ColorKey.Primary
+              },
+              roundKey: RoundKey.Md,
+              size: {
+                sizeKey: SizeKey.MD
+              }
+            }}
           />
         </div>
       )}
 
-      <div
-        className={`mt-12 w-[90%] max-w-4xl grid gap-8 justify-center 
-          ${visibleOptions.length === 1 ? "grid-cols-1" : ""}
-          ${visibleOptions.length === 2 ? "grid-cols-2" : ""}
-          ${visibleOptions.length >= 3 ? "md:grid-cols-3" : ""}`}
-      >
-        {visibleOptions.map(({ label, icon, color, type }) => (
-          <SectionCard
-            label={label}
-            icon={icon}
-            color={color}
-            onClick={() => handleNavigate(type)}
-            />
-        ))}
-      </div>
+      <HomeSectionCards
+        navigateLoginUser={() => navigateLoginUser()}
+        navigateOfficialUser={() => navigateOfficialUser()}
+        navigateUsers={() => navigateUsers()}
+        isLogin={loginUser !== null}
+      />
 
       {loginUser && (
         <div className="mt-16 w-full px-6">
@@ -112,7 +93,6 @@ const Home: React.FC = () => {
             あなたのお気に入りコレクション
           </h2>
           <FavoriteCollectionList 
-            isOwner={true}
             userId={Number(loginUser?.id)}
           />
         </div>

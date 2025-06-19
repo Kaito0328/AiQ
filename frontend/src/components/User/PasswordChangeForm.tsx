@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import Button from "../common/button/Button";
-import { ThemeColor } from "../../style/color";
+import BaseButton from "../common/button/BaseButton";
 
 const PasswordChangeForm: React.FC<{
   onChangePassword: (
@@ -47,14 +46,15 @@ const PasswordChangeForm: React.FC<{
           >
             パスワード変更
           </button>
-          <Button
+          <BaseButton
             color={ThemeColor.Gray}
             onClick={() => setEditMode(false)}
             label="キャンセル"
+
           />
         </>
       ) : (
-        <Button
+        <BaseButton
             onClick={() => setEditMode(true)}
             label="パスワードを変更する"
             color={ThemeColor.Gray}

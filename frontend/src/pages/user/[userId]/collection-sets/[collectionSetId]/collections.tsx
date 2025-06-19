@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import CollectionList from "../../../../../components/item/collection/CollectionList";
+import CollectionList from "../../../../../components/LearningItem/collection/CollectionList";
 import { useUser } from "../../../../../hooks/useUser";
 import UserHeader from "../../../../../components/User/UserHeader";
 import { CollectionSet } from "../../../../../types/collectionSet";
 import { getCollectionSet } from "../../../../../api/CollectionSetAPI";
-import CollectionSetHeader from "../../../../../components/item/collectionSet/CollectionSetHeader";
-import PageContainer from "../../../../../components/item/layout/PageContainer";
-import SectionCard from "../../../../../components/item/layout/SectionCard";
-import SectionTitle from "../../../../../components/item/layout/SectionTitle";
+import CollectionSetHeader from "../../../../../components/LearningItem/collectionSet/CollectionSetHeader";
+import PageContainer from "../../../../../components/LearningItem/common/PageContainer";
 
 interface CollectionPageProps {
   collectionSet?: CollectionSet;
@@ -29,34 +27,33 @@ const CollectionPage: React.FC<CollectionPageProps> = ({ collectionSet: propColl
   }, [collectionSetId, propCollectionSet, collectionSet]);
 
   return (
-    <PageContainer backgroundClassName="bg-gradient-to-br from-blue-100 to-blue-300">
+    <PageContainer>
       {/* ユーザーヘッダー */}
-      <UserHeader 
+      <div>
+              <UserHeader 
         user={user} 
         loading={loading} 
         errorMessage={errorMessage} 
         onFollowStatusChange={onFollowStatusChange} 
       />
+      </div>
+
 
       {/* コレクションセットヘッダー */}
       {collectionSet && (
-        <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
           <CollectionSetHeader 
             collectionSet={collectionSet} 
             isOwner={user ? user.self : false} 
           />
-        </SectionCard>
       )}
-
-      {/* コレクション一覧 */}
-      <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
-        <SectionTitle>コレクション一覧</SectionTitle>
+      <div className="border-t pt-5">
         <CollectionList 
           collectionSetId={Number(collectionSetId)}
           isOwner={user?.self ?? false}
           userId={Number(user?.id)}
         />
-      </SectionCard>
+      </div>
+
     </PageContainer>
   );
 };

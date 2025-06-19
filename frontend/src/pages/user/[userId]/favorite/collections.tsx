@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import FavoriteCollectionList from "../../../../components/item/favorite-collection/FavoriteCollectionList";
+import FavoriteCollectionList from "../../../../components/LearningItem/collection/favorite-collection/FavoriteCollectionList";
 import { useUser } from "../../../../hooks/useUser";
 import UserHeader from "../../../../components/User/UserHeader";
 import { CollectionSet } from "../../../../types/collectionSet";
 import { getCollectionSet } from "../../../../api/CollectionSetAPI";
-import PageContainer from "../../../../components/item/layout/PageContainer";
-import SectionCard from "../../../../components/item/layout/SectionCard";
-import SectionTitle from "../../../../components/item/layout/SectionTitle";
+import PageContainer from "../../../../components/LearningItem/common/PageContainer";
+import SectionCard from "../../../../components/LearningItem/common/SectionCard";
+import SectionTitle from "../../../../components/LearningItem/common/SectionTitle";
 
 interface CollectionPageProps {
   collectionSet?: CollectionSet;
@@ -28,7 +28,7 @@ const FavoriteCollectionPage: React.FC<CollectionPageProps> = ({ collectionSet: 
   }, [collectionSetId, propCollectionSet, collectionSet]);
 
   return (
-    <PageContainer backgroundClassName="bg-gradient-to-br from-blue-100 to-blue-300">
+    <PageContainer>
       {/* ユーザーヘッダー */}
       <UserHeader 
         user={user} 
@@ -41,7 +41,6 @@ const FavoriteCollectionPage: React.FC<CollectionPageProps> = ({ collectionSet: 
       <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
         <SectionTitle>コレクション一覧</SectionTitle>
         <FavoriteCollectionList 
-          isOwner={user?.self ?? false}
           userId={Number(user?.id)}
         />
       </SectionCard>

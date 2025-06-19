@@ -1,14 +1,12 @@
 import { useParams } from "react-router-dom";
-import QuestionList from "../../../../../components/item/question/QuestionList";
+import QuestionList from "../../../../../components/LearningItem/question/QuestionList";
 import UserHeader from "../../../../../components/User/UserHeader";
 import { useUser } from "../../../../../hooks/useUser";
 import { Collection } from "../../../../../types/collection";
 import React, { useEffect, useState } from "react";
-import CollectionHeader from "../../../../../components/item/collection/CollectionHeader";
+import CollectionHeader from "../../../../../components/LearningItem/collection/CollectionHeader";
 import { getCollection } from "../../../../../api/CollectionAPI";
-import PageContainer from "../../../../../components/item/layout/PageContainer";
-import SectionCard from "../../../../../components/item/layout/SectionCard";
-import SectionTitle from "../../../../../components/item/layout/SectionTitle";
+import PageContainer from "../../../../../components/LearningItem/common/PageContainer";
 
 interface QuestionPageProps {
   collection?: Collection;
@@ -34,7 +32,7 @@ const QuestionPage: React.FC<QuestionPageProps> = ({ collection: propCollection 
   }, [collectionId, propCollection]);
 
   return (
-    <PageContainer backgroundClassName="bg-gradient-to-br from-pink-100 to-pink-300">
+    <PageContainer>
       {/* ユーザーヘッダー */}
       <UserHeader 
         user={user} 
@@ -43,28 +41,23 @@ const QuestionPage: React.FC<QuestionPageProps> = ({ collection: propCollection 
         onFollowStatusChange={onFollowStatusChange} 
       />
 
-      {/* コレクションセクション */}
-      <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
-        <SectionTitle>コレクション</SectionTitle>
-        {collection ? (
-          <CollectionHeader 
-            collection={collection} 
-            isOwner={user ? user.self : false} 
-          />
-        ) : (
-          <p className="text-gray-500">コレクションが見つかりません。</p>
-        )}
-      </SectionCard>
-
-      {/* 問題一覧セクション */}
-      <SectionCard className="bg-white/80 rounded-2xl">
-        <SectionTitle>問題一覧</SectionTitle>
+      {collection ? (
+        <CollectionHeader 
+          collection={collection} 
+          isOwner={user ? user.self : false} 
+        />
+      ) : (
+        <p className="text-gray-500">コレクションが見つかりません。</p>
+      )}
+      <div className="border-t pt-5">
         <QuestionList 
           collectionId={Number(collectionId)} 
           userId={user?.id} 
           isOwner={user ? user.self : false} 
         />
-      </SectionCard>
+
+      </div>
+
     </PageContainer>
   );
 };

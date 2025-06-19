@@ -40,6 +40,7 @@ public class FavoriteCollectionService {
         }
     }
 
+    @Transactional
     public void removeFavorite(User user, Collection collection) {
         favoriteCollectionRepository.deleteByUserAndCollection(user, collection);
         collection.getCollectionStats().decrementFavoriteCount();

@@ -1,13 +1,10 @@
-export enum Round {
+export enum RoundKey {
   Sm = 'sm',
   Md = 'md',
   Lg = 'Lg',
   Full = 'full',
 }
 
-export const roundedMap = {
-  [Round.Sm]: 'rounded',
-  [Round.Md]: 'rounded-md',
-  [Round.Lg]: 'rounded-lg',
-  [Round.Full]: 'rounded-full',
-};
+export type RoundMap = Record<RoundKey, string>;
+
+

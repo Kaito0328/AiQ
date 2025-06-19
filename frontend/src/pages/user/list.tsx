@@ -2,26 +2,46 @@ import React, { useState, useEffect } from "react";
 import { generatePath, useNavigate } from "react-router-dom";
 import { fetchUserList } from "../../api/UserAPI";
 import { getFollowees, getFollowers } from "../../api/Follow";
-import { User } from "../../types/user";
+import { User, UsersFilterOption, UsersFilterType } from "../../types/user";
 import { useLoginUser } from "../../hooks/useLoginUser";
 import LoadingIndicator from "../../components/Loading/Loading";
 import { useUser } from "../../hooks/useUser";
 import Paths from "../../routes/Paths";
+import UserList from "../../components/User/userList/UserList"; // ← 追加
+import ChangeUsersButton from "../../components/User/userList/ChangeUsersButton";
+import BaseLabel from "../../components/baseComponents/BaseLabel";
+import { FaUsers } from "react-icons/fa";
+import { SizeKey } from "../../style/size";
+import { FontWeightKey } from "../../style/fontWeight";
 
-type TabType = "all" | "followers" | "followees";
+const USER_LIST_TAB_OPTIONS: UsersFilterOption [] = [
+  { type: UsersFilterType.All, label: '全ユーザー' },
+  { type: UsersFilterType.Followees, label: 'フォロー中', requiresLogin: true },
+  { type: UsersFilterType.Followers, label: 'フォロワー', requiresLogin: true },
+];
 
-const UserList: React.FC = () => {
+const UserListPage: React.FC = () => {
   const [allUsers, setAllUsers] = useState<User[] | null>(null);
   const [followers, setFollowers] = useState<User[] | null>(null);
   const [followees, setFollowees] = useState<User[] | null>(null);
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [tab, setTab] = useState<TabType>("all");
+  const [tab, setTab] = useState<UsersFilterType>(UsersFilterType.All);
+  const [options, setOptions] = useState<UsersFilterOption[]>([]);
   const { setUser } = useUser();
 
   const { loginUser } = useLoginUser();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (loginUser) {
+      setOptions(USER_LIST_TAB_OPTIONS);
+    } else {
+      setOptions(USER_LIST_TAB_OPTIONS.filter(option => !option.requiresLogin));
+    }
+  }, [loginUser]);
+
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -29,7 +49,7 @@ const UserList: React.FC = () => {
       try {
         let data: User[] = [];
 
-        if (tab === "all") {
+        if (tab === UsersFilterType.All) {
           if (!allUsers) {
             const fetched = await fetchUserList();
             setAllUsers(fetched);
@@ -37,7 +57,7 @@ const UserList: React.FC = () => {
           } else {
             data = allUsers;
           }
-        } else if (tab === "followers" && loginUser) {
+        } else if (tab === UsersFilterType.Followers && loginUser) {
           if (!followers) {
             const fetched = await getFollowers(loginUser.id);
             setFollowers(fetched);
@@ -45,7 +65,7 @@ const UserList: React.FC = () => {
           } else {
             data = followers;
           }
-        } else if (tab === "followees" && loginUser) {
+        } else if (tab === UsersFilterType.Followees && loginUser) {
           if (!followees) {
             const fetched = await getFollowees(loginUser.id);
             setFollowees(fetched);
@@ -68,79 +88,46 @@ const UserList: React.FC = () => {
 
   const handleSelectUser = (user: User) => {
     setUser(user);
-    navigate(generatePath(Paths.COLLECTION_SET_PAGE, { userId: user.id}));
+    navigate(generatePath(Paths.COLLECTION_SET_PAGE, { userId: user.id }));
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white py-10 px-4">
       <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-8">
-        <h1 className="text-3xl font-bold text-indigo-700 mb-6 text-center flex items-center justify-center gap-2">
-          <span role="img" aria-label="user">👥</span> ユーザー一覧
+        <h1 className="font-bold mb-6 text-center flex items-center justify-center">
+          <BaseLabel
+            icon={<FaUsers />}
+            label="ユーザーリスト"
+            style = {{
+              size: {
+                sizeKey: SizeKey.LG,
+              },
+              fontWeightKey: FontWeightKey.Bold,
+            }}
+          />
         </h1>
 
         {/* タブ切り替え */}
-        <div className="flex justify-center mb-6 space-x-3">
-          <button
-            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-              tab === "all"
-                ? "bg-indigo-600 text-white shadow"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-            onClick={() => setTab("all")}
-          >
-            全ユーザー
-          </button>
-          {loginUser && (
-            <>
-              <button
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  tab === "followees"
-                    ? "bg-indigo-600 text-white shadow"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-                onClick={() => setTab("followees")}
-              >
-                フォロー中
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  tab === "followers"
-                    ? "bg-indigo-600 text-white shadow"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-                onClick={() => setTab("followers")}
-              >
-                フォロワー
-              </button>
-            </>
-          )}
-        </div>
+        <ul className="flex justify-center  items-center mb-6 space-x-10">
+          {options.map((option) => (
+            <ChangeUsersButton
+              key={option.type}
+              option={option}
+              isSelected={tab === option.type}
+              onClick={() => setTab(option.type)}
+            />
+          ))}
+        </ul>
 
-        {/* リスト表示 */}
+        {/* UserList コンポーネントに差し替え */}
         {loading ? (
           <LoadingIndicator />
-        ) : users.length === 0 ? (
-          <p className="text-center text-gray-600">データが見つかりませんでした。</p>
         ) : (
-          <ul className="space-y-3">
-            {users.map((user) => (
-              <li
-                key={user.id}
-                className="flex justify-between items-center p-4 bg-indigo-50 border border-indigo-200 rounded-lg shadow-sm hover:bg-indigo-100 transition cursor-pointer"
-                onClick={() => handleSelectUser(user)}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-indigo-500 text-lg">👤</span>
-                  <span className="text-gray-800 font-medium">{user.username}</span>
-                </div>
-                <span className="text-indigo-400 text-sm">▶</span>
-              </li>
-            ))}
-          </ul>
+          <UserList users={users} onSelectUser={handleSelectUser} />
         )}
       </div>
     </div>
   );
 };
 
-export default UserList;
+export default UserListPage;

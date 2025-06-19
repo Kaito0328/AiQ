@@ -20,7 +20,7 @@ const QuizQuestion: React.FC<QuizQuestionProps> = ({ question, userAnswer, onUse
     setShowHint(false);
     isSubmitting.current = false;
     answerRef.current?.focus();
-  }, [question]);
+  }, [question, onUserAnswerChange]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.repeat) {

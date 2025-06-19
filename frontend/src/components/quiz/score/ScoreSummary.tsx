@@ -1,5 +1,12 @@
 import React from 'react';
 import { FaHome, FaRedo, FaRedoAlt } from 'react-icons/fa';
+import BaseButton from '../../common/button/BaseButton';
+import { ColorKey } from '../../../style/colorStyle';
+import { FontWeightKey } from '../../../style/fontWeight';
+import { RoundKey } from '../../../style/rounded';
+import BaseLabel from '../../baseComponents/BaseLabel';
+import { SizeKey } from '../../../style/size';
+import BaseCard from '../../containerComponents/BaseCard';
 
 interface ScoreSummaryProps {
   correctCount: number;
@@ -18,45 +25,76 @@ const ScoreSummary: React.FC<ScoreSummaryProps> = ({
   onRetryIncorrect,
   onRetryAll,
 }) => {
+  const resultText = `${total}問中 ${correctCount}問正解 — 正答率 ${correctRate}%`;
   return (
-    <div className="bg-white rounded-xl shadow-md p-8 border border-gray-200">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-4">結果発表</h1>
-      <p className="text-xl text-center text-gray-600 mb-6">
-        {total}問中 {correctCount}問正解 — 正答率 {correctRate}%
-      </p>
-
-      {/* プログレスバー */}
-      <div className="w-full bg-gray-200 rounded-full h-3 mb-8 overflow-hidden">
-        <div
-          className="h-full bg-indigo-500 transition-all duration-1000"
-          style={{ width: `${correctRate}%` }}
+    <BaseCard
+      style={{
+        size: {
+          sizeKey: SizeKey.XL
+        }
+      }}
+    >
+      <div className='flex flex-col items-center justify-center'>
+        <BaseLabel
+          label="結果発表"
+          style={{
+            fontWeightKey: FontWeightKey.Bold,
+            size: {
+              sizeKey: SizeKey.XL
+            }
+          }}
         />
-      </div>
+        <BaseLabel
+          label={resultText}
+        />
 
-      <div className="flex justify-center flex-wrap gap-4">
-        <button
-          onClick={onGoHome}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 shadow-sm transition"
-        >
-          <FaHome />
-          <span>ホーム</span>
-        </button>
-        <button
-          onClick={onRetryIncorrect}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-yellow-100 hover:bg-yellow-200 text-yellow-700 shadow-sm transition"
-        >
-          <FaRedo />
-          <span>間違いだけ再挑戦</span>
-        </button>
-        <button
-          onClick={onRetryAll}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-700 shadow-sm transition"
-        >
-          <FaRedoAlt />
-          <span>全問再挑戦</span>
-        </button>
+        {/* プログレスバー */}
+        <div className="w-full bg-gray-200 rounded-full h-3 mb-8 overflow-hidden">
+          <div
+            className="h-full bg-indigo-500 transition-all duration-1000"
+            style={{ width: `${correctRate}%` }}
+          />
+        </div>
+
+        <div className="flex justify-center flex-wrap gap-4">
+          <BaseButton
+          icon={<FaHome/>}
+            label="ホーム"
+            onClick={onGoHome}
+            style={{
+              color: {
+                colorKey: ColorKey.Secondary,
+              },
+              fontWeightKey: FontWeightKey.Semibold,
+              roundKey: RoundKey.Lg
+            }}
+          />
+          <BaseButton
+          icon={<FaRedo/>}
+            label="間違いだけ再挑戦"
+            onClick={onRetryIncorrect}
+            style={{
+              color: {
+                colorKey: ColorKey.Danger,
+              },
+              roundKey: RoundKey.Lg
+            }}
+          />
+          <BaseButton
+          icon={<FaRedoAlt/>}
+            label="全問再挑戦"
+            onClick={onRetryAll}
+            style={{
+              color: {
+                colorKey: ColorKey.Primary,
+              },
+              roundKey: RoundKey.Lg
+            }}
+          />
+        </div>
+                
       </div>
-    </div>
+    </BaseCard>
   );
 };
 
