@@ -1,9 +1,9 @@
 import ActionButtons from "./Buttons/ActionButtons";
-import LoadingIndicator from "../../Loading/Loading";
 import BaseCard from "../../containerComponents/BaseCard";
 import { ShadowKey } from "../../../style/shadow";
 import { SizeKey } from "../../../style/size";
 import { RoundKey } from "../../../style/rounded";
+import LoadingIndicator from "../../common/Loading/loadingIndicator";
 
 interface ItemListProps<TItem, TInput> {
   items: TItem[];

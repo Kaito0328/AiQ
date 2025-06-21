@@ -7,6 +7,7 @@ import { RoundKey } from '../../../style/rounded';
 import BaseLabel from '../../baseComponents/BaseLabel';
 import { SizeKey } from '../../../style/size';
 import BaseCard from '../../containerComponents/BaseCard';
+import ProgressBar from '../../common/ProgressBar';
 
 interface ScoreSummaryProps {
   correctCount: number;
@@ -48,13 +49,12 @@ const ScoreSummary: React.FC<ScoreSummaryProps> = ({
           label={resultText}
         />
 
-        {/* プログレスバー */}
-        <div className="w-full bg-gray-200 rounded-full h-3 mb-8 overflow-hidden">
-          <div
-            className="h-full bg-indigo-500 transition-all duration-1000"
-            style={{ width: `${correctRate}%` }}
-          />
-        </div>
+        <ProgressBar
+          value={correctCount / total * 100}
+          style={{
+            sizeKey: SizeKey.LG
+          }}
+        />
 
         <div className="flex justify-center flex-wrap gap-4">
           <BaseButton

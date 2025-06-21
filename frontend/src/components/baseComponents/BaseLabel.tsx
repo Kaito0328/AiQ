@@ -71,9 +71,9 @@ const BaseLabel: React.FC<Props> = ({
       "flex items-center",
       classText)
     }>
-      {!iconRight &&icon && <span className={clsx(iconClassText, label??"mr-2")}>{icon}</span>}
+      {!iconRight &&icon && <span className={clsx(iconClassText, label&&"mr-2")}>{icon}</span>}
       {label && <span>{label}</span>}
-      {iconRight &&icon && <span className={clsx(iconClassText, label??"ml-2")}>{icon}</span>}
+      {iconRight &&icon && <span className={clsx(iconClassText, label&&"ml-2")}>{icon}</span>}
     </div>
   );
 };

@@ -1,20 +1,82 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { Menu} from "lucide-react";
+import clsx from "clsx";
 import Paths from "../../routes/Paths";
+import {
+  ComponentStyle,
+  getClassByStyle,
+  PartialComponentStyle,
+  StyleMaps,
+} from "../../style/style";
+import {
+  ColorKey,
+  ColorPropertyKey,
+  ColorVariantKey,
+} from "../../style/colorStyle";
+import { SizeKey, SizeProperty } from "../../style/size";
+import { ShadowKey } from "../../style/shadow";
+import { headerColorMap } from "../../styleMap/colorMap";
+import { headerSizeMap } from "../../styleMap/sizeMap";
+import { HEADER_HEIGHT } from "./Layout";
+import BaseLabel from "../baseComponents/BaseLabel";
+import { FontWeightKey } from "../../style/fontWeight";
+import BaseButton from "../common/button/BaseButton";
+import SideMenu from "./SideMenu";
 
-const HeaderWithHamburgerMenu = () => {
+type HeaderStyle = {
+  colorKey?: ColorKey;
+  sizeKey?: SizeKey;
+};
+
+interface Props {
+  style?: HeaderStyle;
+}
+
+const defaultStyle: ComponentStyle = {
+  color: {
+    colorKey: ColorKey.Primary,
+    properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label],
+    variants: [ColorVariantKey.Hover],
+  },
+  size: {
+    sizeKey: SizeKey.MD,
+    properties: [SizeProperty.Padding],
+    full_width: true,
+  },
+  shadow: {
+    shadowKey: ShadowKey.None,
+  },
+};
+
+const HeaderWithHamburgerMenu = ({ style }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleNavigate = (path: string) => {
     navigate(path);
-    setIsOpen(false); // メニューを閉じる
+    setIsOpen(false);
   };
 
+  const classStyle: PartialComponentStyle = {
+    color: {
+      colorKey: style?.colorKey,
+    },
+    size: {
+      sizeKey: style?.sizeKey,
+    },
+  };
+
+  const maps: Partial<StyleMaps> = {
+    colorMap: headerColorMap,
+    sizeMap: headerSizeMap,
+  };
+
+  const headerClass = getClassByStyle(maps, defaultStyle, classStyle);
+
   return (
-    <div className="relative flex justify-between items-center w-full h-full p-4 shadow-lg text-white">
-      {/* ロゴ（左） */}
+    <header style={{height:  `${HEADER_HEIGHT}vh` }} className={clsx(" w-full relative flex justify-between items-center", headerClass)}>
+      {/* ロゴ */}
       <div className="flex items-center">
         <img
           src="/logo.png"
@@ -24,61 +86,55 @@ const HeaderWithHamburgerMenu = () => {
         />
       </div>
 
-      {/* AiQ（中央） */}
       <div
-        className="absolute left-1/2 transform -translate-x-1/2 text-3xl font-bold cursor-pointer"
-        onClick={() => handleNavigate(Paths.HOME)}
+        className="absolute left-1/2 transform -translate-x-1/2"
       >
-        AiQ
+        <BaseLabel
+          label="AiQ"
+          style={{
+            fontWeightKey: FontWeightKey.Bold,
+            size: {
+              sizeKey: SizeKey.XL
+            },
+            color: {
+              colorKey: ColorKey.Primary,
+              properties: [ColorPropertyKey.Label]
+            }
+          }}
+          bg_color={true}
+        />
       </div>
 
-      {/* ハンバーガーメニュー（右） */}
-      <button className="text-4xl" onClick={() => setIsOpen(true)}>
-        <Menu />
-      </button>
 
-      {/* サイドメニュー */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-gray-900 text-white transform ${
-          isOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out shadow-2xl z-50 rounded-l-xl`}
-      >
-        <div className="p-4 flex justify-between items-center border-b">
-          <h2 className="text-xl font-semibold">MENU</h2>
-          <button className="text-3xl" onClick={() => setIsOpen(false)}>
-            <X />
-          </button>
-        </div>
-        <nav className="p-5 space-y-6">
-          <button
-            onClick={() => handleNavigate(Paths.HOME)}
-            className="block w-full text-left text-lg font-medium hover:text-blue-400 transition"
-          >
-            ホーム
-          </button>
-          <button
-            onClick={() => handleNavigate(Paths.USER_PROFILE)}
-            className="block w-full text-left text-lg font-medium hover:text-blue-400 transition"
-          >
-            アカウント
-          </button>
-          <button
-            onClick={() => handleNavigate(Paths.RESUMABLE_QUIZZES_LIST)}
-            className="block w-full text-left text-lg font-medium hover:text-blue-400 transition"
-          >
-            中断したクイズ
-          </button>
-        </nav>
-      </div>
+      <BaseButton
+        icon={<Menu/>}
+        style={{
+          color: {colorKey: ColorKey.Primary,
+            properties: [ColorPropertyKey.Label]
+          },
+          size: {
+            sizeKey: SizeKey.XL,
+            properties: [SizeProperty.Text]
+          }
+        }}
+        bg_color={true}
+        onClick={() => setIsOpen(true)}
+      />
+
+        <SideMenu
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
+          onNavigate={handleNavigate}
+        />
 
       {/* 背景オーバーレイ */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-60 z-40"
+          className="fixed inset-0 bg-black opacity-60 z-50"
           onClick={() => setIsOpen(false)}
         />
       )}
-    </div>
+    </header>
   );
 };
 

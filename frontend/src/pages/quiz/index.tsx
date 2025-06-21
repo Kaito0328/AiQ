@@ -7,6 +7,8 @@ import { submitAnswer } from '../../api/QuizAPI';
 import { AnswerHistory } from '../../types/answerHistory';
 import Paths from '../../routes/Paths';
 import QuizForm from '../../components/quiz/quizForm/QuizForm';
+import Page from '../../components/containerComponents/Page';
+import { ColorKey } from '../../style/colorStyle';
 
 const QuizPage: React.FC = () => {
   const location = useLocation();
@@ -78,25 +80,33 @@ const QuizPage: React.FC = () => {
   }
 
   const currentQuestion = questions[currentIndex];
+  const resultColorKey = (isCorrect === null ) ? ColorKey.Base : (isCorrect ? ColorKey.Success : ColorKey.Danger);
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="w-full max-w-xl">
-        {isCorrect !== null ? (
-          <Result
-            isCorrect={isCorrect}
-            correctAnswer={currentQuestion.correctAnswer}
-            description={currentQuestion.descriptionText}
-            onNext={handleNext}
-          />
-        ) : (
-          <QuizForm
-            questionText={currentQuestion.questionText}
-            correctAnswer={currentQuestion.correctAnswer}
-            onSubmitAnswer={handleAnswer}
-          />
-        )}
+    <Page
+      style={{
+        colorKey: resultColorKey
+      }}
+    >
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-[90%] max-w-200">
+          {isCorrect !== null ? (
+            <Result
+              isCorrect={isCorrect}
+              correctAnswer={currentQuestion.correctAnswer}
+              description={currentQuestion.descriptionText}
+              onNext={handleNext}
+            />
+          ) : (
+            <QuizForm
+              questionText={currentQuestion.questionText}
+              correctAnswer={currentQuestion.correctAnswer}
+              onSubmitAnswer={handleAnswer}
+            />
+          )}
+        </div>
       </div>
-    </div>
+    </Page>
+    
   );
 };
 

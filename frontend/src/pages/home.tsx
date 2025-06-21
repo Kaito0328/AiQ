@@ -12,6 +12,7 @@ import HomeSectionCards from "../components/home/HomeSectionCards";
 import { RoundKey } from "../style/rounded";
 import { SizeKey } from "../style/size";
 import { ColorKey } from "../style/colorStyle";
+import Page from "../components/containerComponents/Page";
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -55,49 +56,53 @@ const Home: React.FC = () => {
   }, [loginLoading, officialLoading, navigate]);
 
   return (
-    <div className="flex flex-col items-center min-h-screen font-sans w-full">
-      {showWelcome && (
-        <WelcomeBanner
-          username={loginUser ? loginUser.username : undefined}
+    <Page>
+      <div className="flex flex-col items-center min-h-screen font-sans w-full">
+        {showWelcome && (
+          <WelcomeBanner
+            username={loginUser ? loginUser.username : undefined}
+          />
+        )}
+
+        {!loginUser && !loginLoading && (
+          <div className="flex justify-end mt-5 w-full px-5">
+            <BaseButton
+              onClick={() => navigate(Paths.LOGIN)}
+              label="ログイン"
+              style={{
+                color: {
+                  colorKey: ColorKey.Primary
+                },
+                roundKey: RoundKey.Md,
+                size: {
+                  sizeKey: SizeKey.MD
+                }
+              }}
+            />
+          </div>
+        )}
+
+        <HomeSectionCards
+          navigateLoginUser={() => navigateLoginUser()}
+          navigateOfficialUser={() => navigateOfficialUser()}
+          navigateUsers={() => navigateUsers()}
+          isLogin={loginUser !== null}
         />
-      )}
 
-      {!loginUser && !loginLoading && (
-        <div className="flex justify-end mt-5 w-full px-5">
-          <BaseButton
-            onClick={() => navigate(Paths.LOGIN)}
-            label="ログイン"
-            style={{
-              color: {
-                colorKey: ColorKey.Primary
-              },
-              roundKey: RoundKey.Md,
-              size: {
-                sizeKey: SizeKey.MD
-              }
-            }}
-          />
-        </div>
-      )}
+        {loginUser && (
+          <div className="mt-16 w-full px-6">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+              あなたのお気に入りコレクション
+            </h2>
+            <FavoriteCollectionList 
+              userId={Number(loginUser?.id)}
+            />
+          </div>
+        )}
+      </div>
 
-      <HomeSectionCards
-        navigateLoginUser={() => navigateLoginUser()}
-        navigateOfficialUser={() => navigateOfficialUser()}
-        navigateUsers={() => navigateUsers()}
-        isLogin={loginUser !== null}
-      />
+    </Page>
 
-      {loginUser && (
-        <div className="mt-16 w-full px-6">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-            あなたのお気に入りコレクション
-          </h2>
-          <FavoriteCollectionList 
-            userId={Number(loginUser?.id)}
-          />
-        </div>
-      )}
-    </div>
   );
 };
 

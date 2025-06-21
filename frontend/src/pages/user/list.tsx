@@ -4,15 +4,14 @@ import { fetchUserList } from "../../api/UserAPI";
 import { getFollowees, getFollowers } from "../../api/Follow";
 import { User, UsersFilterOption, UsersFilterType } from "../../types/user";
 import { useLoginUser } from "../../hooks/useLoginUser";
-import LoadingIndicator from "../../components/Loading/Loading";
 import { useUser } from "../../hooks/useUser";
 import Paths from "../../routes/Paths";
 import UserList from "../../components/User/userList/UserList"; // ← 追加
 import ChangeUsersButton from "../../components/User/userList/ChangeUsersButton";
-import BaseLabel from "../../components/baseComponents/BaseLabel";
-import { FaUsers } from "react-icons/fa";
 import { SizeKey } from "../../style/size";
-import { FontWeightKey } from "../../style/fontWeight";
+import Page from "../../components/containerComponents/Page";
+import BaseCard from "../../components/containerComponents/BaseCard";
+import LoadingIndicator from "../../components/common/Loading/loadingIndicator";
 
 const USER_LIST_TAB_OPTIONS: UsersFilterOption [] = [
   { type: UsersFilterType.All, label: '全ユーザー' },
@@ -92,41 +91,47 @@ const UserListPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white py-10 px-4">
-      <div className="max-w-2xl mx-auto bg-white shadow-xl rounded-xl p-8">
-        <h1 className="font-bold mb-6 text-center flex items-center justify-center">
-          <BaseLabel
-            icon={<FaUsers />}
-            label="ユーザーリスト"
-            style = {{
+    <Page
+      title="ユーザーリスト"
+    >
+      <div className="flex items-center justify-center">
+        <div className="w-[80%] max-w-200">
+          <BaseCard
+            style={{
               size: {
-                sizeKey: SizeKey.LG,
-              },
-              fontWeightKey: FontWeightKey.Bold,
+                sizeKey: SizeKey.LG
+              }
             }}
-          />
-        </h1>
+          >
+          <div>
+            <ul className="flex justify-center  items-center mb-6 space-x-10">
+              {options.map((option) => (
+                <ChangeUsersButton
+                  key={option.type}
+                  option={option}
+                  isSelected={tab === option.type}
+                  onClick={() => setTab(option.type)}
+                />
+              ))}
+            </ul>
 
-        {/* タブ切り替え */}
-        <ul className="flex justify-center  items-center mb-6 space-x-10">
-          {options.map((option) => (
-            <ChangeUsersButton
-              key={option.type}
-              option={option}
-              isSelected={tab === option.type}
-              onClick={() => setTab(option.type)}
-            />
-          ))}
-        </ul>
+            {loading ? (
+              <LoadingIndicator
+                text="ユーザーリストを取得中..."
+              />
+            ) : (
+              <UserList users={users} onSelectUser={handleSelectUser} />
+            )}
+          </div>
+      </BaseCard>
+          
+        </div>
 
-        {/* UserList コンポーネントに差し替え */}
-        {loading ? (
-          <LoadingIndicator />
-        ) : (
-          <UserList users={users} onSelectUser={handleSelectUser} />
-        )}
+
       </div>
-    </div>
+      
+    </Page>
+
   );
 };
 

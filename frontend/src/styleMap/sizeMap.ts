@@ -48,7 +48,7 @@ export const labelSizeMap: SizeMap = {
     padding: 'py-2.5 px-3.5',
   },
   [SizeKey.LG]: {
-    text: 'text-xl',
+    text: 'text-lg',
     padding: 'py-3.5 px-5',
   },
   [SizeKey.XL]: {
@@ -107,5 +107,42 @@ export const pageSizeMap: SizeMap = {
   },
   [SizeKey.XL]: {
     padding: 'p-4',
+  },
+};
+
+export const headerSizeMap: SizeMap = {
+  [SizeKey.SM]: {
+    padding: 'p-2',
+    text: 'text-sm',
+  },
+  [SizeKey.MD]: {
+    padding: 'p-4',
+    text: 'text-md',
+  },
+  [SizeKey.LG]: {
+    padding: 'p-6',
+    text: 'text-lg',
+  },
+  [SizeKey.XL]: {
+    padding: 'p-8',
+    text: 'text-xl',
+  },
+};
+export const sideMenuSizeMap: SizeMap = {
+  [SizeKey.SM]: {
+    padding: 'p-4',
+    text: 'text-sm',
+  },
+  [SizeKey.MD]: {
+    padding: 'p-5',
+    text: 'text-md',
+  },
+  [SizeKey.LG]: {
+    padding: 'p-6',
+    text: 'text-lg',
+  },
+  [SizeKey.XL]: {
+    padding: 'p-8',
+    text: 'text-xl',
   },
 };

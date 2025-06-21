@@ -4,6 +4,7 @@ import { FilterCondition, SortCondition } from "../../../types/quiz";
 import { useUser } from "../../../hooks/useUser";
 import CollectionSelector from "../../../components/quiz-option/collectionSelect/CollectionSelector";
 import QuizConditionModal from "../../../components/quiz-option/optionModal/QuizConditionModal";
+import Page from "../../../components/containerComponents/Page";
 
 
 const QuizOption: React.FC = () => {
@@ -12,7 +13,6 @@ const QuizOption: React.FC = () => {
 
   const [selectedCollections, setSelectedCollections] = useState<number[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { user }= useUser(Number(userId));
 
   const handleCollectionSelection = (selected: number[]) => {
@@ -31,21 +31,26 @@ const QuizOption: React.FC = () => {
   };
 
   return (
-    <div className="p-6  w-full bg-gradient-to-br from-gray-100 to-blue-100 rounded-lg shadow-lg min-h-screen">
-      <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">クイズの設定</h2>
+    <Page
+      title="クイズの設定"
+    >
+      <div className="p-6  w-full min-h-screen">
 
-    <div>
-      <CollectionSelector userId={Number(userId)} isOfficial={user?.official} onSelectionChange={handleCollectionSelection} />
-    </div>
+      <div>
+        <CollectionSelector userId={Number(userId)} isOfficial={user?.official} onSelectionChange={handleCollectionSelection} />
+      </div>
 
-      {showModal && (
-        <QuizConditionModal
-          onCancel={() => setShowModal(false)}
-          handleStart={handleStartQuiz}
-          loading={loading}
-        />
-      )}
-    </div>
+        {showModal && (
+          <QuizConditionModal
+            onCancel={() => setShowModal(false)}
+            handleStart={handleStartQuiz}
+            loading={false}
+          />
+        )}
+      </div>
+
+    </Page>
+
   );
 };
 

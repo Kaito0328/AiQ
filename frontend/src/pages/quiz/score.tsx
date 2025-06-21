@@ -5,6 +5,7 @@ import ScoreSummary from '../../components/quiz/score/ScoreSummary';
 import AnswerList from '../../components/quiz/score/AnswerList';
 import { Question } from '../../types/question';
 import Paths from '../../routes/Paths';
+import Page from '../../components/containerComponents/Page';
 
 
 const ScorePage: React.FC = () => {
@@ -49,24 +50,26 @@ const ScorePage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
-    {/* 上部：固定させたいサマリー */}
-    <div className="flex-none">
-            <ScoreSummary
-            correctCount={correctCount}
-            total={total}
-            correctRate={correctRate}
-            onGoHome={handleGoHome}
-            onRetryIncorrect={handleRetryIncorrect}
-            onRetryAll={handleRetryAll}
-            />
+    <Page>
+       <div className="flex flex-col h-screen">
+        {/* 上部：固定させたいサマリー */}
+        <div className="flex-none">
+                <ScoreSummary
+                correctCount={correctCount}
+                total={total}
+                correctRate={correctRate}
+                onGoHome={handleGoHome}
+                onRetryIncorrect={handleRetryIncorrect}
+                onRetryAll={handleRetryAll}
+                />
+            </div>
+            {/* 下部：スクロールさせたいリスト */}
+            <div className="flex-1 overflow-y-auto px-4 mt-10">
+                <AnswerList userAnswers={userAnswers} />
+            </div>
         </div>
-
-        {/* 下部：スクロールさせたいリスト */}
-        <div className="flex-1 overflow-y-auto px-4 mt-10">
-            <AnswerList userAnswers={userAnswers} />
-        </div>
-    </div>
+    </Page>
+   
   );
 };
 

@@ -1,10 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import Loading from '../../components/quiz/Loading';
 import { startCasualQuiz } from '../../api/QuizAPI';
 import { CasualQuiz, QuizRequest } from '../../types/quiz';
 import { Question } from '../../types/question';
 import './QuizStartPage.css'; // CSS追加！
+import Page from '../../components/containerComponents/Page';
+import BaseButton from '../../components/common/button/BaseButton';
+import { ColorKey } from '../../style/colorStyle';
+import { SizeKey } from '../../style/size';
+import { FontWeightKey } from '../../style/fontWeight';
 
 const QuizStartPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -14,13 +18,7 @@ const QuizStartPage: React.FC = () => {
   const [quiz, setQuiz] = useState<CasualQuiz | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [fadeOut, setFadeOut] = useState(false);
-  const fetchedRef = useRef(false);
-
   useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
-
     (async () => {
       try {
         const collectionIds = searchParams.get('collectionIds')?.split(',').map(Number) ?? [];
@@ -42,7 +40,6 @@ const QuizStartPage: React.FC = () => {
 
   const handleStartQuiz = () => {
     if (!quiz) return;
-    setFadeOut(true); // フェードアウト開始
 
     setTimeout(() => {
       navigate('/quiz', {
@@ -53,27 +50,28 @@ const QuizStartPage: React.FC = () => {
       });
     }, 800); // アニメーションに合わせて遅延
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-emerald-100 to-emerald-300">
-        <Loading />
-      </div>
-    );
-  }
-
   return (
-    <div className={`min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-100 to-emerald-300 transition-all duration-700 ${fadeOut ? 'tv-fade-out' : 'tv-fade-in'}`}>
-      <div className="bg-white p-10 rounded-xl shadow-xl text-center max-w-md w-full animate-fade-in">
-        <h1 className="text-3xl font-bold text-emerald-700 mb-6">クイズの準備ができました！</h1>
-        <button
+    <Page
+      loading={loading}
+      loadingText='クイズを取得中...'
+    >
+      <div className="w-full min-h-screen flex justify-center items-center">
+        <BaseButton
+          label={"クイズを開始する"}
           onClick={handleStartQuiz}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-        >
-          クイズを開始する
-        </button>
+          style={{
+            color: {
+              colorKey: ColorKey.Success,
+            },
+            size: {
+              sizeKey: SizeKey.LG
+            },
+            fontWeightKey: FontWeightKey.Bold
+          }}
+          bg_color={true}
+        />
       </div>
-    </div>
+    </Page>
   );
 };
 

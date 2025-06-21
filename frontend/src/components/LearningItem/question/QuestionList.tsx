@@ -128,7 +128,7 @@ const QuestionList: React.FC<Props> = ({ collectionId, userId, isOwner }) => {
         onBatchUpsert={onBatchUpsert}
         onBatchDelete={() => handleBatchDelete(localState.selectedIds)}
       />
-      <div className="fixed bottom-9 right-10 z-100">
+      <div className="fixed bottom-9 right-10 z-40">
         <QuestionModal
           collectionId={collectionId}
           onComplete={onComplete}

@@ -8,6 +8,7 @@ import { getCollectionSet } from "../../../../api/CollectionSetAPI";
 import PageContainer from "../../../../components/LearningItem/common/PageContainer";
 import SectionCard from "../../../../components/LearningItem/common/SectionCard";
 import SectionTitle from "../../../../components/LearningItem/common/SectionTitle";
+import Page from "../../../../components/containerComponents/Page";
 
 interface CollectionPageProps {
   collectionSet?: CollectionSet;
@@ -28,23 +29,26 @@ const FavoriteCollectionPage: React.FC<CollectionPageProps> = ({ collectionSet: 
   }, [collectionSetId, propCollectionSet, collectionSet]);
 
   return (
-    <PageContainer>
-      {/* ユーザーヘッダー */}
-      <UserHeader 
-        user={user} 
-        loading={loading} 
-        errorMessage={errorMessage} 
-        onFollowStatusChange={onFollowStatusChange} 
-      />
-
-      {/* コレクション一覧 */}
-      <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
-        <SectionTitle>コレクション一覧</SectionTitle>
-        <FavoriteCollectionList 
-          userId={Number(user?.id)}
+    <Page>
+      <PageContainer>
+        {/* ユーザーヘッダー */}
+        <UserHeader 
+          user={user} 
+          loading={loading} 
+          errorMessage={errorMessage} 
+          onFollowStatusChange={onFollowStatusChange} 
         />
-      </SectionCard>
-    </PageContainer>
+
+        {/* コレクション一覧 */}
+        <SectionCard className="backdrop-blur-md bg-white/80 rounded-2xl">
+          <SectionTitle>コレクション一覧</SectionTitle>
+          <FavoriteCollectionList 
+            userId={Number(user?.id)}
+          />
+        </SectionCard>
+      </PageContainer>
+    </Page>
+
   );
 };
 

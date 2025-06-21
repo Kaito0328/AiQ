@@ -8,6 +8,7 @@ import PasswordChangeForm from "./../../components/User/PasswordChangeForm"; // 
 import LogoutButton from "../../components/User/LogoutButton";
 import DeleteAccountButton from "../../components/User/DeleteAccountButton";
 import UserInfoCard from "../../components/User/UserInfoCard";
+import Page from "../../components/containerComponents/Page";
 
 const UserProfile: React.FC = () => {
   const { loginUser, setLoginUser, loading, errorMessage } = useLoginUser();
@@ -75,23 +76,25 @@ const UserProfile: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center bg-white p-8 rounded-lg shadow-lg max-w-xl mx-auto mt-16">
-      <h1 className="text-3xl font-semibold text-gray-900 mb-4">ユーザー情報</h1>
+    <Page>
+            <div className="flex flex-col items-center bg-white p-8 rounded-lg shadow-lg max-w-xl mx-auto mt-16">
+        <h1 className="text-3xl font-semibold text-gray-900 mb-4">ユーザー情報</h1>
 
-      <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center mb-4">
-        <span className="text-2xl text-white">{loginUser?.username[0]}</span>
+        <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center mb-4">
+          <span className="text-2xl text-white">{loginUser?.username[0]}</span>
+        </div>
+
+        {feedback && <p className="text-center text-green-600 mb-4">{feedback}</p>}
+
+      <UserInfoCard onUpdateUser={handleUpdateUser} loginUser={loginUser} />
+
+        <PasswordChangeForm onChangePassword={handleChangePassword} />
+
+          <LogoutButton handleLogout={handleLogout} />
+
+          <DeleteAccountButton handleDeleteAccount={handleDeleteAccount} />
       </div>
-
-      {feedback && <p className="text-center text-green-600 mb-4">{feedback}</p>}
-
-    <UserInfoCard onUpdateUser={handleUpdateUser} loginUser={loginUser} />
-
-      <PasswordChangeForm onChangePassword={handleChangePassword} />
-
-        <LogoutButton handleLogout={handleLogout} />
-
-        <DeleteAccountButton handleDeleteAccount={handleDeleteAccount} />
-    </div>
+    </Page>
   );
 };
 

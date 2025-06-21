@@ -36,7 +36,7 @@ const QuestionModal: React.FC<Props> = ({ collectionId, onComplete }) => {
           <>
             <motion.button
               initial={{ opacity: 0, x: 0, y: 0 }}
-              animate={{ opacity: 1, x: 80, y: -20 }}
+              animate={{ opacity: 1, x: -80, y: -20 }}
               exit={{ opacity: 0 }}
               className="absolute bg-blue-500 text-white p-3 rounded-full shadow-lg"
               onClick={() => openModal("ai")}
@@ -46,7 +46,7 @@ const QuestionModal: React.FC<Props> = ({ collectionId, onComplete }) => {
 
             <motion.button
               initial={{ opacity: 0, x: 0, y: 0 }}
-              animate={{ opacity: 1, x: 20, y: -80 }}
+              animate={{ opacity: 1, x: -20, y: -80 }}
               exit={{ opacity: 0 }}
               className="absolute bg-green-500 text-white p-3 rounded-full shadow-lg"
               onClick={() => openModal("csv")}

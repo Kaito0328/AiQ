@@ -26,6 +26,7 @@ const AppRoutes: React.FC = () => {
       <Route path={Paths.TOP} element={<TopPage />} />
       <Route path={Paths.LOGIN} element={<Login />} />
       <Route path={Paths.REGISTER} element={<Register />} />
+
       <Route element={<Layout />}>
         <Route path={Paths.HOME} element={<Home />} />
 
@@ -33,7 +34,7 @@ const AppRoutes: React.FC = () => {
         <Route path={Paths.QUIZ} element={<QuizPage />} />
         <Route path={Paths.QUIZ_SCORE} element={<ScorePage />} />
         <Route path={Paths.QUIZ_START} element={<QuizStartPage />} />
-        <Route path={Paths.RESUMABLE_QUIZZES_LIST} element={<ResumableQuizzesList />} />
+          <Route path={Paths.RESUMABLE_QUIZZES_LIST} element={<ResumableQuizzesList />} />
 
         <Route path={Paths.COLLECTION_SET_PAGE} element={<CollectionSetPage />} />
         <Route path={Paths.COLLECTION_PAGE} element={<CollectionPage />} />

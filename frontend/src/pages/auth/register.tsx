@@ -6,6 +6,7 @@ import SecurityNotice from "../../components/auth/SecurityNotice";
 import AuthForm from "../../components/auth/AuthForm.";
 import Paths from "../../routes/Paths";
 import { handleError } from "../../api/handleAPIError";
+import Page from "../../components/containerComponents/Page";
 
 const Register: React.FC = () => {
   // AuthRequest を使ってユーザー名とパスワードを一つのオブジェクトで管理
@@ -37,26 +38,28 @@ const Register: React.FC = () => {
   };
 
   return (
-    <AuthForm
-      title="新規登録"
-      username={authRequest.username}
-      password={authRequest.password}
-      onChange={handleChange}
-      onSubmit={handleRegister}
-      submitLabel="登録"
-      loading={loading}
-      error={error}
-    >
-      <div className="text-center text-sm text-gray-500">
-        アカウントをお持ちですか？{" "}
-        <Link to={Paths.LOGIN} className="text-indigo-600 hover:text-indigo-700">
-          ログインはこちら
-        </Link>
-      </div>
-      <div className="mt-6">
-        <SecurityNotice />
-      </div>
-    </AuthForm>
+    <Page>
+      <AuthForm
+        title="新規登録"
+        username={authRequest.username}
+        password={authRequest.password}
+        onChange={handleChange}
+        onSubmit={handleRegister}
+        submitLabel="登録"
+        loading={loading}
+        error={error}
+      >
+        <div className="text-center text-sm text-gray-500">
+          アカウントをお持ちですか？{" "}
+          <Link to={Paths.LOGIN} className="text-indigo-600 hover:text-indigo-700">
+            ログインはこちら
+          </Link>
+        </div>
+        <div className="mt-6">
+          <SecurityNotice />
+        </div>
+      </AuthForm>
+    </Page>
   );
 };
 

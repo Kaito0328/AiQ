@@ -6,7 +6,7 @@ import { Collection } from "../../../../../types/collection";
 import React, { useEffect, useState } from "react";
 import CollectionHeader from "../../../../../components/LearningItem/collection/CollectionHeader";
 import { getCollection } from "../../../../../api/CollectionAPI";
-import PageContainer from "../../../../../components/LearningItem/common/PageContainer";
+import Page from "../../../../../components/containerComponents/Page";
 
 interface QuestionPageProps {
   collection?: Collection;
@@ -32,33 +32,40 @@ const QuestionPage: React.FC<QuestionPageProps> = ({ collection: propCollection 
   }, [collectionId, propCollection]);
 
   return (
-    <PageContainer>
-      {/* ユーザーヘッダー */}
-      <UserHeader 
-        user={user} 
-        loading={loading} 
-        errorMessage={errorMessage} 
-        onFollowStatusChange={onFollowStatusChange} 
-      />
+    <Page
+      withBackBUtton={true}
+      withScrollControls={true}
+    >
+      <div className="w-full  flex flex-col items-center">
+        <div className="w-[90%] max-w-300 space-y-5">
+          {/* ユーザーヘッダー */}
+          <UserHeader 
+            user={user} 
+            loading={loading} 
+            errorMessage={errorMessage} 
+            onFollowStatusChange={onFollowStatusChange} 
+          />
 
-      {collection ? (
-        <CollectionHeader 
-          collection={collection} 
-          isOwner={user ? user.self : false} 
-        />
-      ) : (
-        <p className="text-gray-500">コレクションが見つかりません。</p>
-      )}
-      <div className="border-t pt-5">
-        <QuestionList 
-          collectionId={Number(collectionId)} 
-          userId={user?.id} 
-          isOwner={user ? user.self : false} 
-        />
+          {collection ? (
+            <CollectionHeader 
+              collection={collection} 
+              isOwner={user ? user.self : false} 
+            />
+          ) : (
+            <p className="text-gray-500">コレクションが見つかりません。</p>
+          )}
+          <div className="border-t pt-5">
+            <QuestionList 
+              collectionId={Number(collectionId)} 
+              userId={user?.id} 
+              isOwner={user ? user.self : false} 
+            />
 
+          </div>
+        </div>
       </div>
+    </Page>
 
-    </PageContainer>
   );
 };
 

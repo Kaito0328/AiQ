@@ -170,6 +170,58 @@ export const cardColorMap: ColorMap = {
 export const pageColorMap: ColorMap = {
   ...defaultColorMap,
   [ColorKey.Base]: {
-    bg: { default: 'bg-sky-50' },
+    bg: { default: 'bg-gradient-to-bl from-sky-50 to-sky-100' },
+  },
+  [ColorKey.Danger]: {
+    bg: { default: 'bg-gradient-to-bl from-red-50 to-red-100' },
+  },
+  [ColorKey.Success]: {
+    bg: { default: 'bg-gradient-to-bl from-emerald-50 to-emerald-100' },
+  },
+};
+
+export const headerColorMap: ColorMap = {
+  [ColorKey.Base]: {
+    bg: { default: 'bg-gray-800', hover: 'hover:bg-gray-700' },
+    label: { default: 'text-white' },
+  },
+  [ColorKey.Primary]: {
+    bg: { default: 'bg-blue-600', hover: 'hover:bg-blue-700' },
+    label: { default: 'text-white' },
+  },
+  [ColorKey.Secondary]: {
+    bg: { default: 'bg-gray-600', hover: 'hover:bg-gray-700' },
+    label: { default: 'text-white' },
+  },
+  [ColorKey.Danger]: {
+    bg: { default: 'bg-red-600', hover: 'hover:bg-red-700' },
+    label: { default: 'text-white' },
+  },
+  [ColorKey.Success]: {
+    bg: { default: 'bg-emerald-600', hover: 'hover:bg-emerald-700' },
+    label: { default: 'text-white' },
+  },
+};
+
+export const sideMenuColorMap: ColorMap = {
+  [ColorKey.Base]: {
+    bg: { default: 'bg-gray-900', hover: 'hover:bg-gray-800' },
+    label: { default: 'text-white' },
+  },
+  [ColorKey.Primary]: {
+    bg: { default: 'bg-blue-700', hover: 'hover:bg-blue-800' },
+    label: { default: 'text-blue-300', hover: 'hover:text-blue-400' },
+  },
+  [ColorKey.Secondary]: {
+    bg: { default: 'bg-gray-700', hover: 'hover:bg-gray-800' },
+    label: { default: 'text-gray-300', hover: 'hover:text-gray-400' },
+  },
+  [ColorKey.Danger]: {
+    bg: { default: 'bg-red-700', hover: 'hover:bg-red-800' },
+    label: { default: 'text-red-300', hover: 'hover:text-red-400' },
+  },
+  [ColorKey.Success]: {
+    bg: { default: 'bg-emerald-700', hover: 'hover:bg-emerald-800' },
+    label: { default: 'text-white' },
   },
 };

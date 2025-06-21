@@ -4,8 +4,8 @@ import { getFavoriteCollections } from "../../../../api/CollectionAPI";
 import { useLoginUser } from "../../../../hooks/useLoginUser";
 import ItemCard from "../CollectionCard/ItemCard";
 import ItemList from "../../common/ItemList";
-import LoadingIndicator from "../../../Loading/Loading";
 import { handleError } from "../../../../api/handleAPIError";
+import LoadingIndicator from "../../../common/Loading/loadingIndicator";
 
 interface Props {
   userId: number;

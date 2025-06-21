@@ -9,7 +9,7 @@ import CollectionSelectTabButton from "./CollectionSelectTabButton";
 import { CollectionSet } from "../../../types/collectionSet";
 import { getCollectionSetsByUserId } from "../../../api/CollectionSetAPI";
 import { getCollectionsByCollectionSetId, getFavoriteCollections } from "../../../api/CollectionAPI";
-import Loading from "../../Loading/Loading";
+import LoadingIndicator from "../../common/Loading/loadingIndicator";
 
 
 type Props = {
@@ -116,10 +116,6 @@ useEffect(() => {
       .filter((c) => (c != undefined));
   }, [selectedIds, allCollectionsMap]);
 
-    if (loading) {
-    return <Loading/>
-  };
-
 
   return (
     <div className="space-y-4 flex flex-col justify-center">
@@ -147,33 +143,39 @@ useEffect(() => {
       </div>
 
       {/* コンテンツ */}
-      <div className="space-y-4 flex-col items-center justify-center">
-        {activeTab === TabType.SET &&
-          collectionSets.map(set => (
-            <CollectionSetCard
-              key={set.id}
-              setName={set.name}
-              collections={set.collections}
-              selectedIds={selectedIds}
-              onToggleCollection={toggleCollection}
-              onToggleSet={() => toggleSet(set.collections)}
-              allSelected={set.collections.every(c => selectedIds.has(c.id))}
-            />
-          ))}
+      { loading ? (
+        <LoadingIndicator
+          text="コレクションを取得中..."
+        />
+      ) : (
+        <div className="space-y-4 flex-col items-center justify-center">
+          {activeTab === TabType.SET &&
+            collectionSets.map(set => (
+              <CollectionSetCard
+                key={set.id}
+                setName={set.name}
+                collections={set.collections}
+                selectedIds={selectedIds}
+                onToggleCollection={toggleCollection}
+                onToggleSet={() => toggleSet(set.collections)}
+                allSelected={set.collections.every(c => selectedIds.has(c.id))}
+              />
+            ))}
+          {activeTab === TabType.FAVORITE && (
+              <div className="space-y-2">
+                  <CollectionSetCard                
+                    setName={"お気に入りコレクション"}
+                    collections={favoriteCollections}
+                    selectedIds={selectedIds}
+                    onToggleCollection={toggleCollection}
+                    onToggleSet={() => toggleSet(favoriteCollections)}
+                    allSelected={favoriteCollections.every(c => selectedIds.has(c.id))}
+                  />
+              </div>
+          )}
+        </div>
+      )}
 
-        {activeTab === TabType.FAVORITE && (
-            <div className="space-y-2">
-                <CollectionSetCard                
-                  setName={"お気に入りコレクション"}
-                  collections={favoriteCollections}
-                  selectedIds={selectedIds}
-                  onToggleCollection={toggleCollection}
-                  onToggleSet={() => toggleSet(favoriteCollections)}
-                  allSelected={favoriteCollections.every(c => selectedIds.has(c.id))}
-                />
-            </div>
-        )}
-      </div>
 
       {/* 選択状況 */}
       <div className="space-y-2">
