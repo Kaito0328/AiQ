@@ -1,6 +1,6 @@
 import React from "react";
 import BaseLabel from "../../../baseComponents/BaseLabel";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 import { SizeKey } from "../../../../style/size";
 
 type Props = {
@@ -13,7 +13,7 @@ const HintDisplay: React.FC<Props> = ({ hint }) => {
         <BaseLabel
           label={hint}
           style={{
-            color: {colorKey: ColorKey.Primary},
+            color: {colorKey: CoreColorKey.Primary},
             size: { sizeKey: SizeKey.MD}
           }}
         />

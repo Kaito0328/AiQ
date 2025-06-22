@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import BaseCard from "../../containerComponents/BaseCard";
 import BaseLabel from "../../baseComponents/BaseLabel";
 import { SizeKey } from "../../../style/size";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { RoundKey } from "../../../style/rounded";
 import { FontWeightKey } from "../../../style/fontWeight";
 import { Collection } from "../../../types/collection";
@@ -38,7 +38,7 @@ const CollectionSetCard: React.FC<Props> = ({
   return (
     <BaseCard
       style={{
-        color: { colorKey: ColorKey.Primary, variants: [] },
+        color: { colorKey: CoreColorKey.Primary, variants: [] },
         size: { sizeKey: SizeKey.LG },
         roundKey: RoundKey.Lg,
       }}
@@ -49,7 +49,7 @@ const CollectionSetCard: React.FC<Props> = ({
           <BaseLabel
             label={setName}
             style={{
-              color: { colorKey: ColorKey.Primary },
+              color: { colorKey: CoreColorKey.Primary },
               size: { sizeKey: SizeKey.LG },
               fontWeightKey: FontWeightKey.Bold,
             }}

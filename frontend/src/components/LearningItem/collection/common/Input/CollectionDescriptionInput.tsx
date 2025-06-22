@@ -2,7 +2,7 @@ import React from "react";
 import BlockTextInput from "../../../../baseComponents/BlockTextInput";
 import { SizeKey } from "../../../../../style/size";
 import { RoundKey } from "../../../../../style/rounded";
-import { ColorKey } from "../../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../../style/colorStyle";
 
 interface Props {
   description?: string;
@@ -19,7 +19,7 @@ const CollectionDescriptionInput: React.FC<Props> = ({
       onChange={onDescriptionInput}
       placeholder="コレクションの説明を入力"
       style={{
-        colorKey:ColorKey.Base,
+        colorKey:CoreColorKey.Base,
         size: {
           sizeKey: SizeKey.LG,
         },

@@ -1,7 +1,7 @@
 // components/common/form/TextInput.tsx
 import React from "react";
 import clsx from "clsx";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../style/colorStyle";
 import { AllSizeProperties, SizeKey, SizeStyle } from "../../style/size";
 import { RoundKey } from "../../style/rounded"
 import { ComponentStyle, getClassByStyle, PartialComponentStyle, StyleMaps } from "../../style/style";
@@ -10,14 +10,14 @@ import { inputColorMap } from "../../styleMap/colorMap";
 import { textSizeMap } from "../../styleMap/sizeMap";
 
 type BlockInputStyle = {
-  colorKey?: ColorKey;
+  colorKey?: CoreColorKey;
   size?: Partial<SizeStyle>;
   roundKey?: RoundKey;
 }
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label, ColorPropertyKey.Ring, ColorPropertyKey.Border],
     variants: [ColorVariantKey.Focus]
   },

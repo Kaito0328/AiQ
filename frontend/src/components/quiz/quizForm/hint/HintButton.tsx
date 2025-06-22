@@ -1,6 +1,6 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 import { FontWeightKey } from "../../../../style/fontWeight";
 
 type Props = {
@@ -13,7 +13,7 @@ const HintButton: React.FC<Props> = ({ onHint }) => (
       label="ヒントを見る"
       onClick={onHint}
       style={{
-        color: { colorKey: ColorKey.Primary },
+        color: { colorKey: CoreColorKey.Primary },
         fontWeightKey: FontWeightKey.Semibold,
       }}
       bg_color={true}

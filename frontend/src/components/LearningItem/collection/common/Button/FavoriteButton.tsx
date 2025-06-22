@@ -3,7 +3,7 @@ import React from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { RoundKey } from "../../../../../style/rounded";
 import BaseButton from "../../../../common/button/BaseButton";
-import { ColorKey } from "../../../../../style/colorStyle";
+import { SpecialColorKey } from "../../../../../style/colorStyle";
 
 interface Props {
   isFavorite: boolean;
@@ -18,7 +18,7 @@ const FavoriteButton: React.FC<Props> = ({ isFavorite, onToggle }) => {
       icon = {isFavorite ? <FaHeart /> : <FaRegHeart />}
       style = {{
         color: {
-          colorKey: ColorKey.Primary,
+          colorKey: SpecialColorKey.Heart,
         },
         roundKey: RoundKey.Full
       }}

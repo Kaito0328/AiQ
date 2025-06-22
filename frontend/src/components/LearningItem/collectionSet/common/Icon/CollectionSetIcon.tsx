@@ -3,7 +3,7 @@ import { FaBook } from "react-icons/fa";
 import { RoundKey } from "../../../../../style/rounded";
 import { SizeKey } from "../../../../../style/size";
 import BaseLabel from "../../../../baseComponents/BaseLabel";
-import { ColorKey } from "../../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../../style/colorStyle";
 
 const CollectionSetIcon: React.FC = () => {
   return (
@@ -11,7 +11,7 @@ const CollectionSetIcon: React.FC = () => {
       icon={<FaBook/>}
       style={{
         color: {
-          colorKey: ColorKey.Primary,
+          colorKey: CoreColorKey.Primary,
         },
         size: {
           sizeKey: SizeKey.MD

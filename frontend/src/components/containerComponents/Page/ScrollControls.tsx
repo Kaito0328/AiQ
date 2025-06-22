@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 import BaseButton from "../../common/button/BaseButton";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { RoundKey } from "../../../style/rounded";
 import { ShadowKey } from "../../../style/shadow";
 
@@ -22,14 +22,14 @@ const ScrollControls: React.FC<Props> = ({ topRef, bottomRef }) => {
   }, []);
 
   return (
-    <div className="fixed bottom-6 left-3 flex flex-col gap-3 z-40 items-end">
+    <div className="fixed z-20 bottom-6 left-3 flex flex-col gap-3  items-end">
       {showScrollTop && (
         <BaseButton
           onClick={() => topRef.current?.scrollIntoView({ behavior: "smooth" })}
           title="ページ上部へ"
           icon={<FaArrowUp/>}
           style={{
-            color: {colorKey: ColorKey.Base},
+            color: {colorKey: CoreColorKey.Base},
             roundKey: RoundKey.Full,
             shadow: {
                 shadowKey: ShadowKey.MD
@@ -43,7 +43,7 @@ const ScrollControls: React.FC<Props> = ({ topRef, bottomRef }) => {
         title={"ページ下部へ"}
         icon={<FaArrowDown/>}
         style={{
-            color: {colorKey: ColorKey.Base},
+            color: {colorKey: CoreColorKey.Base},
             roundKey: RoundKey.Full,
             shadow: {
                 shadowKey: ShadowKey.MD

@@ -2,21 +2,21 @@ import React from "react";
 import { AllSizeProperties, SizeKey, SizeStyle } from "../../style/size";
 import { RoundKey } from "../../style/rounded";
 import clsx from "clsx";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../style/colorStyle";
 import { ComponentStyle, getClassByStyle, PartialComponentStyle, StyleMaps } from "../../style/style";
 import { FontWeightKey } from "../../style/fontWeight";
 import { textSizeMap } from "../../styleMap/sizeMap";
 import { inputColorMap } from "../../styleMap/colorMap";
 
-type InLineInputStyle = {
-  colorKey?: ColorKey;
+export type InLineInputStyle = {
+  colorKey?: CoreColorKey;
   size?: Partial<SizeStyle>;
   roundKey?: RoundKey;
 }
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label, ColorPropertyKey.Ring, ColorPropertyKey.Border],
     variants: [ColorVariantKey.Focus]
   },
@@ -55,6 +55,7 @@ const InLineTextInput: React.FC<Props> = ({
         colorKey: style?.colorKey
       },
       roundKey: style?.roundKey,
+      fontWeightKey: FontWeightKey.Semibold
     }
   
     const maps: Partial<StyleMaps> = {

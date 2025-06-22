@@ -2,7 +2,7 @@ import React from "react";
 import { User } from "../../../types/user";
 import BaseButton from "../../common/button/BaseButton";
 import { FaUser } from "react-icons/fa";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 
 interface UserListItemProps {
   user: User;
@@ -18,7 +18,7 @@ const UserItem: React.FC<UserListItemProps> = ({ user, onSelect }) => {
         icon={<FaUser/>}
         style={{
           color: {
-            colorKey: ColorKey.Primary,
+            colorKey: CoreColorKey.Primary,
           }
         }}
       />

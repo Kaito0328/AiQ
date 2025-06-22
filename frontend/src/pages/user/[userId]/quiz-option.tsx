@@ -34,7 +34,7 @@ const QuizOption: React.FC = () => {
     <Page
       title="クイズの設定"
     >
-      <div className="p-6  w-full min-h-screen">
+      <div className="p-6  w-full">
 
       <div>
         <CollectionSelector userId={Number(userId)} isOfficial={user?.official} onSelectionChange={handleCollectionSelection} />

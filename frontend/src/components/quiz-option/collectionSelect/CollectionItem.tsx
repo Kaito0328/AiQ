@@ -9,7 +9,7 @@ import { SizeKey } from "../../../style/size";
 import BaseLabel from "../../baseComponents/BaseLabel";
 import BaseButton from "../../common/button/BaseButton";
 import { RoundKey } from "../../../style/rounded";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 
 type Props = {
   collection: Collection;
@@ -45,7 +45,7 @@ const CollectionItem: React.FC<Props> = ({
                 label={collection.name}
                 style={{
                   color: {
-                    colorKey: ColorKey.Primary,
+                    colorKey: CoreColorKey.Primary,
                   }
                 }}
             />
@@ -57,7 +57,7 @@ const CollectionItem: React.FC<Props> = ({
                 style={{
                   roundKey: RoundKey.Full,
                   color: {
-                    colorKey: ColorKey.Primary
+                    colorKey: CoreColorKey.Primary
                   },
                   size: {
                     sizeKey: SizeKey.MD

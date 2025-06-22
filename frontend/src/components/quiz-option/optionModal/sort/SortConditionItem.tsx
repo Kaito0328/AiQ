@@ -4,7 +4,7 @@ import { SortCondition, SortDirection, sortKeyLabels } from "../../../../types/q
 import BaseCard from "../../../containerComponents/BaseCard";
 import BaseLabel from "../../../baseComponents/BaseLabel";
 import BaseButton from "../../../common/button/BaseButton";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 import { FontWeightKey } from "../../../../style/fontWeight";
 import { RoundKey } from "../../../../style/rounded";
 import { SizeKey } from "../../../../style/size";
@@ -37,7 +37,7 @@ const SortConditionItem: React.FC<Props> = ({ sort, onRemove, onDirectionChange 
             onClick={() => onDirectionChange(SortDirection.ASC)}
             style={{
                 color: {
-                    colorKey: sort.direction === SortDirection.ASC ? ColorKey.Primary: ColorKey.Secondary
+                    colorKey: sort.direction === SortDirection.ASC ? CoreColorKey.Primary: CoreColorKey.Secondary
                 },
                 fontWeightKey: FontWeightKey.Medium
             }}
@@ -47,7 +47,7 @@ const SortConditionItem: React.FC<Props> = ({ sort, onRemove, onDirectionChange 
             onClick={() => onDirectionChange(SortDirection.DESC)}
             style={{
                 color: {
-                    colorKey: sort.direction === SortDirection.DESC ? ColorKey.Primary: ColorKey.Secondary
+                    colorKey: sort.direction === SortDirection.DESC ? CoreColorKey.Primary: CoreColorKey.Secondary
                 },
                 fontWeightKey: FontWeightKey.Medium
             }}
@@ -55,7 +55,7 @@ const SortConditionItem: React.FC<Props> = ({ sort, onRemove, onDirectionChange 
           <BaseButton icon={<FaTimes />} onClick={onRemove}
             style={{
                 color: {
-                    colorKey: ColorKey.Secondary
+                    colorKey: CoreColorKey.Secondary
                 },
                 size: {
                     sizeKey: SizeKey.SM

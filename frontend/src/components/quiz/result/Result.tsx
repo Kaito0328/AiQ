@@ -3,7 +3,7 @@ import BaseCard from '../../containerComponents/BaseCard';
 import BaseButton from '../../common/button/BaseButton';
 import BaseLabel from '../../baseComponents/BaseLabel';
 import { FontWeightKey } from '../../../style/fontWeight';
-import { ColorKey } from '../../../style/colorStyle';
+import { CoreColorKey } from '../../../style/colorStyle';
 import { SizeKey } from '../../../style/size';
 
 interface ResultProps {
@@ -51,7 +51,7 @@ const Result: React.FC<ResultProps> = ({ isCorrect, correctAnswer, description, 
             style={{
                 fontWeightKey: FontWeightKey.Bold,
                 color: {
-                    colorKey: isCorrect ? ColorKey.Success : ColorKey.Danger
+                    colorKey: isCorrect ? CoreColorKey.Success : CoreColorKey.Danger
                 },
                 size: {
                     sizeKey: SizeKey.XL
@@ -77,7 +77,7 @@ const Result: React.FC<ResultProps> = ({ isCorrect, correctAnswer, description, 
                 style={{
                     fontWeightKey: FontWeightKey.Normal,
                     color: {
-                        colorKey: ColorKey.Secondary
+                        colorKey: CoreColorKey.Secondary
                     }
                 }}
             />
@@ -91,7 +91,7 @@ const Result: React.FC<ResultProps> = ({ isCorrect, correctAnswer, description, 
             style={{
                 fontWeightKey: FontWeightKey.Bold,
                 color: {
-                    colorKey: ColorKey.Success
+                    colorKey: CoreColorKey.Success
                 },
                 size: {
                     sizeKey: SizeKey.MD

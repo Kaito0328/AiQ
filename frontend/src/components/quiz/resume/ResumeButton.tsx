@@ -1,5 +1,5 @@
 import React from "react";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import BaseButton from "../../common/button/BaseButton";
 import { FontWeightKey } from "../../../style/fontWeight";
 
@@ -14,7 +14,7 @@ const ResumeButton: React.FC<ButtonProps> = ({onClick, loading, disabled}) => (
       label= {loading ? "ロード中..." : "再開"}
       style={{
         color: {
-          colorKey: loading ? ColorKey.Secondary : ColorKey.Primary
+          colorKey: loading ? CoreColorKey.Secondary : CoreColorKey.Primary
         },
         fontWeightKey: FontWeightKey.Semibold
       }}

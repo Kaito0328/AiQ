@@ -11,7 +11,7 @@ import BaseButton from "../components/common/button/BaseButton";
 import HomeSectionCards from "../components/home/HomeSectionCards";
 import { RoundKey } from "../style/rounded";
 import { SizeKey } from "../style/size";
-import { ColorKey } from "../style/colorStyle";
+import { CoreColorKey } from "../style/colorStyle";
 import Page from "../components/containerComponents/Page";
 
 const Home: React.FC = () => {
@@ -57,7 +57,7 @@ const Home: React.FC = () => {
 
   return (
     <Page>
-      <div className="flex flex-col items-center min-h-screen font-sans w-full">
+      <div className="flex flex-col items-center font-sans w-full">
         {showWelcome && (
           <WelcomeBanner
             username={loginUser ? loginUser.username : undefined}
@@ -71,7 +71,7 @@ const Home: React.FC = () => {
               label="ログイン"
               style={{
                 color: {
-                  colorKey: ColorKey.Primary
+                  colorKey: CoreColorKey.Primary
                 },
                 roundKey: RoundKey.Md,
                 size: {

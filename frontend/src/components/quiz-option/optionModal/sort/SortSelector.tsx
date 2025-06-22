@@ -2,7 +2,7 @@ import React from "react";
 import { SortCondition, SortKey, SortDirection } from "../../../../types/quiz";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaPlus } from "react-icons/fa";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
 import { SizeKey } from "../../../../style/size";
 import BaseCard from "../../../containerComponents/BaseCard";
 
@@ -32,7 +32,7 @@ const SortSelector: React.FC<Props> = ({ sorts, setSorts, isRandomActive }) => {
     <BaseCard
       style={{
         color: {
-          colorKey: ColorKey.Secondary,
+          colorKey: CoreColorKey.Secondary,
           properties: [ColorPropertyKey.Border, ColorPropertyKey.Ring],
           variants: [ColorVariantKey.Focus]
         },
@@ -54,7 +54,7 @@ const SortSelector: React.FC<Props> = ({ sorts, setSorts, isRandomActive }) => {
               disabled={selected || isRandomActive}
               style={{
                 color: {
-                  colorKey:ColorKey.Secondary
+                  colorKey:CoreColorKey.Secondary
                 },
                 size: {
                   sizeKey: SizeKey.SM

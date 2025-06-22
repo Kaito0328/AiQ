@@ -1,7 +1,7 @@
 
 import React from "react";
 import clsx from "clsx";
-import { ColorKey, ColorPropertyKey, ColorStyle } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorStyle } from "../../style/colorStyle";
 import { AllSizeProperties, getIconSizeClass, IconSizeProperty, IconSizeStyle, SizeKey, SizeStyle } from "../../style/size";
 import { RoundKey } from "../../style/rounded";
 import { FontWeightKey } from "../../style/fontWeight";
@@ -21,7 +21,7 @@ export type LabelStyle = {
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Label],
   },
   size: {
@@ -43,6 +43,7 @@ interface Props {
   iconRight?: boolean;
   style?: LabelStyle;
   bg_color?: boolean;
+  center?: boolean;
 };
 
 const BaseLabel: React.FC<Props> = ({
@@ -51,6 +52,7 @@ const BaseLabel: React.FC<Props> = ({
   iconRight = false,
   style,
   bg_color = false,
+  center = false,
   }) => {
 
   const colorMap = bg_color ? labelBgColorMap : labelTextColorMap;
@@ -69,6 +71,7 @@ const BaseLabel: React.FC<Props> = ({
   return (
     <div className={clsx(
       "flex items-center",
+      center && "justify-center",
       classText)
     }>
       {!iconRight &&icon && <span className={clsx(iconClassText, label&&"mr-2")}>{icon}</span>}

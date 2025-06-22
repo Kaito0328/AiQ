@@ -1,17 +1,17 @@
 import React from "react";
 import { SizeKey, SizeProperty } from "../../../style/size";
 import BaseButton from "../button/BaseButton";
-import { ColorKey, ColorPropertyKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../style/colorStyle";
 import { FontWeightKey } from "../../../style/fontWeight";
 
 type ToggleButtonStyle = {
-  colorKey: ColorKey;
+  colorKey: CoreColorKey;
   sizeKey: SizeKey;
   fontWeightKey: FontWeightKey,
 };
 
 const defaultStyle: ToggleButtonStyle = {
-  colorKey: ColorKey.Primary,
+  colorKey: CoreColorKey.Primary,
   sizeKey: SizeKey.MD,
   fontWeightKey: FontWeightKey.Normal
 };

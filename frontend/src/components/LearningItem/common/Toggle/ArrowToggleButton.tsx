@@ -1,7 +1,7 @@
 import React from "react";
 import ToggleButton from "../../../common/Toggle/ToggleButton";
 import { FaChevronDown, FaChevronRight } from "react-icons/fa";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 import { SizeKey } from "../../../../style/size";
 
 interface Props {
@@ -23,7 +23,7 @@ const ArrowToggleButton: React.FC<Props> = ({
         iconVisible={<FaChevronRight/>}
         iconHidden={<FaChevronDown/>}
         style={{
-          colorKey: ColorKey.Base,
+          colorKey: CoreColorKey.Base,
           sizeKey: SizeKey.SM
         }}
     />

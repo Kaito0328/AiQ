@@ -1,7 +1,7 @@
 import React from "react";
 import BaseLabel from "../../../baseComponents/BaseLabel";
 import { SizeKey } from "../../../../style/size";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 const UnsavedIcon: React.FC = () => {
   return (
@@ -12,7 +12,7 @@ const UnsavedIcon: React.FC = () => {
           sizeKey: SizeKey.SM
         },
         color: {
-          colorKey: ColorKey.Danger
+          colorKey: CoreColorKey.Danger
         }
       }}
     />

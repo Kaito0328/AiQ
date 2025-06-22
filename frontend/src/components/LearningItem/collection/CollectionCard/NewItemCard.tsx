@@ -4,7 +4,7 @@ import EditCard from "../common/Card/EditCard";
 import { ErrorCode, ErrorCodeType } from "../../../../types/error";
 import NewBaseCard from "../common/Card/NewBaseCard";
 import BaseItemCard from "../../common/Card/BaseItemCard";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 interface Props {
     collection: CollectionInput,
@@ -54,7 +54,7 @@ const onEditComplete = (input: CollectionInput) => {
       <BaseItemCard
         isSaved={false}
         errorMessages={[...errorMessages, ...localErrors]}
-        colorKey={ColorKey.Secondary}
+        colorKey={CoreColorKey.Secondary}
       >
           {isEdit && isOwner ? (
             <EditCard

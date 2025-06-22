@@ -1,7 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import { AllSizeProperties, SizeKey } from "../../style/size";
-import {  ColorKey, ColorPropertyKey } from "../../style/colorStyle";
+import {  CoreColorKey, ColorPropertyKey } from "../../style/colorStyle";
 import { RoundKey } from "../../style/rounded";
 import { FontWeightKey} from "../../style/fontWeight";
 import { ComponentStyle, getClassByStyle, StyleMaps } from "../../style/style";
@@ -10,7 +10,7 @@ import { textSizeMap } from "../../styleMap/sizeMap";
 
 type TextStyle = {
   color: {
-    colorKey: ColorKey;
+    colorKey: CoreColorKey;
     colorProperties?: ColorPropertyKey[];
   }
   sizeKey: SizeKey;
@@ -20,7 +20,7 @@ type TextStyle = {
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label],
   },
   size: {

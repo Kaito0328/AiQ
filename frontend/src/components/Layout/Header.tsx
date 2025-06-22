@@ -10,7 +10,7 @@ import {
   StyleMaps,
 } from "../../style/style";
 import {
-  ColorKey,
+  CoreColorKey,
   ColorPropertyKey,
   ColorVariantKey,
 } from "../../style/colorStyle";
@@ -25,7 +25,7 @@ import BaseButton from "../common/button/BaseButton";
 import SideMenu from "./SideMenu";
 
 type HeaderStyle = {
-  colorKey?: ColorKey;
+  colorKey?: CoreColorKey;
   sizeKey?: SizeKey;
 };
 
@@ -35,7 +35,7 @@ interface Props {
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Primary,
+    colorKey: CoreColorKey.Primary,
     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label],
     variants: [ColorVariantKey.Hover],
   },
@@ -75,7 +75,7 @@ const HeaderWithHamburgerMenu = ({ style }: Props) => {
   const headerClass = getClassByStyle(maps, defaultStyle, classStyle);
 
   return (
-    <header style={{height:  `${HEADER_HEIGHT}vh` }} className={clsx(" w-full relative flex justify-between items-center", headerClass)}>
+    <header style={{height:  `${HEADER_HEIGHT}vh` }} className={clsx("fixed top-0 left-0 w-full z-40 flex justify-between items-center", headerClass)}>
       {/* ロゴ */}
       <div className="flex items-center">
         <img
@@ -97,7 +97,7 @@ const HeaderWithHamburgerMenu = ({ style }: Props) => {
               sizeKey: SizeKey.XL
             },
             color: {
-              colorKey: ColorKey.Primary,
+              colorKey: CoreColorKey.Primary,
               properties: [ColorPropertyKey.Label]
             }
           }}
@@ -109,7 +109,7 @@ const HeaderWithHamburgerMenu = ({ style }: Props) => {
       <BaseButton
         icon={<Menu/>}
         style={{
-          color: {colorKey: ColorKey.Primary,
+          color: {colorKey: CoreColorKey.Primary,
             properties: [ColorPropertyKey.Label]
           },
           size: {
@@ -130,7 +130,7 @@ const HeaderWithHamburgerMenu = ({ style }: Props) => {
       {/* 背景オーバーレイ */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-60 z-50"
+          className="fixed inset-0 bg-black z-40 opacity-60"
           onClick={() => setIsOpen(false)}
         />
       )}

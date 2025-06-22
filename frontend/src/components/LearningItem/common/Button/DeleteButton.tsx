@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaTrash } from "react-icons/fa";
-import { ColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
 
 interface Props {
   onDelete: () => void;
@@ -16,7 +16,7 @@ const DeleteButton: React.FC<Props> = ({ onDelete }) => {
       onClick={onDelete}
       style={{
         color: {
-          colorKey: ColorKey.Danger,
+          colorKey: CoreColorKey.Danger,
           properties: [ColorPropertyKey.Label]
         }
       }}

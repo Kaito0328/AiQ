@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaCheckSquare, FaTimes } from "react-icons/fa";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 interface Props {
   onSelect: () => void;
@@ -18,7 +18,7 @@ const SelectButton: React.FC<Props> = ({ onSelect, isSelecting}) => {
       onClick={onSelect}
       style={{
         color: {
-          colorKey: isSelecting ? ColorKey.Secondary : ColorKey.Primary
+          colorKey: isSelecting ? CoreColorKey.Secondary : CoreColorKey.Primary
         }
       }}
     />

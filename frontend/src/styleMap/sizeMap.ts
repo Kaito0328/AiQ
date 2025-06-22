@@ -41,19 +41,19 @@ export const textSizeMap: SizeMap = {
 export const labelSizeMap: SizeMap = {
   [SizeKey.SM]: {
     text: 'text-sm',
-    padding: 'py-1.5 px-2.5',
+    padding: 'p-1.5',
   },
   [SizeKey.MD]: {
     text: 'text-md',
-    padding: 'py-2.5 px-3.5',
+    padding: 'p-2.5',
   },
   [SizeKey.LG]: {
     text: 'text-lg',
-    padding: 'py-3.5 px-5',
+    padding: 'p-3.5',
   },
   [SizeKey.XL]: {
     text: 'text-2xl',
-    padding: 'py-5 px-6',
+    padding: 'p-5',
   },
 };
 

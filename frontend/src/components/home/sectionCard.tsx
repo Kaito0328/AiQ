@@ -3,7 +3,7 @@ import { SizeKey } from "../../style/size";
 import BaseCard from "../containerComponents/BaseCard";
 import BaseLabel from "../baseComponents/BaseLabel";
 import { FontWeightKey } from "../../style/fontWeight";
-import { ColorKey, ColorPropertyKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../style/colorStyle";
 
 
 
@@ -23,7 +23,7 @@ const SectionCard: React.FC<Props> = ({
       onClick={onClick}
       style = {{
         color: {
-          colorKey: ColorKey.Primary
+          colorKey: CoreColorKey.Primary
         }
       }}
     >
@@ -35,7 +35,7 @@ const SectionCard: React.FC<Props> = ({
                 sizeKey: SizeKey.XL,
               },
               color: {
-                colorKey: ColorKey.Primary,
+                colorKey: CoreColorKey.Primary,
                 properties: [ColorPropertyKey.Label]
               }
             }}
@@ -48,7 +48,7 @@ const SectionCard: React.FC<Props> = ({
               sizeKey: SizeKey.LG,
             },
             color: {
-              colorKey: ColorKey.Primary,
+              colorKey: CoreColorKey.Primary,
               properties: [ColorPropertyKey.Label]
             },
             fontWeightKey: FontWeightKey.Semibold

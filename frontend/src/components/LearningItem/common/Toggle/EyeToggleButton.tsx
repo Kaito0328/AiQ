@@ -1,7 +1,7 @@
 import React from "react";
 import ToggleButton from "../../../common/Toggle/ToggleButton";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 interface Props {
   isVisible: boolean;
@@ -22,7 +22,7 @@ const EyeToggleButton: React.FC<Props> = ({
         iconVisible={<FaEye/>}
         iconHidden={<FaEyeSlash/>}
         style={{
-          colorKey: ColorKey.Success
+          colorKey: CoreColorKey.Success
         }}
     />
   );

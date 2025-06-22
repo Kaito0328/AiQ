@@ -37,17 +37,22 @@ const TopPage: React.FC = () => {
         <img src="/logo.png" alt="Logo" className="w-24 h-24 mb-4" />
         <h1 className="text-5xl font-bold tracking-wider drop-shadow-lg">AiQ</h1>
         <p className="mt-4 text-lg md:text-xl text-white/80 max-w-md text-center">
-          あなた専用のクイズ学習アプリ。<br />知識を深め、成績を記録して成長を実感しよう。
+          あなた専用のクイズ学習アプリ。
         </p>
 
     
-        <div className="mt-10">
+        <div className="mt-20 w-[20%]">
           <LoadingButton
           onClick={handleStart}
           loading={!ready}
           label="はじめる"
           loadingText="読み込み中..."
           bg_color={true}
+          style={{
+            size: {
+              full_width: true
+            }
+          }}
         />
 
         </div>

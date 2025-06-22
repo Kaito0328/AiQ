@@ -3,7 +3,7 @@ import React from "react";
 import { SizeKey } from "../../../../../style/size";
 import BaseButton from "../../../../common/button/BaseButton";
 import { FaLock, FaLockOpen } from "react-icons/fa";
-import { ColorKey } from "../../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../../style/colorStyle";
 
 interface Props {
   open: boolean;
@@ -22,7 +22,7 @@ const OpenButton: React.FC<Props> = ({ open, onToggle }) => {
           sizeKey: SizeKey.MD,
         },
         color: {
-          colorKey: open ? ColorKey.Success : ColorKey.Secondary
+          colorKey: open ? CoreColorKey.Success : CoreColorKey.Secondary
         }
       }}
     />

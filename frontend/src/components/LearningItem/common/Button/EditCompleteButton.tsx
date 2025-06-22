@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaCheck } from "react-icons/fa";
-import { ColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
 
 interface Props {
   onComplete: () => void;
@@ -18,7 +18,7 @@ const EditCompleteButton: React.FC<Props> = ({ onComplete, disabled }) => {
       disabled={disabled}
       style={{
         color: {
-          colorKey: ColorKey.Primary,
+          colorKey: CoreColorKey.Primary,
           properties: [ColorPropertyKey.Label]
         }
       }}

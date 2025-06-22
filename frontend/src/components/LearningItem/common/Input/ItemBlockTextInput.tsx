@@ -2,7 +2,7 @@ import React from "react";
 import { SizeKey } from "../../../../style/size";
 import { RoundKey } from "../../../../style/rounded";
 import BlockTextInput from "../../../baseComponents/BlockTextInput";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 interface Props {
     defaultValue?: string;
   placeholder: string;
@@ -21,7 +21,7 @@ const ItemBlockTextInput: React.FC<Props> = ({
         onChange={(text) => onInput(text)}
         placeholder={placeholder}
         style={{
-          colorKey: ColorKey.Primary,
+          colorKey: CoreColorKey.Primary,
           size: {
             sizeKey: SizeKey.MD,
           },

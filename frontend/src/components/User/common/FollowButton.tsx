@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../common/button/BaseButton";
 import { FaUserCheck, FaUserPlus } from "react-icons/fa";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 
 interface Props {
     handleFollow: () => void;
@@ -15,7 +15,7 @@ const FollowButton: React.FC<Props> = ({ handleFollow, isFollowing }) => {
             label={isFollowing ? "フォロー中" : "フォロー"}
             style={{
                 color: {
-                    colorKey: isFollowing ? ColorKey.Primary : ColorKey.Secondary
+                    colorKey: isFollowing ? CoreColorKey.Primary : CoreColorKey.Secondary
                 }
             }}
             bg_color={true}

@@ -14,7 +14,7 @@ import { SizeKey } from "../../style/size";
 import { FontWeightKey } from "../../style/fontWeight";
 import BaseCard from "../containerComponents/BaseCard";
 import { ShadowKey } from "../../style/shadow";
-import { ColorKey, ColorPropertyKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../style/colorStyle";
 
 interface UserHeaderProps {
   user: User | null;
@@ -89,7 +89,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage, on
                 label={user.official ? "公式ユーザー" : user.username}
                 style={{
                   color: {
-                    colorKey: ColorKey.Base,
+                    colorKey: CoreColorKey.Base,
                     properties: [ColorPropertyKey.Label],
                     variants: []
                   },
@@ -113,7 +113,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage, on
                   text={"フォロワー"}
                   style={{
                     color: {
-                      colorKey: ColorKey.Secondary
+                      colorKey: CoreColorKey.Secondary
                     },
                   }}
                 />
@@ -131,7 +131,7 @@ const UserHeader: React.FC<UserHeaderProps> = ({ user, loading, errorMessage, on
                   text={"フォロー"}
                   style={{
                     color: {
-                      colorKey: ColorKey.Secondary
+                      colorKey: CoreColorKey.Secondary
                     },
                   }}
                 />

@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../common/button/BaseButton";
 import { FaPlay} from "react-icons/fa";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 
 interface Props {
     navigateQuizStart: () => void;
@@ -14,7 +14,7 @@ const QuizStartButton: React.FC<Props> = ({ navigateQuizStart }) => {
             label={"クイズを開始"}
             style={{
                 color: {
-                    colorKey: ColorKey.Primary,
+                    colorKey: CoreColorKey.Primary,
                 }
             }}
             bg_color={true}

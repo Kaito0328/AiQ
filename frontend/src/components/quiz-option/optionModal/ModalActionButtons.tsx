@@ -1,7 +1,7 @@
 import React from "react";
 import CancelButton from "../../LearningItem/common/Button/CancelButton";
 import LoadingButton from "../../common/button/LoadingButton";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 
 type Props = {
   onCancel: () => void;
@@ -24,7 +24,7 @@ const ModalActionButtons: React.FC<Props> = ({ onCancel, onConfirm, loading }) =
         onClick={onConfirm}
         bg_color={true}
         style={{
-          colorKey: ColorKey.Primary,
+          colorKey: CoreColorKey.Primary,
         }}
       />
     </div>

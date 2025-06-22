@@ -1,7 +1,7 @@
 import React from "react";
 import { FaSave } from "react-icons/fa";
 import BaseButton from "../../../common/button/BaseButton";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 interface Props {
   onSave: () => void;
@@ -18,7 +18,7 @@ const SaveButton: React.FC<Props> = ({ onSave, disabled}) => {
       disabled={disabled}
       style={{
         color: {
-          colorKey: disabled ? ColorKey.Secondary : ColorKey.Primary
+          colorKey: disabled ? CoreColorKey.Secondary : CoreColorKey.Primary
         }
       }}
     />

@@ -1,6 +1,6 @@
 import React from "react";
 import { ComponentStyle, getClassByStyle, PartialComponentStyle, StyleMaps } from "../../style/style";
-import { ColorKey, ColorPropertyKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../style/colorStyle";
 import { AllSizeProperties, SizeKey, SizeStyle } from "../../style/size";
 import { RoundKey } from "../../style/rounded";
 import { FontWeightKey } from "../../style/fontWeight";
@@ -9,14 +9,14 @@ import { inputColorMap } from "../../styleMap/colorMap";
 import { textSizeMap } from "../../styleMap/sizeMap";
 
 type BaseCheckboxInputStyle = {
-  colorKey?: ColorKey;
+  colorKey?: CoreColorKey;
   size?: Partial<SizeStyle>;
   roundKey?: RoundKey;
 };
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Ring, ColorPropertyKey.Border],
     variants: [],
   },

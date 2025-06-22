@@ -1,7 +1,7 @@
 import React from "react";
 import clsx from "clsx";
 import { X } from "lucide-react";
-import { ColorKey, ColorPropertyKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../style/colorStyle";
 import { SizeKey, SizeProperty } from "../../style/size";
 import { FontWeightKey } from "../../style/fontWeight";
 import { ComponentStyle, getClassByStyle, StyleMaps } from "../../style/style";
@@ -15,13 +15,13 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onNavigate: (path: string) => void;
-  colorKey?: ColorKey;
+  colorKey?: CoreColorKey;
   sizeKey?: SizeKey;
 }
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg],
   },
   size: {
@@ -63,7 +63,7 @@ const SideMenu: React.FC<Props> = ({
   return (
     <div
       className={clsx(
-        "fixed top-0 right-0 h-full w-64 transform transition-transform duration-300 ease-in-out shadow-2xl z-100 rounded-l-xl",
+        "fixed top-0 z-50 right-0 h-full w-64 transform transition-transform duration-300 ease-in-out shadow-2xl rounded-l-xl",
         isOpen ? "translate-x-0" : "translate-x-full",
         containerClass
       )}
@@ -74,7 +74,7 @@ const SideMenu: React.FC<Props> = ({
           style={{
             fontWeightKey: FontWeightKey.Semibold,
             color: {
-              colorKey: ColorKey.Primary,
+              colorKey: CoreColorKey.Primary,
               properties: [ColorPropertyKey.Label],
             },
             size: {
@@ -92,7 +92,7 @@ const SideMenu: React.FC<Props> = ({
                 properties: [SizeProperty.Text]
              },
             color: {
-              colorKey: ColorKey.Primary,
+              colorKey: CoreColorKey.Primary,
               properties: [ColorPropertyKey.Label],
             },
           }}
@@ -108,12 +108,13 @@ const SideMenu: React.FC<Props> = ({
             style={{
               size: { sizeKey: SizeKey.LG, properties:[SizeProperty.Text] },
               color: {
-                colorKey: ColorKey.Primary,
+                colorKey: CoreColorKey.Primary,
                 properties: [ColorPropertyKey.Label],
               },
               fontWeightKey: FontWeightKey.Semibold
             }}
             bg_color={true}
+            center={false}
           />
         ))}
       </nav>

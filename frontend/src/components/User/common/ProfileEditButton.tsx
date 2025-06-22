@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../common/button/BaseButton";
 import { FaEdit} from "react-icons/fa";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 
 interface Props {
     navigateProfile: () => void;
@@ -14,7 +14,7 @@ const ProfileEditButton: React.FC<Props> = ({ navigateProfile }) => {
             label={"プロフィールを編集"}
             style={{
                 color: {
-                    colorKey: ColorKey.Secondary,
+                    colorKey: CoreColorKey.Secondary,
                 }
             }}
             bg_color={true}

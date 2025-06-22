@@ -1,12 +1,18 @@
 import clsx from 'clsx';
 
-export enum ColorKey {
+export enum CoreColorKey {
   Base = 'base',
   Primary = 'primary',
   Secondary = 'secondary',
   Danger = 'danger',
   Success = 'success',
 }
+
+export enum SpecialColorKey {
+  Heart = 'Heart',
+}
+
+export type ColorKey = CoreColorKey | SpecialColorKey;
 
 export enum ColorPropertyKey {
   Bg = 'bg',
@@ -29,7 +35,9 @@ export type ColorVariant = Partial<Record<ColorVariantKey, string>>;
 // ボタンなどインタラクティブ要素用のカラーセット
 export type ColorSlot = Partial<Record<ColorPropertyKey, ColorVariant>>;
 
-export type ColorMap = Record<ColorKey, ColorSlot>;
+export type CoreColorMap = Record<CoreColorKey, ColorSlot>;
+export type SpecialColorMap = Partial<Record<SpecialColorKey, ColorSlot>>;
+export type ColorMap = CoreColorMap & SpecialColorMap;
 
 export type ColorStyle = {
   colorKey: ColorKey;

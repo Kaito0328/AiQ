@@ -4,7 +4,7 @@ import { FilterCondition, FilterType } from "../../../../types/quiz";
 import BaseCard from "../../../containerComponents/BaseCard";
 import BaseLabel from "../../../baseComponents/BaseLabel";
 import BaseButton from "../../../common/button/BaseButton";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 import { FontWeightKey } from "../../../../style/fontWeight";
 import { RoundKey } from "../../../../style/rounded";
 import { SizeKey } from "../../../../style/size";
@@ -64,7 +64,7 @@ const FilterConditionItem: React.FC<Props> = ({ filter, onRemove, onValueChange 
             icon={<FaTimes />}
             onClick={onRemove}
             style={{
-              color: { colorKey: ColorKey.Secondary },
+              color: { colorKey: CoreColorKey.Secondary },
               size: { sizeKey: SizeKey.SM },
               roundKey: RoundKey.Full
             }}

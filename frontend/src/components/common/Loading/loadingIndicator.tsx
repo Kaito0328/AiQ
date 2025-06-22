@@ -2,7 +2,7 @@
 import React from "react";
 import { FaSpinner } from "react-icons/fa";
 import BaseLabel from "../..//baseComponents/BaseLabel";
-import { ColorKey } from "../../../style/colorStyle";
+import { ColorKey, CoreColorKey } from "../../../style/colorStyle";
 import { SizeKey } from "../../../style/size";
 
 interface LoadingIndicatorProps {
@@ -13,7 +13,7 @@ interface LoadingIndicatorProps {
 
 const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
   text = "読み込み中…",
-  colorKey = ColorKey.Primary,
+  colorKey = CoreColorKey.Primary,
   sizeKey = SizeKey.LG,
 }) => {
   return (

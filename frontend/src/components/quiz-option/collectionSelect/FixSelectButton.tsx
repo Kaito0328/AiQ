@@ -1,6 +1,6 @@
 import React from "react";
 import BaseButton from "../../common/button/BaseButton";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { SizeKey } from "../../../style/size";
 import { FontWeightKey } from "../../../style/fontWeight";
 
@@ -14,7 +14,7 @@ const FixSelectButton: React.FC<Props> = ({ fixSelect }) => {
             label={"決定"}
             style={{
                 color: {
-                    colorKey: ColorKey.Primary
+                    colorKey: CoreColorKey.Primary
                 },
                 size: {
                     sizeKey: SizeKey.LG,

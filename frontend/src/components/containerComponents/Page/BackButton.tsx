@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import BaseButton from "../../common/button/BaseButton";
 import { SizeKey } from "../../../style/size";
 import { RoundKey } from "../../../style/rounded";
-import { ColorKey, ColorPropertyKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../style/colorStyle";
 
 const BackButton: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="fixed top-20 left-3 z-40 transition">
+    <div className="fixed top-20 left-3 z-20 transition">
         <BaseButton
             onClick={() => navigate(-1)}
             title="戻る"
@@ -20,11 +20,12 @@ const BackButton: React.FC = () => {
                     sizeKey: SizeKey.MD,
                 },
                 color: {
-                    colorKey: ColorKey.Primary,
+                    colorKey: CoreColorKey.Primary,
                     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label]
                 },
                 roundKey: RoundKey.Full,
             }}
+            bg_color={true}
         />
     </div>
 

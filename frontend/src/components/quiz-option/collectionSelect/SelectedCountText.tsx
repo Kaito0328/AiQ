@@ -1,6 +1,6 @@
 import React from "react";
 import Text from "../../baseComponents/Text";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { SizeKey } from "../../../style/size";
 import { RoundKey } from "../../../style/rounded";
 import { FontWeightKey } from "../../../style/fontWeight";
@@ -14,7 +14,7 @@ const SelectedCountText: React.FC<Props> = ({ count }) => {
     <Text
       text={`選択中: ${count}件`}
       style={{
-        color: { colorKey: ColorKey.Base },
+        color: { colorKey: CoreColorKey.Base },
         sizeKey: SizeKey.LG,
         roundKey: RoundKey.Lg,
         fontWeightKey: FontWeightKey.Semibold,

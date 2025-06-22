@@ -3,7 +3,7 @@ import BaseCard from "../../containerComponents/BaseCard";
 import SelectedCollectionItem from "./SelectedCollectionItem";
 import { SizeKey } from "../../../style/size";
 import { RoundKey } from "../../../style/rounded";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { Collection } from "../../../types/collection";
 
 type Props = {
@@ -15,7 +15,7 @@ const SelectedCollectionList: React.FC<Props> = ({ selectedCollections, onRemove
   return (
     <BaseCard
       style={{
-        color: { colorKey: ColorKey.Secondary },
+        color: { colorKey: CoreColorKey.Secondary },
         size: { sizeKey: SizeKey.LG },
         roundKey: RoundKey.Lg,
       }}

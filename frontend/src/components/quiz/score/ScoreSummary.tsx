@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaHome, FaRedo, FaRedoAlt } from 'react-icons/fa';
 import BaseButton from '../../common/button/BaseButton';
-import { ColorKey } from '../../../style/colorStyle';
+import { CoreColorKey } from '../../../style/colorStyle';
 import { FontWeightKey } from '../../../style/fontWeight';
 import { RoundKey } from '../../../style/rounded';
 import BaseLabel from '../../baseComponents/BaseLabel';
@@ -63,7 +63,7 @@ const ScoreSummary: React.FC<ScoreSummaryProps> = ({
             onClick={onGoHome}
             style={{
               color: {
-                colorKey: ColorKey.Secondary,
+                colorKey: CoreColorKey.Secondary,
               },
               fontWeightKey: FontWeightKey.Semibold,
               roundKey: RoundKey.Lg
@@ -75,7 +75,7 @@ const ScoreSummary: React.FC<ScoreSummaryProps> = ({
             onClick={onRetryIncorrect}
             style={{
               color: {
-                colorKey: ColorKey.Danger,
+                colorKey: CoreColorKey.Danger,
               },
               roundKey: RoundKey.Lg
             }}
@@ -86,7 +86,7 @@ const ScoreSummary: React.FC<ScoreSummaryProps> = ({
             onClick={onRetryAll}
             style={{
               color: {
-                colorKey: ColorKey.Primary,
+                colorKey: CoreColorKey.Primary,
               },
               roundKey: RoundKey.Lg
             }}

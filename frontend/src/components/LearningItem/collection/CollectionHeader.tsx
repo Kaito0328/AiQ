@@ -15,7 +15,7 @@ import BaseLabel from "../../baseComponents/BaseLabel";
 import { SizeKey } from "../../../style/size";
 import BaseCard from "../../containerComponents/BaseCard";
 import { ShadowKey } from "../../../style/shadow";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import CollectionIcon from "./common/Icon/CollectionIcon";
 
 interface Props {
@@ -119,7 +119,7 @@ const CollectionHeader: React.FC<Props> = ({ collection, isOwner }) => {
                   sizeKey: SizeKey.LG
                 },
                 color: {
-                  colorKey: ColorKey.Base
+                  colorKey: CoreColorKey.Base
                 }
               }}
             />

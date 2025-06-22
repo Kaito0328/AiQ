@@ -9,7 +9,7 @@ import { arrayMove, SortableContext, verticalListSortingStrategy } from "@dnd-ki
 import DraggableSortItem from "./DraggableSortItem";
 import { restrictToFirstScrollableAncestor, restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import BaseCard from "../../../containerComponents/BaseCard";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
 import { SizeKey, SizeProperty } from "../../../../style/size";
 import ArrowToggleButton from "../../../LearningItem/common/Toggle/ArrowToggleButton";
 import { FontWeightKey } from "../../../../style/fontWeight";
@@ -87,7 +87,7 @@ const SortSection: React.FC<Props> = ({ sorts, setSorts }) => {
                     <BaseCard
                       style={{
                         color: {
-                          colorKey: ColorKey.Secondary,
+                          colorKey: CoreColorKey.Secondary,
                           properties: [ColorPropertyKey.Border, ColorPropertyKey.Ring],
                           variants: [ColorVariantKey.Focus]
                         },

@@ -6,7 +6,7 @@ import { Question } from '../../types/question';
 import './QuizStartPage.css'; // CSS追加！
 import Page from '../../components/containerComponents/Page';
 import BaseButton from '../../components/common/button/BaseButton';
-import { ColorKey } from '../../style/colorStyle';
+import { CoreColorKey } from '../../style/colorStyle';
 import { SizeKey } from '../../style/size';
 import { FontWeightKey } from '../../style/fontWeight';
 
@@ -61,7 +61,7 @@ const QuizStartPage: React.FC = () => {
           onClick={handleStartQuiz}
           style={{
             color: {
-              colorKey: ColorKey.Success,
+              colorKey: CoreColorKey.Success,
             },
             size: {
               sizeKey: SizeKey.LG

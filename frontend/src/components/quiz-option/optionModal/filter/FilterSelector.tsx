@@ -2,7 +2,7 @@ import React from "react";
 import { FilterCondition, FilterType } from "../../../../types/quiz";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaPlus } from "react-icons/fa";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
 import { SizeKey } from "../../../../style/size";
 import BaseCard from "../../../containerComponents/BaseCard";
 
@@ -29,7 +29,7 @@ const FilterSelector: React.FC<Props> = ({ filters, setFilters }) => {
     <BaseCard
       style={{
         color: {
-          colorKey: ColorKey.Secondary,
+          colorKey: CoreColorKey.Secondary,
           properties: [ColorPropertyKey.Border, ColorPropertyKey.Ring],
           variants: [ColorVariantKey.Focus]
         },
@@ -44,7 +44,7 @@ const FilterSelector: React.FC<Props> = ({ filters, setFilters }) => {
             icon={<FaPlus />}
             onClick={() => addFilter(opt.type, opt.defaultValue)}
             style={{
-                color: { colorKey: ColorKey.Secondary },
+                color: { colorKey: CoreColorKey.Secondary },
                 size: { sizeKey: SizeKey.SM }
             }}
             bg_color={true}

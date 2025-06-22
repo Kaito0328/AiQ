@@ -1,11 +1,11 @@
 import React from "react";
 import clsx from "clsx";
 import BaseLabel, { LabelStyle } from "../../baseComponents/BaseLabel";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
 
 const defaultStyle: LabelStyle = {
   color: {
-    colorKey: ColorKey.Primary,
+    colorKey: CoreColorKey.Primary,
     properties: [ColorPropertyKey.Label, ColorPropertyKey.Bg],
     variants: [ColorVariantKey.Hover]
   }
@@ -21,6 +21,7 @@ type Props = {
   style?: LabelStyle;
   bg_color?: boolean;
   is_submit?: boolean;
+  center?: boolean;
 };
 
 const BaseButton: React.FC<Props> = ({
@@ -33,6 +34,7 @@ const BaseButton: React.FC<Props> = ({
   style,
   bg_color,
   is_submit = false,
+  center = true,
 }) => {
 
   const mergedStyle: LabelStyle = {
@@ -61,6 +63,7 @@ const BaseButton: React.FC<Props> = ({
         iconRight={iconRight}
         style={mergedStyle}
         bg_color={bg_color}
+          center={center}
       />
     </button>
   );

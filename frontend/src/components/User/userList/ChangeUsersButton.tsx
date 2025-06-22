@@ -2,7 +2,7 @@ import React from "react";
 import { UsersFilterOption } from "../../../types/user";
 import BaseButton from "../../common/button/BaseButton";
 import { SizeKey } from "../../../style/size";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
 import { FontWeightKey } from "../../../style/fontWeight";
 
 interface UserListItemProps {
@@ -22,7 +22,7 @@ const ChangeUsersButton: React.FC<UserListItemProps> = ({ option, onClick, isSel
             sizeKey: SizeKey.MD
           },
           color: {
-            colorKey: isSelected ? ColorKey.Primary: ColorKey.Secondary,
+            colorKey: isSelected ? CoreColorKey.Primary: CoreColorKey.Secondary,
             properties: [ColorPropertyKey.Label, ColorPropertyKey.Bg],
             variants: [ColorVariantKey.Hover]
           },

@@ -8,7 +8,7 @@ import { AnswerHistory } from '../../types/answerHistory';
 import Paths from '../../routes/Paths';
 import QuizForm from '../../components/quiz/quizForm/QuizForm';
 import Page from '../../components/containerComponents/Page';
-import { ColorKey } from '../../style/colorStyle';
+import { CoreColorKey } from '../../style/colorStyle';
 
 const QuizPage: React.FC = () => {
   const location = useLocation();
@@ -80,7 +80,7 @@ const QuizPage: React.FC = () => {
   }
 
   const currentQuestion = questions[currentIndex];
-  const resultColorKey = (isCorrect === null ) ? ColorKey.Base : (isCorrect ? ColorKey.Success : ColorKey.Danger);
+  const resultColorKey = (isCorrect === null ) ? CoreColorKey.Base : (isCorrect ? CoreColorKey.Success : CoreColorKey.Danger);
   return (
     <Page
       style={{

@@ -1,21 +1,21 @@
 import React from "react";
 import { SizeKey } from "../../../style/size";
 import { RoundKey } from "../../../style/rounded";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../style/colorStyle";
 import BaseButton from "./BaseButton";
 import { PartialComponentStyle } from "../../../style/style";
 
 type LoadingButtonStyle = {
-  colorKey: ColorKey;
+  colorKey: CoreColorKey;
   size: {
-    sizeKey: SizeKey;
-    full_width: boolean; 
+    sizeKey?: SizeKey;
+    full_width?: boolean; 
   },
   roundKey: RoundKey;
 };
 
 const defaultStyle: LoadingButtonStyle = {
-  colorKey: ColorKey.Primary,
+  colorKey: CoreColorKey.Primary,
   size: {
     sizeKey: SizeKey.MD,
     full_width: false,

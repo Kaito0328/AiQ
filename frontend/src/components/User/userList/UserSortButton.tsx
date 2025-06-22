@@ -2,7 +2,7 @@ import React from "react";
 import BaseButton from "../../common/button/BaseButton";
 import { UsersSortOption } from "../../../types/user";
 import { SizeKey } from "../../../style/size";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { FontWeightKey } from "../../../style/fontWeight";
 
 
@@ -19,7 +19,7 @@ const UserSortButton: React.FC<Props> = ({ sortOption, onClick, isSelected }) =>
         label={sortOption.label}
         style={{
           color: {
-            colorKey: isSelected ? ColorKey.Primary : ColorKey.Secondary
+            colorKey: isSelected ? CoreColorKey.Primary : CoreColorKey.Secondary
           },
           size: {
             sizeKey: SizeKey.SM

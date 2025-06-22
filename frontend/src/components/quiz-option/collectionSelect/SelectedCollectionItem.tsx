@@ -2,7 +2,7 @@ import React from "react";
 import BaseLabel from "../../baseComponents/BaseLabel";
 import { FaBook } from "react-icons/fa";
 import { SizeKey } from "../../../style/size";
-import { ColorKey } from "../../../style/colorStyle";
+import { CoreColorKey } from "../../../style/colorStyle";
 import { FontWeightKey } from "../../../style/fontWeight";
 import DeleteButton from "../../LearningItem/common/Button/DeleteButton";
 
@@ -18,7 +18,7 @@ const SelectedCollectionItem: React.FC<Props> = ({ name, onRemove }) => {
         icon={<FaBook />}
         label={name}
         style={{
-          color: { colorKey: ColorKey.Primary },
+          color: { colorKey: CoreColorKey.Primary },
           size: { sizeKey: SizeKey.MD },
           fontWeightKey: FontWeightKey.Normal,
         }}

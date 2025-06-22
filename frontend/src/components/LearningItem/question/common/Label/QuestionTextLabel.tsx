@@ -1,7 +1,7 @@
 import React from "react"; 
 import BaseLabel from "../../../../baseComponents/BaseLabel";
 import { FontWeightKey } from "../../../../../style/fontWeight";
-import { ColorKey } from "../../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../../style/colorStyle";
 
 const QuestionLabel: React.FC<{ questionText?: string}> = ({ questionText }) => {
     return (
@@ -11,7 +11,7 @@ const QuestionLabel: React.FC<{ questionText?: string}> = ({ questionText }) => 
                 style={{
                     fontWeightKey: FontWeightKey.Semibold,
                     color: {
-                        colorKey: ColorKey.Primary
+                        colorKey: CoreColorKey.Primary
                     }
                 }}
 

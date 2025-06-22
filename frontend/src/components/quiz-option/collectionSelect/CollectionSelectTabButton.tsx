@@ -1,6 +1,6 @@
 import React from "react";
 import BaseButton from "../../common/button/BaseButton";
-import { ColorKey, ColorPropertyKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../style/colorStyle";
 import { SizeKey } from "../../../style/size";
 import { FontWeightKey } from "../../../style/fontWeight";
 
@@ -17,7 +17,7 @@ const CollectionSelectTabButton: React.FC<Props> = ({ label, isActive, onClick }
       onClick={onClick}
       style={{
         color: {
-          colorKey: isActive ? ColorKey.Primary : ColorKey.Secondary,
+          colorKey: isActive ? CoreColorKey.Primary : CoreColorKey.Secondary,
           properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label]
         },
         size: {

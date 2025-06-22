@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaPlus } from "react-icons/fa";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 interface Props {
   onAdd: () => void;
@@ -16,7 +16,7 @@ const AddButton: React.FC<Props> = ({ onAdd}) => {
       onClick={onAdd}
       style={{
         color: {
-          colorKey: ColorKey.Primary,
+          colorKey: CoreColorKey.Primary,
         }
       }}
       bg_color={false}

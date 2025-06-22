@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaEdit } from "react-icons/fa";
-import { ColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
 
 interface Props {
   onEdit: () => void;
@@ -16,7 +16,7 @@ const EditButton: React.FC<Props> = ({ onEdit }) => {
       onClick={onEdit}
       style={{
         color: {
-          colorKey: ColorKey.Primary,
+          colorKey: CoreColorKey.Primary,
           properties: [ColorPropertyKey.Label]
         }
       }}

@@ -1,7 +1,7 @@
 import React from "react";
 import BaseButton from "../../../common/button/BaseButton";
 import { FaTrash } from "react-icons/fa";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 interface Props {
   onDelete: () => void;
@@ -18,7 +18,7 @@ const BatchDeleteButton: React.FC<Props> = ({ onDelete, disabled }) => {
       disabled={disabled}
       style={{
         color: {
-          colorKey: disabled? ColorKey.Secondary : ColorKey.Danger
+          colorKey: disabled? CoreColorKey.Secondary : CoreColorKey.Danger
         }
       }}
       bg_color={false}

@@ -1,7 +1,7 @@
 import React from "react";
 import { SizeKey } from "../../../../style/size";
 import Text from "../../../baseComponents/Text";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 const IdLabel: React.FC<{ id: number }> = ({ id }) => (
   <div className="text-right">
@@ -10,7 +10,7 @@ const IdLabel: React.FC<{ id: number }> = ({ id }) => (
         style={{
           sizeKey: SizeKey.SM,
           color: {
-            colorKey: ColorKey.Secondary
+            colorKey: CoreColorKey.Secondary
           },
         }}
     />

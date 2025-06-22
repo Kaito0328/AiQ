@@ -2,6 +2,11 @@ import { useState } from "react";
 import { csvGenerateQuestions } from "../../../../api/GenerationAPI";
 import { Question } from "../../../../types/question";
 import { BatchUpsertResponse } from "../../../../types/batchResponse";
+import BaseModal from "../../../common/modal/baseModal";
+import { CoreColorKey } from "../../../../style/colorStyle";
+import BaseLabel from "../../../baseComponents/BaseLabel";
+import { handleError } from "../../../../api/handleAPIError";
+import { FontWeightKey } from "../../../../style/fontWeight";
 
 const CsvModal = ({ collectionId, onClose, onComplete }: { collectionId: number; onClose: () => void, onComplete: (response: BatchUpsertResponse<Question>) => void }) => {
   const [file, setFile] = useState<File | null>(null);
@@ -32,7 +37,8 @@ const CsvModal = ({ collectionId, onClose, onComplete }: { collectionId: number;
             onComplete(response);
           }, 2000);
     } catch (err) {
-      setError("エラーが発生しました");
+      const errorMessage =handleError(err);
+      setError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
@@ -40,13 +46,15 @@ const CsvModal = ({ collectionId, onClose, onComplete }: { collectionId: number;
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white w-full max-w-2xl p-8 rounded-lg shadow-lg">
-        <h1 className="text-center text-2xl font-semibold text-gray-800 mb-6">CSVから問題を生成</h1>
-
-        <div className="space-y-6">
+        <BaseModal title="CSVから問題を生成" onClose={onClose} onConfirm={handleSubmit} confirmButtonText="CSVをアップロード" loadingConfirmButtonText="アップロード中..." loading={loading}>
           <div>
-            <label className="block font-medium text-gray-700">CSVファイル:</label>
+            <BaseLabel
+              label="CSVファイル:"
+              style={{
+                fontWeightKey: FontWeightKey.Semibold
+              }}
+
+            />
             <input
               type="file"
               accept=".csv"
@@ -54,33 +62,27 @@ const CsvModal = ({ collectionId, onClose, onComplete }: { collectionId: number;
               className="w-full p-2 mt-2 border rounded-md border-gray-300"
             />
           </div>
-        </div>
 
-        <div className="flex justify-center mt-8">
-          {!message && (
-            <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="w-64 py-3 bg-green-500 text-white text-lg font-semibold rounded-md hover:bg-green-600 focus:ring-4 focus:ring-green-200 transition duration-300"
-          >
-            {loading ? "アップロード中..." : "CSVをアップロード"}
-          </button>
-          )}
-        </div>
+      <BaseLabel
+        label={error}
+        style={{
+          color: {
+            colorKey: CoreColorKey.Success
+          }
+        }}
+        center={true}
+      />
+      <BaseLabel
+        label={message}
+        style={{
+          color: {
+            colorKey: CoreColorKey.Success
+          }
+        }}
+        center={true}
+      />
 
-        {error && <p className="text-red-500 text-center mt-4">{error}</p>}
-        {message && <p className="text-blue-500 text-center mt-4">{message}</p>}
-
-        <div className="flex justify-center mt-6">
-          <button
-            onClick={onClose}
-            className="py-2 px-4 bg-gray-300 text-gray-700 text-lg font-semibold rounded-md hover:bg-gray-400 focus:ring-4 focus:ring-gray-200 transition duration-300"
-          >
-            閉じる
-          </button>
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   );
 };
 

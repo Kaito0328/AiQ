@@ -3,7 +3,7 @@ import { FaLock, FaLockOpen } from "react-icons/fa";
 import { RoundKey } from "../../../../../style/rounded";
 import { SizeKey } from "../../../../../style/size";
 import BaseLabel from "../../../../baseComponents/BaseLabel";
-import { ColorKey } from "../../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../../style/colorStyle";
 
 interface Props {
   open: boolean;
@@ -15,7 +15,7 @@ const OpenIcon: React.FC<Props> = ({ open}) => {
       icon={open? <FaLockOpen /> : <FaLock/>}
       style={{
         color: {
-          colorKey: open? ColorKey.Success : ColorKey.Secondary,
+          colorKey: open? CoreColorKey.Success : CoreColorKey.Secondary,
         },
         size: {
           sizeKey: SizeKey.MD

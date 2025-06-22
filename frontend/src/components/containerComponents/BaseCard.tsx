@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from "react";
 import { AllSizeProperties, SizeKey, SizeStyle } from "../../style/size";
 import { RoundKey } from "../../style/rounded";
 import {
-  ColorKey,
+  CoreColorKey,
   ColorPropertyKey,
   ColorStyle,
   ColorVariantKey,
@@ -31,7 +31,7 @@ type CardStyle = {
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg],
     variants: [ColorVariantKey.Hover],
   },
@@ -84,7 +84,7 @@ const BaseCard: React.FC<PropsWithChildren<Props>> = ({
         <BaseLabel
           label={errorMessage}
           style={{
-            color: { colorKey: ColorKey.Danger },
+            color: { colorKey: CoreColorKey.Danger },
             size: { sizeKey: SizeKey.MD },
           }}
         />

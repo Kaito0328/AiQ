@@ -5,7 +5,7 @@ import ResumeButton from './ResumeButton';
 import BaseLabel from '../../baseComponents/BaseLabel';
 import { FaBook, FaFilter, FaSort } from 'react-icons/fa';
 import { FontWeightKey } from '../../../style/fontWeight';
-import { ColorKey } from '../../../style/colorStyle';
+import { CoreColorKey } from '../../../style/colorStyle';
 import { SizeKey, SizeProperty } from '../../../style/size';
 import { CasualQuiz, filterTypeLabels, sortKeyLabels } from '../../../types/quiz';
 
@@ -38,7 +38,7 @@ const ResumeItem: React.FC<ItemProps> = ({quiz, disabled, handleResumeQuiz}) => 
                 style={{
                     fontWeightKey: FontWeightKey.Semibold,
                     color: {
-                        colorKey: ColorKey.Primary
+                        colorKey: CoreColorKey.Primary
                     },
                     size: {
                         sizeKey: SizeKey.LG,
@@ -58,7 +58,7 @@ const ResumeItem: React.FC<ItemProps> = ({quiz, disabled, handleResumeQuiz}) => 
                 label={answeredText}
                 style={{
                     color: {
-                        colorKey: ColorKey.Secondary,
+                        colorKey: CoreColorKey.Secondary,
                     },
                     size: {
                         sizeKey: SizeKey.SM
@@ -81,7 +81,7 @@ const ResumeItem: React.FC<ItemProps> = ({quiz, disabled, handleResumeQuiz}) => 
                     label={filterText}
                     style={{
                         color: {
-                            colorKey: ColorKey.Primary
+                            colorKey: CoreColorKey.Primary
                         },
                     }}
                 />
@@ -95,7 +95,7 @@ const ResumeItem: React.FC<ItemProps> = ({quiz, disabled, handleResumeQuiz}) => 
                     label={sortText}
                     style={{
                         color: {
-                            colorKey: ColorKey.Primary
+                            colorKey: CoreColorKey.Primary
                         },
                     }}
                 />

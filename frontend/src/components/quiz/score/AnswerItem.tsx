@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { AnswerHistory } from '../../../types/answerHistory';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import BaseCard from '../../containerComponents/BaseCard';
-import { ColorKey } from '../../../style/colorStyle';
+import { CoreColorKey } from '../../../style/colorStyle';
 import { SizeKey, SizeProperty } from '../../../style/size';
 import BaseLabel from '../../baseComponents/BaseLabel';
 import { FontWeightKey } from '../../../style/fontWeight';
@@ -22,7 +22,7 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, index }) => {
     <BaseCard
       style={{
         color: {
-          colorKey: answer.correct ? ColorKey.Success : ColorKey.Danger
+          colorKey: answer.correct ? CoreColorKey.Success : CoreColorKey.Danger
         },
         size: {
           sizeKey: SizeKey.LG
@@ -44,7 +44,7 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, index }) => {
           : <FaTimesCircle/>}
           style={{
             color: {
-              colorKey: answer.correct ? ColorKey.Success : ColorKey.Danger
+              colorKey: answer.correct ? CoreColorKey.Success : CoreColorKey.Danger
             }
           }}
           />
@@ -106,7 +106,7 @@ const AnswerItem: React.FC<AnswerItemProps> = ({ answer, index }) => {
                 label={answer.question.descriptionText}
                 style={{
                   color: {
-                    colorKey: ColorKey.Secondary
+                    colorKey: CoreColorKey.Secondary
                   }
                 }}
               />

@@ -1,4 +1,4 @@
-import { ColorKey } from "../../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../../style/colorStyle";
 import { FontWeightKey } from "../../../../../style/fontWeight";
 import { SizeKey } from "../../../../../style/size";
 import BaseLabel from "../../../../baseComponents/BaseLabel";
@@ -13,7 +13,7 @@ const CorrectAnswerText: React.FC<Props> = ({ correctAnswer }) => (
       label={correctAnswer}
       style={{
         color: {
-          colorKey: ColorKey.Success
+          colorKey: CoreColorKey.Success
         },
         size: {
           sizeKey: SizeKey.LG

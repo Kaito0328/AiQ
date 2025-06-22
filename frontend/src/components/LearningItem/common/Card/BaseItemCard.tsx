@@ -6,17 +6,17 @@ import { SizeKey } from "../../../../style/size";
 import { RoundKey } from "../../../../style/rounded";
 import BaseCard from "../../../containerComponents/BaseCard";
 import { ShadowKey } from "../../../../style/shadow";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 interface Props {
   isSaved: boolean;
   errorMessages: ErrorCode[];
-  colorKey?: ColorKey;
+  colorKey?: CoreColorKey;
 }
 
 const BaseItemCard: React.FC<PropsWithChildren<Props>> = ({
     isSaved,
     errorMessages,
-    colorKey = ColorKey.Base,
+    colorKey = CoreColorKey.Base,
     children,
 }) => {
   return (

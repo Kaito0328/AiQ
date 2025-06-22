@@ -8,7 +8,7 @@ import ArrowToggleButton from "../../../LearningItem/common/Toggle/ArrowToggleBu
 import FilterSelector from "./FilterSelector";
 import FilterConditionItem from "./FilterConditionItem";
 import BaseCard from "../../../containerComponents/BaseCard";
-import { ColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorVariantKey } from "../../../../style/colorStyle";
 
 type Props = {
   filters: FilterCondition[];
@@ -69,7 +69,7 @@ const FilterSection: React.FC<Props> = ({ filters, setFilters }) => {
                         <BaseCard
                         style={{
                             color: {
-                            colorKey: ColorKey.Secondary,
+                            colorKey: CoreColorKey.Secondary,
                             properties: [ColorPropertyKey.Border, ColorPropertyKey.Ring],
                             variants: [ColorVariantKey.Focus]
                             },

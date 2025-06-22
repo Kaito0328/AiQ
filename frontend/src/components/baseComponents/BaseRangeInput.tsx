@@ -3,20 +3,20 @@ import clsx from "clsx";
 import { SizeKey, SizeStyle, AllSizeProperties } from "../../style/size";
 import { RoundKey } from "../../style/rounded";
 import { FontWeightKey } from "../../style/fontWeight";
-import { ColorKey, ColorPropertyKey } from "../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../style/colorStyle";
 import { ComponentStyle, getClassByStyle, PartialComponentStyle, StyleMaps } from "../../style/style";
 import { inputColorMap } from "../../styleMap/colorMap";
 import { textSizeMap } from "../../styleMap/sizeMap";
 
 type BaseRangeInputStyle = {
-  colorKey?: ColorKey;
+  colorKey?: CoreColorKey;
   size?: Partial<SizeStyle>;
   roundKey?: RoundKey;
 };
 
 const defaultStyle: ComponentStyle = {
   color: {
-    colorKey: ColorKey.Base,
+    colorKey: CoreColorKey.Base,
     properties: [ColorPropertyKey.Bg, ColorPropertyKey.Ring, ColorPropertyKey.Border],
     variants: [],
   },

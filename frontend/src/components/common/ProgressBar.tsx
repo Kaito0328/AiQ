@@ -1,39 +1,39 @@
 import React from "react";
 import clsx from "clsx";
-import { ColorKey } from "../../style/colorStyle";
+import { CoreColorKey } from "../../style/colorStyle";
 import { SizeKey } from "../../style/size";
 import { RoundKey } from "../../style/rounded";
 
 type ProgressBarStyle = {
-  colorKey: ColorKey;
+  colorKey: CoreColorKey;
   sizeKey: SizeKey;
   roundKey: RoundKey;
 };
 
 const defaultStyle: ProgressBarStyle = {
-  colorKey: ColorKey.Primary,
+  colorKey: CoreColorKey.Primary,
   sizeKey: SizeKey.MD,
   roundKey: RoundKey.Full,
 };
 
-const ProgressBarColorMap: Record<ColorKey, { track: string; bar: string }> = {
-  [ColorKey.Base]: {
+const ProgressBarColorMap: Record<CoreColorKey, { track: string; bar: string }> = {
+  [CoreColorKey.Base]: {
     track: "bg-gray-200",
     bar: "bg-gray-400",
   },
-  [ColorKey.Primary]: {
+  [CoreColorKey.Primary]: {
     track: "bg-blue-100",
     bar: "bg-blue-500",
   },
-  [ColorKey.Secondary]: {
+  [CoreColorKey.Secondary]: {
     track: "bg-gray-300",
     bar: "bg-gray-600",
   },
-  [ColorKey.Danger]: {
+  [CoreColorKey.Danger]: {
     track: "bg-red-100",
     bar: "bg-red-500",
   },
-  [ColorKey.Success]: {
+  [CoreColorKey.Success]: {
     track: "bg-green-100",
     bar: "bg-green-500",
   },

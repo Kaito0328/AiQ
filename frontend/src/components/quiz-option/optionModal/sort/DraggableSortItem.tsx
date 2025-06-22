@@ -6,7 +6,7 @@ import { SortCondition, SortDirection } from "../../../../types/quiz";
 import { FaGripVertical } from "react-icons/fa6";
 import BaseLabel from "../../../baseComponents/BaseLabel";
 import { SizeKey } from "../../../../style/size";
-import { ColorKey } from "../../../../style/colorStyle";
+import { CoreColorKey } from "../../../../style/colorStyle";
 
 type Props = {
   sort: SortCondition;
@@ -37,7 +37,7 @@ const DraggableSortItem: React.FC<Props> = ({ sort, setSorts }) => {
               properties: []
             },
             color: {
-              colorKey: ColorKey.Primary
+              colorKey: CoreColorKey.Primary
             },
 
           }}

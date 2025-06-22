@@ -2,7 +2,7 @@ import React from "react";
 import { handleAPIError } from "../../.../../../api/handleAPIError";
 import { ErrorCode } from "../../../types/error";
 import BaseLabel from "../../baseComponents/BaseLabel";
-import { ColorKey, ColorPropertyKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../style/colorStyle";
 import { SizeKey } from "../../../style/size";
 
 interface Props {
@@ -21,7 +21,7 @@ const ErrorMessageList: React.FC<Props> = ({ errorMessages }) => {
             icon={<span>⚠️</span>}
             style={{
               color: {
-                colorKey: ColorKey.Danger,
+                colorKey: CoreColorKey.Danger,
                 properties: [ColorPropertyKey.Label],
               },
               size: {

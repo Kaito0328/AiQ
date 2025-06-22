@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { User } from "../../types/user";
 import LoadingButton from "../common/button/LoadingButton";
-import { ColorKey } from "../../style/colorStyle";
+import { CoreColorKey } from "../../style/colorStyle";
 
 const UserInfoCard: React.FC<{
   loginUser: User | null;
@@ -34,7 +34,7 @@ const UserInfoCard: React.FC<{
             onClick={handleUpdateUser}
             loading={loading}
             style={{
-              colorKey: ColorKey.Primary
+              colorKey: CoreColorKey.Primary
             }}
             bg_color={true}
           />

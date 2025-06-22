@@ -2,7 +2,7 @@ import React from "react";
 import { SizeKey } from "../../../../style/size";
 import { useNavigate } from "react-router-dom";
 import { FontWeightKey } from "../../../../style/fontWeight";
-import { ColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey } from "../../../../style/colorStyle";
 import BaseButton from "../../../common/button/BaseButton";
 
 const LinkedNameText: React.FC<{ name: string, url?: string }> = ({ name, url }) => {
@@ -20,7 +20,7 @@ const LinkedNameText: React.FC<{ name: string, url?: string }> = ({ name, url })
                     sizeKey: SizeKey.LG
                 },
                 color: {
-                    colorKey: ColorKey.Primary,
+                    colorKey: CoreColorKey.Primary,
                     properties: [ColorPropertyKey.Label]
                 },
                 fontWeightKey: FontWeightKey.Bold
