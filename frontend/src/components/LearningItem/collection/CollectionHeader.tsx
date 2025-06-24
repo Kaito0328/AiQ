@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Collection, CollectionInput } from "../../../types/collection";
 import { updateCollection } from "../../../api/CollectionAPI";
-import ItemInLineTextInput from "../common/Input/ItemInLineTextInput";
 import OpenButton from "./common/Button/OpenButton";
 import OpenIcon from "./common/Icon/OpenIcon";
 import EditDeleteButtons from "../common/Buttons/EditDeleteButtons";
@@ -17,6 +16,7 @@ import BaseCard from "../../containerComponents/BaseCard";
 import { ShadowKey } from "../../../style/shadow";
 import { CoreColorKey } from "../../../style/colorStyle";
 import CollectionIcon from "./common/Icon/CollectionIcon";
+import CollectionNameInput from "./common/Input/CollectionNameInput";
 
 interface Props {
   collection: Collection;
@@ -81,10 +81,9 @@ const CollectionHeader: React.FC<Props> = ({ collection, isOwner }) => {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2 min-w-[200px] flex-1">
               <CollectionIcon/>
-              <ItemInLineTextInput
-                defaultValue={input.name}
-                onInput={(value) => handleChange("name", value)}
-                placeholder="コレクション名を入力"
+              <CollectionNameInput
+                name={input.name}
+                onNameInput={(value) => handleChange("name", value)}
               />
             </div>
             <div className="flex items-center gap-2 whitespace-wrap">

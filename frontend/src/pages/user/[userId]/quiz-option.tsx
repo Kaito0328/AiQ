@@ -5,6 +5,7 @@ import { useUser } from "../../../hooks/useUser";
 import CollectionSelector from "../../../components/quiz-option/collectionSelect/CollectionSelector";
 import QuizConditionModal from "../../../components/quiz-option/optionModal/QuizConditionModal";
 import Page from "../../../components/containerComponents/Page";
+import UserHeader from "../../../components/User/UserHeader";
 
 
 const QuizOption: React.FC = () => {
@@ -13,7 +14,7 @@ const QuizOption: React.FC = () => {
 
   const [selectedCollections, setSelectedCollections] = useState<number[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const { user }= useUser(Number(userId));
+  const { user, loading, errorMessage, onFollowStatusChange } = useUser(Number(userId));
 
   const handleCollectionSelection = (selected: number[]) => {
     setSelectedCollections(selected);
@@ -34,6 +35,13 @@ const QuizOption: React.FC = () => {
     <Page
       title="クイズの設定"
     >
+          <UserHeader
+            user={user}
+            loading={loading}
+            errorMessage={errorMessage}
+            onFollowStatusChange={onFollowStatusChange}
+          />
+
       <div className="p-6  w-full">
 
       <div>

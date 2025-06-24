@@ -15,7 +15,7 @@ const SelectedCollectionList: React.FC<Props> = ({ selectedCollections, onRemove
   return (
     <BaseCard
       style={{
-        color: { colorKey: CoreColorKey.Secondary },
+        color: { colorKey: CoreColorKey.Base },
         size: { sizeKey: SizeKey.LG },
         roundKey: RoundKey.Lg,
       }}

@@ -12,6 +12,7 @@ import { useCollectionUIState } from "./hook/state/useCollectionUIState";
 import { useUIAction } from "./hook/action/useCollectionUIAction";
 import NewItemCard from "./CollectionCard/NewItemCard";
 import AllDescriptionToggleButton from "../common/Button/AllDescriptionToggleButton";
+import { useCollectionFavoriteActions } from "./hook/action/useCollectionFavoriteAction";
 
 interface Props {
   collectionSetId: number;
@@ -29,8 +30,11 @@ const CollectionList: React.FC<Props> = ({ collectionSetId, userId, isOwner }) =
     handleCollectionBatchUpsert,
     handleDelete,
     handleBatchDelete,
-    handleFavorite
   } = useCollectionAPIActions(collectionSetId, apiState);
+
+  const {
+    handleFavorite
+  } = useCollectionFavoriteActions(apiState);
 
   const {
     handleLocalCreate,

@@ -1,6 +1,6 @@
 import React from "react";
 import BaseButton from "../../common/button/BaseButton";
-import { CoreColorKey, ColorPropertyKey } from "../../../style/colorStyle";
+import { CoreColorKey, ColorPropertyKey, ColorKey } from "../../../style/colorStyle";
 import { SizeKey } from "../../../style/size";
 import { FontWeightKey } from "../../../style/fontWeight";
 
@@ -8,24 +8,24 @@ type Props = {
   label: string;
   isActive: boolean;
   onClick: () => void;
+  activeColorKey : ColorKey;
 };
 
-const CollectionSelectTabButton: React.FC<Props> = ({ label, isActive, onClick }) => {
+const CollectionSelectTabButton: React.FC<Props> = ({ label, isActive, onClick, activeColorKey }) => {
   return (
     <BaseButton
       label={label}
       onClick={onClick}
       style={{
         color: {
-          colorKey: isActive ? CoreColorKey.Primary : CoreColorKey.Secondary,
-          properties: [ColorPropertyKey.Bg, ColorPropertyKey.Label]
+          colorKey: isActive ? activeColorKey : CoreColorKey.Secondary,
+          properties: [ ColorPropertyKey.Label]
         },
         size: {
           sizeKey: SizeKey.LG
         },
-        fontWeightKey: isActive ? FontWeightKey.Bold : FontWeightKey.Normal
+        fontWeightKey: FontWeightKey.Bold
       }}
-      bg_color={isActive}
     />
   );
 };

@@ -1,16 +1,17 @@
 import React from "react";
 import { SizeKey } from "../../../style/size";
 import { RoundKey } from "../../../style/rounded";
-import { CoreColorKey } from "../../../style/colorStyle";
+import { ColorKey } from "../../../style/colorStyle";
 import BaseButton from "../../common/button/BaseButton";
 import { IoArrowRedo } from "react-icons/io5";
 
 type Props = {
   title: string;
   navigatePage: () => void;
+  colorKey: ColorKey;
 };
 
-const NavigatePageButton: React.FC<Props> = ({ title, navigatePage }) => {
+const NavigatePageButton: React.FC<Props> = ({ title, navigatePage, colorKey }) => {
   return (
     <BaseButton
     icon={<IoArrowRedo/>}
@@ -18,9 +19,9 @@ const NavigatePageButton: React.FC<Props> = ({ title, navigatePage }) => {
     onClick={navigatePage}
       style={{
         color: {
-          colorKey: CoreColorKey.Primary,
+          colorKey: colorKey,
         },
-        size: { sizeKey: SizeKey.LG },
+        size: { sizeKey: SizeKey.MD },
         roundKey: RoundKey.Full
       }}
     />

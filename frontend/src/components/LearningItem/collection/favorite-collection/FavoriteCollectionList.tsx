@@ -6,23 +6,40 @@ import ItemCard from "../CollectionCard/ItemCard";
 import ItemList from "../../common/ItemList";
 import { handleError } from "../../../../api/handleAPIError";
 import LoadingIndicator from "../../../common/Loading/loadingIndicator";
+import AllDescriptionToggleButton from "../../common/Button/AllDescriptionToggleButton";
+import { useUIAction } from "../hook/action/useCollectionUIAction";
+import { useCollectionUIState } from "../hook/state/useCollectionUIState";
+import { useCollectionAPIState } from "../hook/state/useCollectionAPIState";
+import { useCollectionFavoriteActions } from "../hook/action/useCollectionFavoriteAction";
 
 interface Props {
   userId: number;
 }
 
 const FavoriteCollectionList: React.FC<Props> = ({ userId }) => {
-  const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string>();
   const { loginUser } = useLoginUser();
+
+    const apiState = useCollectionAPIState();
+    const uiState = useCollectionUIState(apiState.collections, []);
+
+    const {
+      setAllVisibility,
+    } = useUIAction(uiState);
+
+      const {
+        handleFavorite
+      } = useCollectionFavoriteActions(apiState);
+  
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       try {
         const res = await getFavoriteCollections(userId);
-      setCollections(res);
+        console.log(res)
+      apiState.setCollections(res);
       } catch (e) {
         setErrorMessage(handleError(e));
       } finally {
@@ -39,25 +56,31 @@ const FavoriteCollectionList: React.FC<Props> = ({ userId }) => {
         userId={userId}
         isOwner={false}
         isLogin={loginUser != null}
-        // 閲覧のみなので不要なpropは省略
         errorMessages={[]} 
         AddPendingChanges={() => {}}
         onDelete={() => {}}
         onDescriptionToggle={() => {}}
-        onFavoriteToggle={() => {}}
+        onFavoriteToggle={() => handleFavorite(collection.id, collection.favorite)}
         isDescriptionVisible={false}
         isSaved={true}
       />
     ),
-    [userId, loginUser]
+    [userId, loginUser, handleFavorite]
   );
 
   if (loading) return <LoadingIndicator />;
 
   return (
+    <div>
+      <div className="w-full max-w-4xl flex justify-end mb-5">
+        <AllDescriptionToggleButton
+          isVisible={uiState.allVisible}
+          onToggle={() => setAllVisibility()}
+        />
+      </div>
     <ItemList<Collection, never>
-      items={collections}
-      loading={false}
+      items={apiState.collections}
+      loading={apiState.loading || loading}
       errorMessage={errorMessage}
       pendingCreations={[]}
       selectedIds={[]}
@@ -72,6 +95,7 @@ const FavoriteCollectionList: React.FC<Props> = ({ userId }) => {
       onBatchUpsert={() => {}}
       onBatchDelete={() => {}}
     />
+  </div>
   );
 };
 

@@ -41,7 +41,7 @@ const TopPage: React.FC = () => {
         </p>
 
     
-        <div className="mt-20 w-[20%]">
+        <div className="mt-20 min-w-[20%]">
           <LoadingButton
           onClick={handleStart}
           loading={!ready}

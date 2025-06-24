@@ -8,6 +8,8 @@ import IdLabel from "../../../common/Text/IdText";
 import DescriptionText from "../../../common/Text/DescriptionText";
 import LinkedNameText from "../../../common/Text/LinkedNameText";
 import CollectionIcon from "../Icon/CollectionIcon";
+import Paths from "../../../../../routes/Paths";
+import { generatePath } from "react-router-dom";
 
 interface Props {
   collection: Collection;
@@ -33,7 +35,7 @@ const BaseCard: React.FC<Props> = ({
   onDelete
 }) => {
 
-  const url = `/user/${userId}/collection/${collection.id}/questions`;
+    const url = generatePath(Paths.QUESTION_PAGE, {userId, collectionId: collection.id});
 
   return (
     <div>
@@ -55,14 +57,12 @@ const BaseCard: React.FC<Props> = ({
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-4 ml-auto">
-            <div className="flex flex-col items-end gap-1 text-sm sm:text-base whitespace-nowrap">
               {isOwner && (
                 <EditDeleteButtons
                   onEdit={onEdit}
                   onDelete={onDelete}
                 />
               )}
-            </div>
           </div>
         </div>
       </div>

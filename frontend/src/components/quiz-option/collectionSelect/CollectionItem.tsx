@@ -9,13 +9,15 @@ import { SizeKey } from "../../../style/size";
 import BaseLabel from "../../baseComponents/BaseLabel";
 import BaseButton from "../../common/button/BaseButton";
 import { RoundKey } from "../../../style/rounded";
-import { CoreColorKey } from "../../../style/colorStyle";
+import { ColorKey } from "../../../style/colorStyle";
+import BaseCheckboxInput from "../../baseComponents/BaseCheckboxInput";
 
 type Props = {
   collection: Collection;
   onSelectChange: () => void;
   selected: boolean;
   navigateCollectionPage: () => void;
+  colorKey: ColorKey;
 };
 
 const CollectionItem: React.FC<Props> = ({
@@ -23,6 +25,7 @@ const CollectionItem: React.FC<Props> = ({
   onSelectChange,
   selected,
   navigateCollectionPage,
+  colorKey,
 }) => {
   return (
     <BaseCard
@@ -33,19 +36,16 @@ const CollectionItem: React.FC<Props> = ({
       }}
     >
         <label className="flex">
-            <input
-            type="checkbox"
+          <BaseCheckboxInput
             checked={selected}
-            onClick={(onSelectChange)}
-
-            className="mr-2"
-            />
+            onChange={onSelectChange}
+          />
             <BaseLabel
                 icon={<FaBook/>}
                 label={collection.name}
                 style={{
                   color: {
-                    colorKey: CoreColorKey.Primary,
+                    colorKey: colorKey,
                   }
                 }}
             />
@@ -57,7 +57,7 @@ const CollectionItem: React.FC<Props> = ({
                 style={{
                   roundKey: RoundKey.Full,
                   color: {
-                    colorKey: CoreColorKey.Primary
+                    colorKey: colorKey
                   },
                   size: {
                     sizeKey: SizeKey.MD

@@ -163,7 +163,7 @@ export const cardColorMap: ColorMap = {
     border: { default: 'border-sky-400' },
   },
   [CoreColorKey.Secondary]: {
-    bg: { default: 'bg-gray-50' },
+    bg: { default: 'bg-gray-100' },
     border: { default: 'border-gray-600' },
   },
   [CoreColorKey.Success]: {

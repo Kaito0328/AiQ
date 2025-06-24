@@ -6,22 +6,24 @@ import { FontWeightKey } from "../../../style/fontWeight";
 
 interface Props {
     fixSelect: () => void;
+    disabled: boolean;
 }
-const FixSelectButton: React.FC<Props> = ({ fixSelect }) => {
+const FixSelectButton: React.FC<Props> = ({ fixSelect, disabled }) => {
     return (
         <BaseButton
             onClick={fixSelect}
             label={"決定"}
             style={{
                 color: {
-                    colorKey: CoreColorKey.Primary
+                    colorKey: disabled ?  CoreColorKey.Secondary : CoreColorKey.Primary
                 },
                 size: {
                     sizeKey: SizeKey.LG,
-                    full_width: false
+                    full_width: true
                 },
                 fontWeightKey: FontWeightKey.Semibold
             }}
+            disabled={disabled}
             bg_color={true}
         />
     );

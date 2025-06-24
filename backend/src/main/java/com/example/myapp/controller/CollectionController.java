@@ -95,8 +95,8 @@ public class CollectionController {
                 User user = userService.getUserById(userId);
 
                 List<Collection> collections = favoriteCollectionService.getFavoriteCollections(user, loginUser);
-
-                return ListTransformUtil.toCollectionOutputs(collections);
+                                List<CollectionOutput> collectionOutputs = convertCollectionOutputs(loginUser, collections);
+                return collectionOutputs;
         }
 
         @PostMapping("/collection/collection-set/{collectionSetId}")

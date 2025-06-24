@@ -27,26 +27,29 @@ const BaseCard: React.FC<Props> = ({
   return (
 <div className="p-4 rounded-xl shadow-md hover:shadow-lg transition w-full max-w-3xl mx-auto bg-white space-y-2">
   {/* ヘッダー：問題文とトグル */}
-  <div className="flex flex-wrap items-start justify-between gap-2">
-    {/* 左：問題文（flex-growで可変） */}
-    <div className="flex-1 break-words font-semibold">
+  <div className="flex flex-wrap items-center justify-between min-w-0 w-full">
+    {/* 左側：問題文 */}
+    <div className="flex break-words">
       <QuestionTextLabel questionText={question.questionText} />
     </div>
-
-    {/* 右：ボタン群（固定幅） */}
-    <div className="flex flex-col items-end gap-1 shrink-0">
+    <div className="mr-2 ml-auto">
       <AnswerToggleButton
         isVisible={isAnswerVisible}
         onToggle={onDescriptionToggle}
       />
-      {isOwner && (
-        <EditDeleteButtons
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      )}
+    </div>
+
+    {/* 右側：ボタン群 */}
+    <div className="flex flex-wrap items-center gap-2 sm:gap-4 ml-auto">
+        {isOwner && (
+          <EditDeleteButtons
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
+        )}
     </div>
   </div>
+
 
   {/* 解答と説明文（トグル表示） */}
   {isAnswerVisible && (

@@ -1,7 +1,9 @@
 import { ApiError } from '../types/error';
 
+const LOCAL_API_URL = 'http://localhost:8080';
+
 // API_BASE_URL を環境変数から取得するように変更
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'; // ローカルデフォルト値を設定
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || LOCAL_API_URL; // ローカルデフォルト値を設定
 // https://mechanical-annabel-t-tech-f1b7cf63.koyeb.app
 const API_ENDPOINT = '/api';
 
@@ -13,6 +15,7 @@ export const fetchFromAPI = async (
   authenticated: boolean = false,
   useDefaultContentType: boolean = true,
 ): Promise<Response> => {
+  if (API_BASE_URL === LOCAL_API_URL) await sleep(1000);
   const token = authenticated ? localStorage.getItem('token') : null;
   const headers = new Headers(options.headers || {});
   console.log('Fetching from API:', `${API_BASE_URL}${API_ENDPOINT}${endpoint}`);
