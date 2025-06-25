@@ -36,8 +36,10 @@ public class GeminiService {
                 + ")\\n" + "以下の JSON 形式で100問生成してください:\\n"
                 + "{ \"questions\": [ { \"question\": \"問題文\", \"answer\": \"解答\", \"description\": \"補足知識(50文字程度)\"}, ... ] }";
 
+        System.out.println(prompt);
+
         String apiUrl = UriComponentsBuilder.fromHttpUrl(
-                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent")
+                "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent")
                 .queryParam("key", apiKey).toUriString();
 
         HttpHeaders headers = new HttpHeaders();
@@ -51,15 +53,13 @@ public class GeminiService {
         try {
             ResponseEntity<String> response =
                     restTemplate.exchange(apiUrl, HttpMethod.POST, entity, String.class);
-
-
+            System.out.println(response.getBody());
             return CompletableFuture.completedFuture(parseAiResponse(response.getBody()));
         } catch (Exception e) {
             e.printStackTrace();
             return CompletableFuture.completedFuture(Collections.emptyList());
         }
     }
-
 
 
     private List<CreateRequest<QuestionInput>> parseAiResponse(String responseBody) {
@@ -69,9 +69,16 @@ public class GeminiService {
 
             String rawJson = jsonNode.get("candidates").get(0).get("content").get("parts").get(0)
                     .get("text").asText();
-
-            // もし JSON がコードブロックとして囲まれている場合、それを除去
             String cleanedJson = rawJson.replaceAll("```json", "").replaceAll("```", "").trim();
+            if (cleanedJson.matches("(?s).*},\\s*\\]\\s*}\\s*$")) {
+            } else if (cleanedJson.matches("(?s).*},\\s*,\\s*\\]\\s*}\\s*$")) {
+                cleanedJson = cleanedJson.replaceAll(",\\s*\\]\\s*}\\s*$", "]}");
+            } else if (cleanedJson.matches("(?s).*}\\s*,\\s*\\n\\s*\\]\\s*}\\s*$")) {
+                cleanedJson = cleanedJson.replaceAll(",\\s*\\]\\s*}\\s*$", "]}");
+            }
+            cleanedJson = cleanedJson.replaceAll(",\\s*\\]\\s*}\\s*$", "]}");
+
+
             JsonNode parsedJson = objectMapper.readTree(cleanedJson);
 
             List<QuestionInput> questionInputs = new ArrayList<>();
