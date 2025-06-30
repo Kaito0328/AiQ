@@ -985,3 +985,6 @@ JSON形式:
   "responseId": "EqBiaLDyJaPnld8P7LDWwQM"
 }
 
+2025-06-30T14:34:42.023Z  INFO 20748 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-06-30T14:34:42.027Z  INFO 20748 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2025-06-30T14:34:42.029Z  INFO 20748 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
