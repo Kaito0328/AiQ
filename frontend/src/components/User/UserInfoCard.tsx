@@ -34,7 +34,7 @@ const UserInfoCard: React.FC<{
             onClick={handleUpdateUser}
             loading={loading}
             style={{
-              colorKey: CoreColorKey.Primary
+              colorKey: CoreColorKey.Success
             }}
             bg_color={true}
           />

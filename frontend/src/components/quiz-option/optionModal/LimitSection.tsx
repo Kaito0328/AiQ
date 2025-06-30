@@ -2,6 +2,7 @@ import React from "react";
 import BaseLabel from "../../baseComponents/BaseLabel";
 import { FontWeightKey } from "../../../style/fontWeight";
 import InLineTextInput from "../../baseComponents/InLineTextInput";
+import BaseRangeInput from "../../baseComponents/BaseRangeInput";
 
 type Props = {
   limit: number;
@@ -28,14 +29,13 @@ const LimitSection: React.FC<Props> = ({ limit, setLimit }) => {
             </div>
         </div>
 
-      <input
-        type="range"
-        min="1"
-        max="100"
+      <BaseRangeInput
+        min={0}
+        max={100}
         value={limit}
-        onChange={(e) => setLimit(Number(e.target.value))}
-        className="w-full accent-blue-600"
+        onChange={(value) => setLimit(value)}
       />
+
     </div>
   );
 };

@@ -1,6 +1,6 @@
 package com.example.myapp.dto;
 
 public record AiQuestionRequest(String theme, String question_format, String answer_format,
-        String question_example, String answer_example, String collectionSetName,
+        String question_example, String answer_example, String collectionSetName, Integer question_number, 
         boolean isPublic) {
 }

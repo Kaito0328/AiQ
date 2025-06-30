@@ -1,5 +1,10 @@
 import React, { useState } from "react";
 import BaseButton from "../common/button/BaseButton";
+import LabelWithInput from "../common/input/labelWithInput";
+import { CoreColorKey } from "../../style/colorStyle";
+import { SizeKey, SizeProperty } from "../../style/size";
+import BaseLabel from "../baseComponents/BaseLabel";
+import { FontWeightKey } from "../../style/fontWeight";
 
 const PasswordChangeForm: React.FC<{
   onChangePassword: (
@@ -21,42 +26,86 @@ const PasswordChangeForm: React.FC<{
   };
 
   return (
-    <div className="mt-8 w-full">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">パスワード変更</h2>
-      
-      {editMode ? (
-        <>
-          <input
-            type="password"
-            placeholder="現在のパスワード"
-            className="border rounded-lg p-2 w-full mb-2"
-            value={oldPassword}
-            onChange={(e) => setOldPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="新しいパスワード"
-            className="border rounded-lg p-2 w-full mb-4"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded-lg w-full mb-2"
-            onClick={handleSubmit}
-          >
-            パスワード変更
-          </button>
-          <BaseButton
-            onClick={() => setEditMode(false)}
-            label="キャンセル"
+    <div className="w-full">
 
+      {editMode ? (
+        <div>
+            <BaseLabel
+              label="パスワード変更"
+              style={{
+                size: {
+                  sizeKey: SizeKey.LG,
+                  properties: [SizeProperty.Text]
+                },
+                fontWeightKey: FontWeightKey.Bold
+              }}
+            />
+          <LabelWithInput
+              placeholder={"現在のパスワード"}
+              value={oldPassword}
+              onChange={(value) => setOldPassword(value)}
+              label={"現在のパスワード"}
           />
-        </>
+
+          <LabelWithInput
+              placeholder={"新しいパスワード"}
+              value={newPassword}
+              onChange={setNewPassword}
+              label={"新しいパスワード"}
+          />
+
+          <div className="flex items-center justify-center">
+            <div className="min-w-[30%]">
+              <BaseButton
+                onClick={handleSubmit}
+                label={"パスワードを変更"}
+                style={{
+                  color: {
+                    colorKey: CoreColorKey.Success
+                  },
+                  size: {
+                    full_width: true
+                  }
+                }}
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-center">
+            <div className="min-w-[30%]">
+              <BaseButton
+                onClick={() => setEditMode(false)}
+                label="キャンセル"
+                style={{
+                  color: {
+                    colorKey: CoreColorKey.Secondary,
+                  },
+                  size: {
+                    sizeKey: SizeKey.SM,
+                    full_width: true
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+
+          
+          
+        </div>
       ) : (
-        <BaseButton
-            onClick={() => setEditMode(true)}
-            label="パスワードを変更する"
-        />
+          <div className="flex items-center justify-center">
+            <div className="min-w-[30%]">
+              <BaseButton
+                  onClick={() => setEditMode(true)}
+                  label="パスワードを変更する"
+                  style={{
+                    size: {
+                      full_width: true
+                    }
+                  }}
+              />
+            </div>
+          </div>
       )}
     </div>
   );

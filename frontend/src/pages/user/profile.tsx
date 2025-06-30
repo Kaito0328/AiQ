@@ -87,12 +87,17 @@ const UserProfile: React.FC = () => {
         {feedback && <p className="text-center text-green-600 mb-4">{feedback}</p>}
 
       <UserInfoCard onUpdateUser={handleUpdateUser} loginUser={loginUser} />
+        <div className="w-full mt-10">
+                  <PasswordChangeForm onChangePassword={handleChangePassword} />
+        </div>
 
-        <PasswordChangeForm onChangePassword={handleChangePassword} />
+      <div className="mt-10 flex justify-center">
+          <div className="min-w-[30%]">
+            <LogoutButton handleLogout={handleLogout} />
+            <DeleteAccountButton handleDeleteAccount={handleDeleteAccount} />
+          </div>
+      </div>
 
-          <LogoutButton handleLogout={handleLogout} />
-
-          <DeleteAccountButton handleDeleteAccount={handleDeleteAccount} />
       </div>
     </Page>
   );

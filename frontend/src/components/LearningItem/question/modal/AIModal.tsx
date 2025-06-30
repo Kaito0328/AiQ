@@ -11,6 +11,9 @@ import BaseLabel from "../../../baseComponents/BaseLabel";
 import { CoreColorKey } from "../../../../style/colorStyle";
 import { ErrorCode } from "../../../../types/error";
 import { SizeKey } from "../../../../style/size";
+import BaseRangeInput from "../../../baseComponents/BaseRangeInput";
+import InLineTextInput from "../../../baseComponents/InLineTextInput";
+import { FontWeightKey } from "../../../../style/fontWeight";
 
 const AIModal = ({
   collectionId,
@@ -27,6 +30,7 @@ const AIModal = ({
     answer_format: "",
     question_example: "",
     answer_example: "",
+    question_number: 50,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ErrorCode[]>([]);
@@ -75,6 +79,31 @@ const AIModal = ({
             }}
           />
         ))}
+        <div>
+          <BaseLabel
+              label="生成する問題数: "
+              style={{
+                  fontWeightKey: FontWeightKey.Semibold,
+              }}
+          />
+          <div>
+            <InLineTextInput
+                defaultValue={requestData.question_number.toString()}
+                value={requestData.question_number.toString()}
+                onChange={(value: string) =>  setRequestData((prev) => ({ ...prev, ["question_number"]: Number(value) }))}
+                
+            />
+          </div>
+
+          <BaseRangeInput
+            min={0}
+            max={100}
+            value={requestData.question_number}
+            onChange={(value) =>  setRequestData((prev) => ({ ...prev, ["question_number"]: value }))}
+          />
+
+        </div>
+
       </div>
 
       <ErrorMessageList errorMessages={error}/>

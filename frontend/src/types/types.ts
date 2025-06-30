@@ -9,7 +9,8 @@ export interface AiGenerationRequest {
   question_format: string; // 質問のフォーマット
   answer_format: string; // 答えのフォーマット
   question_example: string; // 質問の例
-  answer_example: string; // 答えの例      // 公開設定
+  answer_example: string;
+  question_number: number;
 }
 
 export interface AuthRequest {
