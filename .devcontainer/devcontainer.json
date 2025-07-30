@@ -1,0 +1,58 @@
+{
+  "name": "AiQ-Container",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/workspace",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "java.compile.nullAnalysis.mode": "automatic",
+        "java.format.settings.profile": "GoogleStyle",
+        "java.format.settings.url": "https://raw.githubusercontent.com/google/styleguide/gh-pages/eclipse-java-google-style.xml",
+        "java.import.gradle.wrapper.enabled": true,
+        "[java]": {
+          "editor.defaultFormatter": "redhat.java",
+          "editor.formatOnPaste": true,
+          "editor.formatOnSave": true
+        },
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode"
+        },
+        "workbench.colorCustomizations": {
+          "editorIndentGuide.background1": "#b22222",
+          "editorIndentGuide.background2": "#ff4500",
+          "editorIndentGuide.background3": "#ffd700",
+          "editorIndentGuide.background4": "#228b22",
+          "editorIndentGuide.background5": "#000080",
+          "editorIndentGuide.background6": "#8b008b",
+          "editorIndentGuide.activeBackground1": "#fff",
+          "editorIndentGuide.activeBackground2": "#fff",
+          "editorIndentGuide.activeBackground3": "#fff",
+          "editorIndentGuide.activeBackground4": "#fff",
+          "editorIndentGuide.activeBackground5": "#fff",
+          "editorIndentGuide.activeBackground6": "#fff"
+        }
+      },
+      "extensions": [
+        "vscjava.vscode-java-pack",
+        "VisualStudioExptTeam.vscodeintellicode",
+        "vscjava.vscode-gradle",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "streetsidesoftware.code-spell-checker",
+        "formulahendry.auto-rename-tag",
+        "ionutvmi.path-autocomplete",
+        "GitHub.copilot",
+        "eamodio.gitlens"
+      ]
+    }
+  },
+  "remoteUser": "root"
+}

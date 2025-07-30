@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+  main:
+    allow-bean-definition-overriding: true
+  flyway:
+    enabled: false
+
+jwt:
+  secret:
+    key: testSecretKey12345678901234567890123456789012
+
+gemini:
+  api:
+    key: test-api-key
+
+logging:
+  level:
+    com.example.myapp: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.security: DEBUG

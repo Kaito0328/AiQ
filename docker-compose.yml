@@ -1,0 +1,63 @@
+services:
+  # --- バックエンドサービス ---
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development # 開発用ステージを指定
+    container_name: backend-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/workspace # プロジェクト全体をマウント
+    working_dir: /workspace/backend # 作業ディレクトリを指定
+    env_file:
+      - ./backend/.env
+    command: ./gradlew bootRun
+    depends_on:
+      db:
+        condition: service_healthy
+        
+  # --- フロントエンドサービス ---
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-app
+    ports:
+      - "3000:3000"
+    volumes:
+      # ホストのfrontendディレクトリをコンテナの/appにマウントしてホットリロードを有効化
+      - ./frontend:/app
+      # /app/node_modulesをホスト側で上書きしないようにする設定
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env
+    # working_dirはDockerfileで設定済みのため不要
+    # command: npm run dev # commandもDockerfileのCMDで指定済みのため不要な場合が多い
+    depends_on:
+      - backend
+
+  # --- データベースサービス ---
+  db:
+    image: postgres:16
+    container_name: backend-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/src/main/resources/db/migration:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  frontend_node_modules:

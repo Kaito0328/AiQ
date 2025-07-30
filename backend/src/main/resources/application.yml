@@ -1,0 +1,48 @@
+server:
+  port: 8080
+
+spring:
+  # --- データベース接続設定 ---
+  # 環境変数から値を読み込むことを強制する (デフォルト値なし)
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    
+  # --- Flywayの接続設定 ---
+  # こちらも環境変数から読み込む
+  flyway:
+    enabled: true
+    url: ${SPRING_DATASOURCE_URL}
+    user: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+jwt:
+  secret:
+    key: ${JWT_SECRET}  # JWT_SECRETが設定されない場合のデフォルト
+
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}  # 必ず環境変数 GEMINI_API_KEY を設定する
+
+logging:
+  file:
+    name: logs/app.log
+  level:
+    org.springframework.security: DEBUG
+    com.example.myapp: DEBUG
