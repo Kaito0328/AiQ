@@ -1,0 +1,43 @@
+services:
+  # --- 統合開発用コンテナ ---
+  workspace:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: aiq-workspace
+    volumes:
+      - .:/workspace # プロジェクト全体をマウント
+    working_dir: /workspace
+    ports:
+      - "8080:8080" # バックエンド用
+      - "3000:3000" # フロントエンド用
+    env_file:
+      - ./backend/.env
+      - ./frontend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    # コンテナを起動し続けるためのコマンド
+    command: sleep infinity
+
+  # --- データベースコンテナ（そのまま流用） ---
+  db:
+    image: postgres:16
+    container_name: backend-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

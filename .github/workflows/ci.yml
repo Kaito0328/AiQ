@@ -1,0 +1,57 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # Job全体で利用する環境変数をここで一括定義します
+    env:
+      DATABASE_URL: postgresql://postgres:password@localhost:5432/mydatabase
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: mydatabase
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      # Rust専用のキャッシュアクションを利用して記述をシンプルにします
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ./backend
+
+      # コンパイル済みのsqlx-cliをダウンロードしてインストール時間を短縮します
+      - name: Install sqlx-cli
+        uses: taiki-e/install-action@v2
+        with:
+          tool: sqlx-cli
+
+      # 環境変数は上部で定義されているため、ここではコマンドを実行するだけになります
+      - name: Run migrations
+        working-directory: ./backend
+        run: cargo sqlx migrate run
+
+      - name: Run tests
+        working-directory: ./backend
+        run: cargo test

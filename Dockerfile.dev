@@ -1,0 +1,14 @@
+# 最新のRust環境をベースにする
+FROM rust:1-bookworm
+
+WORKDIR /workspace
+
+# 必要なパッケージをインストール
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Rustの開発用ツールをインストール
+RUN cargo install cargo-watch
+RUN cargo install sqlx-cli --no-default-features --features native-tls,postgres

@@ -1,0 +1,112 @@
+# .gitignore
+
+# 共通で無視するファイル (OSやIDEが生成するもの)
+#----------------------------------------------------------------
+
+backend-old
+frontend-old
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# ログファイル
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 環境変数ファイル (これは絶対にGitに含めないでください！)
+.env
+.env.local
+.env.*.local
+
+
+# フロントエンド関連 (/frontend)
+#----------------------------------------------------------------
+/frontend/node_modules/
+/frontend/build/
+/frontend/dist/
+/frontend/coverage/
+
+
+# バックエンド関連 (/backend)
+#----------------------------------------------------------------
+
+# Gradle関連
+/backend/.gradle/
+/backend/build/
+/backend/gradle-app.setting
+/backend/!gradle-wrapper.jar
+/backend/.gradletasknamecache
+
+# Java / Spring Boot関連
+/backend/target/
+/backend/*.jar
+/backend/*.war
+/backend/*.ear
+/backend/hs_err_pid*
+/backend/replay_pid*
+
+# IDE設定ファイル
+# Eclipse
+/backend/.project
+/backend/.classpath
+/backend/.settings/
+/backend/.metadata/
+/backend/bin/
+/backend/.buildpath
+
+# IntelliJ IDEA
+/backend/*.iml
+/backend/*.ipr
+/backend/*.iws
+/backend/out/
+/backend/.idea/
+
+# VS Code
+/backend/.vscode/
+
+# NetBeans
+/backend/nbproject/private/
+/backend/nbbuild/
+/backend/dist/
+/backend/nbdist/
+/backend/.nb-gradle/
+
+# Spring Boot関連
+/backend/.spring-boot-devtools.properties
+/backend/buildOutputCleanup
+/backend/cache.properties
+/backend/org.eclipse.buildship.core.prefs
+
+# ログファイル
+/backend/logs/
+/backend/*.log
+/backend/spring.log
+
+# データベース関連（H2など）
+/backend/*.db
+/backend/*.mv.db
+/backend/*.trace.db
+
+# 一時ファイル
+/backend/tmp/
+/backend/temp/
+
+# アプリケーション設定（機密情報を含む可能性）
+/backend/src/main/resources/application-prod.yml
+/backend/src/main/resources/application-dev.yml
+/backend/src/main/resources/application-local.yml
+
+# テスト結果
+/backend/test-results/
+/backend/build/reports/
+/backend/build/test-results/
