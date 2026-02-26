@@ -1,0 +1,1 @@
+UPDATE user_stats SET follower_count = follower_count + 1 WHERE user_id = $1

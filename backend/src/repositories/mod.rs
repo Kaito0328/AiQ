@@ -1,1 +1,8 @@
+pub mod collection;
+pub mod collection_set;
+pub mod follow;
+pub mod question;
 pub mod user;
+pub mod quiz;
+pub mod ranking_quiz_repository;
+pub mod favorite_collection;

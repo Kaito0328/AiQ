@@ -28,6 +28,8 @@ yarn-error.log*
 .env.local
 .env.*.local
 
+frontend-old2
+
 
 # フロントエンド関連 (/frontend)
 #----------------------------------------------------------------
