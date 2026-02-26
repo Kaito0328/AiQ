@@ -1,0 +1,80 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "    UPDATE users\nSET \n    username = COALESCE($1, username),\n    display_name = COALESCE($2, display_name),\n    bio = COALESCE($3, bio),\n    icon_url = COALESCE($4, icon_url),\n    updated_at = NOW()\nWHERE id = $5\nRETURNING\n    id,\n    username,\n    email,\n    password,\n    display_name,\n    bio,\n    icon_url,\n    is_official,\n    created_at,\n    updated_at;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "email",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "password",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "display_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 5,
+        "name": "bio",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "icon_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "is_official",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 8,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 9,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Varchar",
+        "Text",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4140675640a2b0ab60272b7b5f117baba53950dcb3d0c5c0789dca8bd85b20ac"
+}

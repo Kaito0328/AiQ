@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO collection_stats (collection_id)\nVALUES ($1);",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "12bf8473ae37da28cf6334cd6a88c8b1893ebe04ed4b5c03636e93cf37e079b4"
+}

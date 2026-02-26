@@ -1,0 +1,95 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n    u.id,\n    u.username,\n    u.display_name,\n    u.bio,\n    u.icon_url,\n    COALESCE(s.follower_count, 0) AS \"follower_count!\",\n    COALESCE(s.following_count, 0) AS \"following_count!\",\n    (SELECT COUNT(*) FROM collections WHERE user_id = u.id) AS \"collection_count!\",\n    (SELECT COUNT(*) FROM collection_sets WHERE user_id = u.id) AS \"set_count!\",\n    COALESCE(EXISTS (\n        SELECT 1 FROM user_follows \n        WHERE follower_id = $1::uuid AND followee_id = u.id\n    ), false) AS \"is_following!\",\n    COALESCE(EXISTS (\n        SELECT 1 FROM user_follows \n        WHERE follower_id = u.id AND followee_id = $1::uuid\n    ), false) AS \"is_followed!\",\n    COALESCE(u.id = $1::uuid, false) AS \"is_self!\",\n    u.is_official AS \"is_official!\"\nFROM users u\nLEFT JOIN user_stats s ON u.id = s.user_id\nWHERE u.id = $2;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "username",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "display_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "bio",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "icon_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "follower_count!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 6,
+        "name": "following_count!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 7,
+        "name": "collection_count!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 8,
+        "name": "set_count!",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 9,
+        "name": "is_following!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 10,
+        "name": "is_followed!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "is_self!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 12,
+        "name": "is_official!",
+        "type_info": "Bool"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      false
+    ]
+  },
+  "hash": "1ef120bebeb56d542d234a1d4e9a145703a1f1a7b05a1a047962a06388660ea5"
+}

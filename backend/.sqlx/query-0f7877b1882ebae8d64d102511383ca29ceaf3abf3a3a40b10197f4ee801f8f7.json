@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT * FROM casual_quizzes\nWHERE id = $1;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "filter_types",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 3,
+        "name": "sort_keys",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "collection_names",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "answered_question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 7,
+        "name": "total_questions",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "correct_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "elapsed_time_millis",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "is_active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "0f7877b1882ebae8d64d102511383ca29ceaf3abf3a3a40b10197f4ee801f8f7"
+}

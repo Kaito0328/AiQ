@@ -1,0 +1,98 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE casual_quizzes\nSET\n    answered_question_ids = $2,\n    correct_count = $3,\n    elapsed_time_millis = $4,\n    is_active = $5,\n    updated_at = NOW()\nWHERE id = $1\nRETURNING *;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "filter_types",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 3,
+        "name": "sort_keys",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "collection_names",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "answered_question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 7,
+        "name": "total_questions",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "correct_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "elapsed_time_millis",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "is_active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "UuidArray",
+        "Int4",
+        "Int8",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "4b896e4e7dcdb77c99873d257d02c0f1a873e0119a311fd25eab1989b7c2ee41"
+}

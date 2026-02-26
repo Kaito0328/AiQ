@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n                INSERT INTO ranking_quiz_answers (ranking_quiz_id, question_id, user_answer, is_correct, time_taken_millis)\n                VALUES ($1, $2, $3, $4, $5)\n                ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Bool",
+        "Int8"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "6c071d322e7c9b44e86b6b8da470f4bcb84448d644175352406941ba86e5b861"
+}

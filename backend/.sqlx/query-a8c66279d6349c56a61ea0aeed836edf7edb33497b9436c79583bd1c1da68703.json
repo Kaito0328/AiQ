@@ -1,0 +1,23 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH RankedScores AS (\n                SELECT \n                    user_id,\n                    MAX(score) as max_score,\n                    MAX(correct_count) as max_correct,\n                    MIN(total_time_millis) as min_time\n                FROM ranking_records\n                WHERE collection_id = $2\n                GROUP BY user_id\n            ),\n            Ranks AS (\n                SELECT \n                    user_id,\n                    RANK() OVER (ORDER BY max_score DESC, max_correct DESC, min_time ASC) as rank\n                FROM RankedScores\n            )\n            SELECT rank FROM Ranks WHERE user_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "rank",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "a8c66279d6349c56a61ea0aeed836edf7edb33497b9436c79583bd1c1da68703"
+}
