@@ -26,9 +26,9 @@ WORKDIR /app
 # 必要な共有ライブラリをインストール
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 # ビルドしたバイナリだけをコピー
-COPY --from=builder /app/target/release/backend-app /app/backend-app
+COPY --from=builder /app/target/release/backend /app/backend
 EXPOSE 8080
-CMD ["./backend-app"]
+CMD ["./backend"]
 
 # --- ローカル開発用ステージ ---
 FROM rust:1-bookworm AS development
