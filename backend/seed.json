@@ -1,0 +1,76 @@
+[
+    {
+        "collection": {
+            "name": "一般常識クイズ 基本編",
+            "description": "誰でも知っておきたい一般常識をまとめたクイズ問題集です。",
+            "quiz_type": "flashcard",
+            "is_open": true
+        },
+        "questions": [
+            {
+                "content": "日本で一番高い山は？",
+                "answer": "富士山",
+                "note": "標高は3,776mです。",
+                "display_order": 0
+            },
+            {
+                "content": "太陽系で最も大きい惑星は？",
+                "answer": "木星",
+                "note": "地球の約11倍の直径があります。",
+                "display_order": 1
+            },
+            {
+                "content": "現在の日本の紙幣で最も額面が大きいのは何円札？",
+                "answer": "一万円札",
+                "note": "新紙幣の肖像画は渋沢栄一です。",
+                "display_order": 2
+            },
+            {
+                "content": "百人一首の「百人」とは、何に関係する人のこと？",
+                "answer": "歌人",
+                "note": "100人の歌人による和歌を1首ずつ選んだものです。",
+                "display_order": 3
+            },
+            {
+                "content": "円周率はおよそいくら？",
+                "answer": "3.14",
+                "note": "割り切れない無理数ですが、一般的に3.14として計算されます。",
+                "display_order": 4
+            }
+        ]
+    },
+    {
+        "collection": {
+            "name": "ITパスポート レベル確認",
+            "description": "ITパスポート試験によく出る基本用語のクイズです。",
+            "quiz_type": "flashcard",
+            "is_open": true
+        },
+        "questions": [
+            {
+                "content": "悪意のある第三者が、正規のウェブサイトを改ざんし、アクセスしたユーザーを偽のサイトに誘導する攻撃を何という？",
+                "answer": "フィッシング（またはファーミング）",
+                "note": "偽サイトで個人情報などを入力させます。",
+                "display_order": 0
+            },
+            {
+                "content": "データを暗号化してアクセス不能にし、復元と引き換えに身代金を要求するマルウェアは？",
+                "answer": "ランサムウェア",
+                "note": "Ransom(身代金)とSoftwareを組み合わせた造語です。",
+                "display_order": 1
+            },
+            {
+                "content": "「IoT」は何の略？",
+                "answer": "Internet of Things",
+                "note": "モノのインターネットと訳され、家電などがネットに繋がることを指します。",
+                "display_order": 2
+            },
+            {
+                "content": "システム開発において、開発と運用が互いに連携し、柔軟かつスピーディに開発を進める手法は？",
+                "answer": "DevOps",
+                "note": "DevelopmentとOperationsを組み合わせた言葉です。",
+                "display_order": 3
+            }
+        ]
+    }
+]

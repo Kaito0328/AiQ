@@ -1,1 +1,11 @@
+pub mod collection_handler;
+pub mod collection_set_handler;
+pub mod follow_handler;
+pub mod question_handler;
+pub mod ranking_quiz_handler;
 pub mod user_handler;
+pub mod quiz_handler;
+pub mod ai_handler;
+pub mod match_handler;
+pub mod match_ws_handler;
+pub mod favorite_collection_handler;

@@ -12,3 +12,4 @@ RUN apt-get update && apt-get install -y \
 # Rustの開発用ツールをインストール
 RUN cargo install cargo-watch
 RUN cargo install sqlx-cli --no-default-features --features native-tls,postgres
+RUN rustup toolchain install stable && rustup default stable && rustup component add rustfmt clippy
