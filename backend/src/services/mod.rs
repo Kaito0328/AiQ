@@ -1,1 +1,12 @@
+pub mod ai_service;
+pub mod collection_service;
+pub mod collection_set_service;
+pub mod follow_service;
+pub mod match_service;
+pub mod match_ws_service;
+pub mod question_service;
+pub mod quiz_service;
+pub mod ranking_quiz_service;
 pub mod user_service;
+pub mod seed_service;
+pub mod favorite_collection_service;

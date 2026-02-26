@@ -1,65 +1,72 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { View } from '@/src/design/primitives/View';
+import { Stack } from '@/src/design/primitives/Stack';
+import { Text } from '@/src/design/baseComponents/Text';
+import { Button } from '@/src/design/baseComponents/Button';
+import { useAuth } from '@/src/shared/auth/useAuth';
+import Image from 'next/image';
+
+/**
+ * ルート画面 (準備画面)
+ * 旧環境 (frontend-old) の構成をデザインシステムで再現。
+ * 無料デプロイ環境のコールドスタート対策として機能します。
+ */
+export default function LandingPage() {
+  const router = useRouter();
+  const { loading: authLoading } = useAuth();
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!authLoading) {
+      setReady(true);
+    }
+  }, [authLoading]);
+
+  const handleStart = () => {
+    if (ready) {
+      router.push('/home');
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <View bg="base" className="min-h-screen flex items-center justify-center p-6">
+      <Stack gap="xl" align="center" className="max-w-sm w-full">
+        {/* ロゴとアプリ名 */}
+        <Stack gap="md" align="center">
+          <View
+            className="relative w-24 h-24 overflow-hidden rounded-brand-lg"
+            bg="muted"
           >
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+              src="/logo_black.png"
+              alt="AiQ Logo"
+              fill
+              className="object-contain p-2"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </View>
+          <Text variant="h1" weight="bold" color="primary" className="tracking-tight">
+            AiQ
+          </Text>
+          <Text variant="body" color="secondary" className="text-center">
+            あなた専用のクイズ学習アプリ。
+          </Text>
+        </Stack>
+
+        <View className="w-full mt-8">
+          <Button
+            size="lg"
+            fullWidth
+            loading={!ready}
+            onClick={handleStart}
+            className="py-6 text-lg"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            はじめる
+          </Button>
+        </View>
+      </Stack>
+    </View>
   );
 }
