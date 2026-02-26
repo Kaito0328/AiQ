@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "-- IDを指定してパスワード(ハッシュ値)を更新する\nUPDATE users\nSET password = $1\nWHERE id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "43fd3962f8082349cc7b43f29d0af3a90f6824ec193b9d152ff3d6b64d1b16c3"
+}

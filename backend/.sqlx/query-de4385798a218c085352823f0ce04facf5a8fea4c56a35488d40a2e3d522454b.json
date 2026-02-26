@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE user_stats\nSET following_count = GREATEST(0, following_count - 1)\nWHERE user_id = $1",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "de4385798a218c085352823f0ce04facf5a8fea4c56a35488d40a2e3d522454b"
+}

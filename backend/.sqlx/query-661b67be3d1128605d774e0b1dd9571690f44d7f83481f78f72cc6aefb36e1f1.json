@@ -1,0 +1,61 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE questions\nSET question_text = $1, correct_answer = $2, description_text = $3, updated_at = NOW()\nWHERE id = $4\nRETURNING id, collection_id, question_text, correct_answer, description_text, created_at, updated_at;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "collection_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "correct_answer",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text",
+        "Text",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "661b67be3d1128605d774e0b1dd9571690f44d7f83481f78f72cc6aefb36e1f1"
+}

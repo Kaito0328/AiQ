@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n    c.id, \n    c.user_id, \n    c.name, \n    c.description_text, \n    c.is_open, \n    c.created_at, \n    c.updated_at,\n    u.username as author_name,\n    u.icon_url as author_icon_url,\n    u.is_official as \"is_official!\",\n    COALESCE(s.favorite_count, 0)::bigint as favorite_count,\n    COALESCE(s.question_count, 0)::bigint as question_count,\n    TRUE as \"is_favorited!\",\n    (\n        SELECT r.rank FROM (\n            SELECT user_id, RANK() OVER (ORDER BY MAX(score) DESC) as rank\n            FROM ranking_records\n            WHERE collection_id = c.id\n            GROUP BY user_id\n        ) r WHERE r.user_id = $1::uuid\n    ) as user_rank\nFROM favorite_collections fc\nJOIN collections c ON fc.collection_id = c.id\nJOIN users u ON c.user_id = u.id\nLEFT JOIN collection_stats s ON c.id = s.collection_id\nWHERE fc.user_id = $1\nORDER BY fc.created_at DESC;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "is_open",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "author_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "author_icon_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "is_official!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 10,
+        "name": "favorite_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 11,
+        "name": "question_count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 12,
+        "name": "is_favorited!",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 13,
+        "name": "user_rank",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      null,
+      null,
+      null,
+      null
+    ]
+  },
+  "hash": "5c3905b0e8325252b6f146869a9a07522c4cfba0ad489a4369b2e5d03e51bab8"
+}

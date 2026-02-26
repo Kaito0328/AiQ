@@ -1,0 +1,103 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO casual_quizzes (\n    user_id, filter_types, sort_keys, collection_names,\n    question_ids, answered_question_ids, total_questions, correct_count, elapsed_time_millis, is_active\n) VALUES (\n    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10\n) RETURNING *;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "filter_types",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 3,
+        "name": "sort_keys",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "collection_names",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "answered_question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 7,
+        "name": "total_questions",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "correct_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "elapsed_time_millis",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "is_active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 11,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 12,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "UuidArray",
+        "UuidArray",
+        "Int4",
+        "Int4",
+        "Int8",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "596588f087c956674283718898ff7472566941ec42b981f26ebdd0f3af665d42"
+}

@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "WITH ranked_scores AS (\n    SELECT \n        user_id,\n        MAX(score) as max_score\n    FROM ranking_records\n    WHERE collection_id = $1\n    GROUP BY user_id\n)\nSELECT \n    rs.user_id,\n    u.username as \"username!\",\n    u.icon_url,\n    rs.max_score as \"score!\",\n    RANK() OVER (ORDER BY rs.max_score DESC) as \"rank!\"\nFROM ranked_scores rs\nJOIN users u ON rs.user_id = u.id\nORDER BY rs.max_score DESC\nLIMIT 10;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "username!",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "icon_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "score!",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "rank!",
+        "type_info": "Int8"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "6892ad7f95227ee2d9d14cb4cd3057336b215ed0046d7b3cfe9567d17f354876"
+}

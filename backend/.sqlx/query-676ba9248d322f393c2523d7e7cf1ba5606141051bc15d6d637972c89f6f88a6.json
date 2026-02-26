@@ -1,0 +1,54 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_question_stats (user_id, question_id, correct_count, wrong_count, is_last_correct, updated_at)\nVALUES (\n    $1, $2,\n    CASE WHEN $3 = true THEN 1 ELSE 0 END,\n    CASE WHEN $3 = false THEN 1 ELSE 0 END,\n    $3, NOW()\n)\nON CONFLICT (user_id, question_id) DO UPDATE SET\n    correct_count = user_question_stats.correct_count + CASE WHEN $3 = true THEN 1 ELSE 0 END,\n    wrong_count = user_question_stats.wrong_count + CASE WHEN $3 = false THEN 1 ELSE 0 END,\n    is_last_correct = $3,\n    updated_at = NOW()\nRETURNING *;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "question_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "correct_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "wrong_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "is_last_correct",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Bool"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "676ba9248d322f393c2523d7e7cf1ba5606141051bc15d6d637972c89f6f88a6"
+}

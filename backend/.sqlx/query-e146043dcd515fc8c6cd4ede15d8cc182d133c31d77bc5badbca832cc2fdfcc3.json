@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_stats (user_id, follower_count, following_count)\nVALUES ($1, 0, 0)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "e146043dcd515fc8c6cd4ede15d8cc182d133c31d77bc5badbca832cc2fdfcc3"
+}
