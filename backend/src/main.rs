@@ -3,6 +3,7 @@ use backend::state::AppState;
 use backend::services::seed_service::seed_official_data;
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
+use axum::http::HeaderValue;
 use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -29,10 +30,19 @@ async fn main() {
     let state = AppState::new(pool);
     
     // Create CORS layer
-    let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
+    let frontend_url = env::var("FRONTEND_URL").unwrap_or_else(|_| "*".to_string());
+    
+    let cors = if frontend_url == "*" {
+        CorsLayer::new()
+            .allow_origin(Any)
+            .allow_methods(Any)
+            .allow_headers(Any)
+    } else {
+        CorsLayer::new()
+            .allow_origin(frontend_url.parse::<HeaderValue>().unwrap())
+            .allow_methods(Any)
+            .allow_headers(Any)
+    };
 
     let router = app(state.clone()).layer(cors);
 
