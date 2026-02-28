@@ -29,14 +29,13 @@ impl FromRequestParts<AppState> for User {
 
         // 1. UUID としてパースを試みる
         if let Ok(user_id) = uuid::Uuid::parse_str(user_id_or_username) {
-            let user_opt = sqlx::query_as!(
-                User,
+            let user_opt = sqlx::query_as::<_, User>(
                 r#"
                 SELECT id, username, email, password, display_name, bio, icon_url, is_official, created_at, updated_at
                 FROM users WHERE id = $1
                 "#,
-                user_id
             )
+            .bind(user_id)
             .fetch_optional(&state.db)
             .await
             .map_err(|e| {
@@ -50,14 +49,13 @@ impl FromRequestParts<AppState> for User {
         }
 
         // 2. UUID でない、または見つからない場合はユーザー名として検索
-        let user_opt = sqlx::query_as!(
-            User,
+        let user_opt = sqlx::query_as::<_, User>(
             r#"
             SELECT id, username, email, password, display_name, bio, icon_url, is_official, created_at, updated_at
             FROM users WHERE username = $1
             "#,
-            user_id_or_username
         )
+        .bind(user_id_or_username)
         .fetch_optional(&state.db)
         .await
         .map_err(|e| {

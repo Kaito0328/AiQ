@@ -14,8 +14,7 @@ impl EditRequestRepository {
         description_text: Option<String>,
         reason_id: i32,
     ) -> Result<EditRequest, sqlx::Error> {
-        let request = sqlx::query_as!(
-            EditRequest,
+        let request = sqlx::query_as::<_, EditRequest>(
             r#"
             WITH inserted AS (
                 INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, description_text, reason_id)
@@ -30,13 +29,13 @@ impl EditRequestRepository {
             JOIN questions q ON i.question_id = q.id
             JOIN collections c ON q.collection_id = c.id
             "#,
-            question_id,
-            requester_id,
-            question_text,
-            &correct_answers,
-            description_text,
-            reason_id
         )
+        .bind(question_id)
+        .bind(requester_id)
+        .bind(question_text)
+        .bind(&correct_answers)
+        .bind(description_text)
+        .bind(reason_id)
         .fetch_one(pool)
         .await?;
 
@@ -47,8 +46,7 @@ impl EditRequestRepository {
         pool: &PgPool,
         collection_id: Uuid,
     ) -> Result<Vec<EditRequest>, sqlx::Error> {
-        let requests = sqlx::query_as!(
-            EditRequest,
+        let requests = sqlx::query_as::<_, EditRequest>(
             r#"
             SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,
                    q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
@@ -60,8 +58,8 @@ impl EditRequestRepository {
             WHERE q.collection_id = $1
             ORDER BY er.created_at DESC
             "#,
-            collection_id
         )
+        .bind(collection_id)
         .fetch_all(pool)
         .await?;
 
@@ -72,8 +70,7 @@ impl EditRequestRepository {
         pool: &PgPool,
         owner_id: Uuid,
     ) -> Result<Vec<EditRequest>, sqlx::Error> {
-        let requests = sqlx::query_as!(
-            EditRequest,
+        let requests = sqlx::query_as::<_, EditRequest>(
             r#"
             SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,
                    q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
@@ -85,8 +82,8 @@ impl EditRequestRepository {
             WHERE c.user_id = $1 AND er.status = 'pending'
             ORDER BY er.created_at DESC
             "#,
-            owner_id
         )
+        .bind(owner_id)
         .fetch_all(pool)
         .await?;
 
@@ -94,8 +91,7 @@ impl EditRequestRepository {
     }
 
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<EditRequest, sqlx::Error> {
-        let request = sqlx::query_as!(
-            EditRequest,
+        let request = sqlx::query_as::<_, EditRequest>(
             r#"
             SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,
                    q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
@@ -106,8 +102,8 @@ impl EditRequestRepository {
             JOIN users u ON er.requester_id = u.id
             WHERE er.id = $1
             "#,
-            id
         )
+        .bind(id)
         .fetch_one(pool)
         .await?;
 
@@ -119,8 +115,7 @@ impl EditRequestRepository {
         id: Uuid,
         status: String,
     ) -> Result<EditRequest, sqlx::Error> {
-        let request = sqlx::query_as!(
-            EditRequest,
+        let request = sqlx::query_as::<_, EditRequest>(
             r#"
             WITH updated AS (
                 UPDATE edit_requests SET status = $1 WHERE id = $2 RETURNING *
@@ -133,9 +128,9 @@ impl EditRequestRepository {
             JOIN questions q ON i.question_id = q.id
             JOIN collections c ON q.collection_id = c.id
             "#,
-            status,
-            id
         )
+        .bind(status)
+        .bind(id)
         .fetch_one(pool)
         .await?;
 

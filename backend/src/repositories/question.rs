@@ -12,28 +12,22 @@ impl QuestionRepository {
         correct_answers: Vec<String>,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
-        let question = sqlx::query_file_as!(
-            Question,
-            "src/queries/questions/insert_question.sql",
-            collection_id,
-            question_text,
-            &correct_answers,
-            description_text
-        )
-        .fetch_one(pool)
-        .await?;
+        let question = sqlx::query_as::<_, Question>(include_str!("../queries/questions/insert_question.sql"))
+            .bind(collection_id)
+            .bind(question_text)
+            .bind(&correct_answers)
+            .bind(description_text)
+            .fetch_one(pool)
+            .await?;
 
         Ok(question)
     }
 
     pub async fn find_by_id(pool: &PgPool, question_id: Uuid) -> Result<Question, sqlx::Error> {
-        let question = sqlx::query_file_as!(
-            Question,
-            "src/queries/questions/find_by_id.sql",
-            question_id
-        )
-        .fetch_one(pool)
-        .await?;
+        let question = sqlx::query_as::<_, Question>(include_str!("../queries/questions/find_by_id.sql"))
+            .bind(question_id)
+            .fetch_one(pool)
+            .await?;
 
         Ok(question)
     }
@@ -42,13 +36,10 @@ impl QuestionRepository {
         pool: &PgPool,
         collection_id: Uuid,
     ) -> Result<Vec<Question>, sqlx::Error> {
-        let questions = sqlx::query_file_as!(
-            Question,
-            "src/queries/questions/find_by_collection_id.sql",
-            collection_id
-        )
-        .fetch_all(pool)
-        .await?;
+        let questions = sqlx::query_as::<_, Question>(include_str!("../queries/questions/find_by_collection_id.sql"))
+            .bind(collection_id)
+            .fetch_all(pool)
+            .await?;
 
         Ok(questions)
     }
@@ -60,22 +51,20 @@ impl QuestionRepository {
         correct_answers: Vec<String>,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
-        let question = sqlx::query_file_as!(
-            Question,
-            "src/queries/questions/update_question.sql",
-            question_text,
-            &correct_answers,
-            description_text,
-            question_id
-        )
-        .fetch_one(pool)
-        .await?;
+        let question = sqlx::query_as::<_, Question>(include_str!("../queries/questions/update_question.sql"))
+            .bind(question_text)
+            .bind(&correct_answers)
+            .bind(description_text)
+            .bind(question_id)
+            .fetch_one(pool)
+            .await?;
 
         Ok(question)
     }
 
     pub async fn delete(pool: &PgPool, question_id: Uuid) -> Result<bool, sqlx::Error> {
-        let result = sqlx::query_file!("src/queries/questions/delete_question.sql", question_id)
+        let result = sqlx::query(include_str!("../queries/questions/delete_question.sql"))
+            .bind(question_id)
             .execute(pool)
             .await?;
 
@@ -119,8 +108,7 @@ impl QuestionRepository {
             descriptions.push(item.description_text);
         }
 
-        let results = sqlx::query_as!(
-            Question,
+        let results = sqlx::query_as::<_, Question>(
             r#"
             INSERT INTO questions (id, collection_id, question_text, correct_answers, description_text)
             SELECT u.id, u.collection_id, u.question_text, 
@@ -133,14 +121,15 @@ impl QuestionRepository {
                 correct_answers = COALESCE(EXCLUDED.correct_answers, questions.correct_answers),
                 description_text = COALESCE(EXCLUDED.description_text, questions.description_text),
                 updated_at = NOW()
+            WHERE questions.id = EXCLUDED.id
             RETURNING id, collection_id, question_text, correct_answers, description_text, created_at, updated_at
             "#,
-            &ids,
-            &coll_ids,
-            &texts as &[Option<String>],
-            &answers as &[Option<String>],
-            &descriptions as &[Option<String>]
         )
+        .bind(&ids)
+        .bind(&coll_ids)
+        .bind(&texts as &[Option<String>])
+        .bind(&answers as &[Option<String>])
+        .bind(&descriptions as &[Option<String>])
         .fetch_all(pool)
         .await?;
 
@@ -155,12 +144,10 @@ impl QuestionRepository {
             return Ok(0);
         }
 
-        let result = sqlx::query!(
-            "DELETE FROM questions WHERE id = ANY($1)",
-            &question_ids
-        )
-        .execute(pool)
-        .await?;
+        let result = sqlx::query("DELETE FROM questions WHERE id = ANY($1)")
+            .bind(&question_ids)
+            .execute(pool)
+            .await?;
 
         Ok(result.rows_affected())
     }
