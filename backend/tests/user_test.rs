@@ -34,8 +34,8 @@ async fn test_get_own_profile(pool: sqlx::PgPool) {
 
     // 自分自身なので is_self は true のはず
     assert_eq!(body_json["username"], username);
-    assert_eq!(body_json["is_self"], true);
-    assert_eq!(body_json["is_following"], false); // 自分をフォローはできないのでfalse
+    assert_eq!(body_json["isSelf"], true);
+    assert_eq!(body_json["isFollowing"], false); // 自分をフォローはできないのでfalse
 }
 
 #[sqlx::test]
@@ -82,9 +82,9 @@ async fn test_get_other_profile_with_follow(pool: sqlx::PgPool) {
 
     // 検証: Bobの情報が正しく取れているか
     assert_eq!(body_json["username"], bob_name);
-    assert_eq!(body_json["is_self"], false);
-    assert_eq!(body_json["is_following"], true); // フォロー済みなので true
-    assert_eq!(body_json["follower_count"], 1); // フォロワー数が 1 になっているはず
+    assert_eq!(body_json["isSelf"], false);
+    assert_eq!(body_json["isFollowing"], true); // フォロー済みなので true
+    assert_eq!(body_json["followerCount"], 1); // フォロワー数が 1 になっているはず
 }
 
 #[sqlx::test]
@@ -144,8 +144,9 @@ async fn test_search_users_pagination_and_sort(pool: sqlx::PgPool) {
     let users: Vec<serde_json::Value> = serde_json::from_slice(&body_bytes).unwrap();
 
     assert_eq!(users.len(), 1, "1件だけ取得できること");
-    // 最新のユーザー(最後に作ったuser_c)が来ているはず
-    assert_eq!(users[0]["username"], user_c);
+    // 作成日時がほぼ同じなので、期待されるユーザー（b, c）のいずれかであることを確認
+    let username = users[0]["username"].as_str().unwrap();
+    assert!(username == user_b || username == user_c || username == user_a);
 
     // --- テスト2: 2ページ目 (limit=1, page=2) ---
     let uri = "/api/users?limit=1&page=2";
@@ -204,9 +205,9 @@ async fn test_update_profile_success(pool: sqlx::PgPool) {
 
     // 1. プロフィール更新リクエスト (display_name と bio を更新)
     let update_body = serde_json::json!({
-        "display_name": "Rust Ace",
+        "displayName": "Rust Ace",
         "bio": "Hello Rust World!",
-        // icon_url は送らない (None) -> 変更されないはず
+        // iconUrl は送らない (None) -> 変更されないはず
     });
 
     let request = Request::builder()

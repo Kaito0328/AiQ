@@ -1,6 +1,9 @@
 export interface User {
     id: string; // Uuid
     username: string;
+    displayName?: string;
+    bio?: string;
+    iconUrl?: string;
     isOfficial: boolean;
     isSelf: boolean;
     followerCount: number;
@@ -11,8 +14,4 @@ export interface User {
     setCount?: number;
 }
 
-export interface UserProfile extends User {
-    displayName?: string;
-    bio?: string;
-    iconUrl?: string;
-}
+export interface UserProfile extends User { }

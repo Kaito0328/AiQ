@@ -16,21 +16,21 @@ async fn test_batch_collections(pool: sqlx::PgPool) {
     let collection_id = common::create_test_collection(&app, &token, true).await;
 
     let batch_body = serde_json::json!({
-        "upsert_items": [
+        "upsertItems": [
             {
                 "id": collection_id,
                 "name": "Updated Batch Name",
-                "description_text": "Updated via batch",
-                "is_open": false
+                "descriptionText": "Updated via batch",
+                "isOpen": false
             },
             {
                 "id": null,
                 "name": "New Batch Collection",
-                "description_text": "Created via batch",
-                "is_open": true
+                "descriptionText": "Created via batch",
+                "isOpen": true
             }
         ],
-        "delete_ids": []
+        "deleteIds": []
     });
 
     let req_batch = Request::builder()
@@ -46,8 +46,7 @@ async fn test_batch_collections(pool: sqlx::PgPool) {
 
     let body_bytes = res_batch.into_body().collect().await.unwrap().to_bytes();
     let result: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(result.get("upserted_count").unwrap().as_i64().unwrap(), 2);
-    assert_eq!(result.get("deleted_count").unwrap().as_i64().unwrap(), 0);
+    assert_eq!(result.get("successItems").unwrap().as_array().unwrap().len(), 2);
 }
 
 #[sqlx::test]
@@ -59,15 +58,15 @@ async fn test_batch_questions(pool: sqlx::PgPool) {
     let question_id = common::create_test_question(&app, &token, &collection_id).await;
 
     let batch_body = serde_json::json!({
-        "upsert_items": [
+        "upsertItems": [
             {
                 "id": null,
-                "question_text": "New Batch Question",
-                "correct_answer": "Batch Answer",
-                "description_text": "Desc"
+                "questionText": "New Batch Question",
+                "correctAnswers": ["Batch Answer"],
+                "descriptionText": "Desc"
             }
         ],
-        "delete_ids": [question_id]
+        "deleteIds": [question_id]
     });
 
     let req_batch = Request::builder()
@@ -86,6 +85,5 @@ async fn test_batch_questions(pool: sqlx::PgPool) {
 
     let body_bytes = res_batch.into_body().collect().await.unwrap().to_bytes();
     let result: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(result.get("upserted_count").unwrap().as_i64().unwrap(), 1);
-    assert_eq!(result.get("deleted_count").unwrap().as_i64().unwrap(), 1);
+    assert_eq!(result.get("successItems").unwrap().as_array().unwrap().len(), 1);
 }

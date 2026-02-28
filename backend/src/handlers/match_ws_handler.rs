@@ -1,7 +1,6 @@
 use crate::dtos::match_ws_dto::{PlayerScoreDto, WsClientMessage, WsServerMessage};
 use crate::state::AppState;
 use crate::state::match_state::PlayerState;
-use crate::utils::jwt::Claims;
 use axum::{
     extract::{
         Path, Query, State,
@@ -38,6 +37,7 @@ async fn handle_socket(
 ) {
     let mut user_id = Uuid::new_v4();
     let mut username = format!("Guest_{}", &user_id.to_string()[..4]);
+    let mut icon_url: Option<String> = None;
 
     // Try to verify token from query or headers
     let token = query_token.or_else(|| {
@@ -49,12 +49,13 @@ async fn handle_socket(
 
     if let Some(token) = token {
         if let Ok(claims) = crate::utils::jwt::verify_token(&token) {
-            if let Ok(Some(record)) = sqlx::query!("SELECT username FROM users WHERE id = $1", claims.sub)
+            if let Ok(Some(record)) = sqlx::query!("SELECT username, icon_url FROM users WHERE id = $1", claims.sub)
                 .fetch_optional(&state.db)
                 .await 
             {
                 user_id = claims.sub;
                 username = record.username;
+                icon_url = record.icon_url;
             }
         }
     }
@@ -78,6 +79,7 @@ async fn handle_socket(
                         username: username.clone(),
                         score: 0,
                         correct_answers: 0,
+                        icon_url: icon_url.clone(),
                     },
                 );
 
@@ -89,6 +91,7 @@ async fn handle_socket(
                         user_id: p.user_id,
                         username: p.username.clone(),
                         score: p.score,
+                        icon_url: p.icon_url.clone(),
                     })
                     .collect();
 
@@ -108,6 +111,7 @@ async fn handle_socket(
                     user_id: p.user_id,
                     username: p.username.clone(),
                     score: p.score,
+                    icon_url: p.icon_url.clone(),
                 })
                 .collect();
 

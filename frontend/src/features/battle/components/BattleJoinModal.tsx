@@ -6,8 +6,9 @@ import { Stack } from '@/src/design/primitives/Stack';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
-import { LogIn } from 'lucide-react';
+import { LogIn, Swords } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { View } from '@/src/design/primitives/View';
 
 interface BattleJoinModalProps {
     isOpen: boolean;
@@ -49,6 +50,21 @@ export function BattleJoinModal({ isOpen, onClose }: BattleJoinModalProps) {
                     <LogIn size={18} />
                     参加する
                 </Button>
+
+                <View className="border-t border-surface-muted pt-4">
+                    <Button
+                        variant="ghost"
+                        color="secondary"
+                        className="w-full gap-2 text-brand-primary hover:bg-brand-primary/10"
+                        onClick={() => {
+                            router.push('/battle/lobby');
+                            onClose();
+                        }}
+                    >
+                        <Swords size={18} />
+                        公開ルームを探す
+                    </Button>
+                </View>
             </Stack>
         </Modal>
     );

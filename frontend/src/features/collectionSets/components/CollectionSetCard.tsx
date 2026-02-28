@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { cn } from '@/src/shared/utils/cn';
 import { useCollectionSet } from '@/src/features/collectionSets/hooks/useCollectionSets';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
+import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 
 interface CollectionSetCardProps {
     set: CollectionSet;
@@ -115,14 +116,14 @@ export function CollectionSetCard({
                                                 <Text variant="xs" weight="bold">{c.name}</Text>
                                                 <Text variant="xs" color="secondary" className="opacity-60">{c.questionCount || 0} 問</Text>
                                             </Stack>
-                                            <View className={cn(
-                                                "w-5 h-5 rounded-full border flex items-center justify-center transition-all",
-                                                isSelected
-                                                    ? "bg-brand-primary border-brand-primary text-white"
-                                                    : "border-slate-300 group-hover/item:border-brand-primary/50"
-                                            )}>
-                                                {isSelected && <Check size={12} strokeWidth={3} />}
-                                            </View>
+                                            <Checkbox
+                                                checked={isSelected}
+                                                readOnly
+                                                className={cn(
+                                                    "transition-all shadow-sm",
+                                                    isSelected && "scale-110"
+                                                )}
+                                            />
                                         </View>
                                     );
                                 })}

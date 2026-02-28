@@ -23,18 +23,26 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
     const isEditing = !!question;
     const [input, setInput] = useState<QuestionInput>({
         questionText: question?.questionText || '',
-        correctAnswer: question?.correctAnswer || '',
+        correctAnswers: question?.correctAnswers || [''],
         descriptionText: question?.descriptionText || '',
     });
+    const [answersString, setAnswersString] = useState(question?.correctAnswers.join(', ') || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!input.questionText.trim() || !input.correctAnswer.trim()) {
+        const correctAnswers = answersString.split(',').map(s => s.trim()).filter(s => s !== '');
+
+        if (!input.questionText.trim() || correctAnswers.length === 0) {
             setError('問題文と正解は必須です');
             return;
         }
+
+        const data: QuestionInput = {
+            ...input,
+            correctAnswers
+        };
 
         setLoading(true);
         setError(null);
@@ -42,9 +50,9 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
         try {
             let result: Question;
             if (isEditing && question) {
-                result = await updateQuestion(question.id, input);
+                result = await updateQuestion(question.id, data);
             } else {
-                result = await createQuestion(collectionId, input);
+                result = await createQuestion(collectionId, data);
             }
             onSaved(result);
         } catch (err) {
@@ -88,8 +96,8 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
                             <Stack gap="xs">
                                 <Text variant="xs" weight="bold">正解 *</Text>
                                 <Input
-                                    value={input.correctAnswer}
-                                    onChange={(e) => setInput({ ...input, correctAnswer: e.target.value })}
+                                    value={answersString}
+                                    onChange={(e) => setAnswersString(e.target.value)}
                                     placeholder="正解を入力してください（複数の場合はカンマ区切り）"
                                 />
                             </Stack>

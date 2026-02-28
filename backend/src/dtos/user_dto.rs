@@ -21,6 +21,7 @@ pub struct UserProfileResponse {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UserSearchQuery {
     // 🌟 flattenをやめて、直接フィールドを書きます
     // これなら ?page=1&limit=20&q=keyword を確実に受け取れます
@@ -34,6 +35,7 @@ pub struct UserSearchQuery {
 // src/dtos/user.rs の末尾に追記
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ChangePasswordRequest {
     pub old_password: String,
     pub new_password: String,

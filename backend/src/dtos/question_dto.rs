@@ -4,7 +4,7 @@ use serde::Deserialize;
 #[serde(rename_all = "camelCase")]
 pub struct CreateQuestionRequest {
     pub question_text: String,
-    pub correct_answer: String,
+    pub correct_answers: Vec<String>,
     pub description_text: Option<String>,
 }
 
@@ -12,7 +12,7 @@ pub struct CreateQuestionRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateQuestionRequest {
     pub question_text: String,
-    pub correct_answer: String,
+    pub correct_answers: Vec<String>,
     pub description_text: Option<String>,
 }
 
@@ -21,7 +21,7 @@ pub struct UpdateQuestionRequest {
 pub struct UpsertQuestionItem {
     pub id: Option<uuid::Uuid>,
     pub question_text: Option<String>,
-    pub correct_answer: Option<String>,
+    pub correct_answers: Option<Vec<String>>,
     pub description_text: Option<String>,
 }
 

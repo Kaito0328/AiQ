@@ -103,12 +103,15 @@ impl RankingQuizService {
                 .await
                 .map_err(|_| AppError::InternalServerError("Question not found".into()))?;
             
-            let is_correct = actual_question.correct_answer.trim().to_lowercase() == ans.answer.trim().to_lowercase();
+            let trimmed_ans = ans.answer.trim().to_lowercase();
+            let is_correct = actual_question.correct_answers.iter().any(|correct| {
+                correct.trim().to_lowercase() == trimmed_ans
+            });
             correct_results.push(is_correct);
             detailed_results.push(crate::dtos::ranking_quiz_dto::RankingAnswerResultDto {
                 question_id: ans.question_id,
                 is_correct,
-                correct_answer: actual_question.correct_answer,
+                correct_answer: actual_question.correct_answers.join(" / "),
             });
         }
 
@@ -193,7 +196,10 @@ impl RankingQuizService {
             .await
             .map_err(|_| AppError::InternalServerError("Question not found".into()))?;
 
-        let is_correct = actual_question.correct_answer.trim() == req.answer.trim();
+        let trimmed_ans = req.answer.trim();
+        let is_correct = actual_question.correct_answers.iter().any(|correct| {
+            correct.trim() == trimmed_ans
+        });
 
         // 4. Update state
         let next_index = current_index + 1;
@@ -272,7 +278,7 @@ impl RankingQuizService {
 
         Ok(SubmitRankingAnswerResponse {
             is_correct,
-            correct_answer: actual_question.correct_answer,
+            correct_answer: actual_question.correct_answers.join(" / "),
             description_text: actual_question.description_text,
             next_question: next_question_dto,
             is_completed,

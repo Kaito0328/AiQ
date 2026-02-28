@@ -11,7 +11,7 @@ pub mod utils; // 追加: extractors モジュールを公開
 
 use axum::{
     Router,
-    routing::{delete, get, post, put},
+    routing::{delete, get, post, put, patch},
 };
 use state::AppState;
 
@@ -100,6 +100,14 @@ pub fn app(state: AppState) -> Router {
         .route(
             "/api/collections/{collection_id}/questions/batch",
             post(handlers::question_handler::batch_questions),
+        )
+        .route(
+            "/api/collections/{collection_id}/csv",
+            post(handlers::collection_handler::upload_csv),
+        )
+        .route(
+            "/api/collections/{collection_id}/csv",
+            get(handlers::collection_handler::export_csv),
         )
         // 更新と削除は問題のIDを直接指定する
         .route(
@@ -197,6 +205,10 @@ pub fn app(state: AppState) -> Router {
             get(handlers::ranking_quiz_handler::get_leaderboard),
         )
         .route(
+            "/api/ai/complete",
+            post(handlers::ai_handler::complete_ai_questions),
+        )
+        .route(
             "/api/ws/generate/collection/{collection_id}",
             get(handlers::ai_handler::generate_ai_questions_ws),
         )
@@ -208,8 +220,31 @@ pub fn app(state: AppState) -> Router {
             post(handlers::match_handler::create_room),
         )
         .route(
+            "/api/match/room",
+            get(handlers::match_handler::list_rooms),
+        )
+        .route(
             "/api/ws/match/{room_id}",
             get(handlers::match_ws_handler::ws_handler),
+        )
+        // ==========================================
+        // Edit Request Routes
+        // ==========================================
+        .route(
+            "/api/edit-requests",
+            post(handlers::edit_request_handler::create_edit_request),
+        )
+        .route(
+            "/api/collections/{collection_id}/edit-requests",
+            get(handlers::edit_request_handler::list_requests_by_collection),
+        )
+        .route(
+            "/api/edit-requests/my-pending",
+            get(handlers::edit_request_handler::list_my_requests),
+        )
+        .route(
+            "/api/edit-requests/{id}",
+            patch(handlers::edit_request_handler::update_request_status),
         )
         .with_state(state)
 }

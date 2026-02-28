@@ -65,7 +65,15 @@ async fn handle_ws(
     }).unwrap().into())).await;
 
     // Generate questions
-    match AiService::generate_questions(&req.prompt, count).await {
+    match AiService::generate_questions(
+        &req.prompt, 
+        count, 
+        req.pdf_data.as_deref(),
+        req.question_format.as_deref(),
+        req.answer_format.as_deref(),
+        req.example_question.as_deref(),
+        req.example_answer.as_deref()
+    ).await {
         Ok(questions) => {
             // Save to DB
             let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
@@ -77,7 +85,7 @@ async fn handle_ws(
             let upsert_items: Vec<UpsertQuestionItem> = questions.iter().map(|q| UpsertQuestionItem {
                 id: None,
                 question_text: Some(q.question_text.clone()),
-                correct_answer: Some(q.correct_answer.clone()),
+                correct_answers: Some(q.correct_answers.clone()),
                 description_text: q.description_text.clone(),
             }).collect();
 
@@ -113,4 +121,17 @@ async fn handle_ws(
     }
 
     let _ = socket.close().await;
+}
+
+pub async fn complete_ai_questions(
+    State(_state): axum::extract::State<crate::AppState>,
+    axum::Json(req): axum::Json<crate::dtos::ai_dto::CompleteQuestionsRequest>,
+) -> Result<axum::Json<Vec<crate::dtos::ai_dto::GeneratedQuestion>>, crate::error::AppError> {
+    let questions = crate::services::ai_service::AiService::complete_questions(
+        req.items,
+        req.complete_description.unwrap_or(true),
+        req.question_format,
+        req.answer_format,
+    ).await?;
+    Ok(axum::Json(questions))
 }

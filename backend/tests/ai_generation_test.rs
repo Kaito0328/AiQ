@@ -1,5 +1,5 @@
+#[cfg(feature = "ai-tests")]
 #[tokio::test]
-#[ignore]
 async fn test_gemini_api_direct() {
     // This test actually calls the Gemini API.
     // Run it with: `cargo test test_gemini_api_direct -- --ignored`
@@ -14,7 +14,7 @@ async fn test_gemini_api_direct() {
     let prompt = "Rustの所有権について、専門用語を少なくして簡単な問題を生成してください。";
     let count = 2;
 
-    match backend::services::ai_service::AiService::generate_questions(prompt, count).await {
+    match backend::services::ai_service::AiService::generate_questions(prompt, count, None, None, None, None, None).await {
         Ok(questions) => {
             assert_eq!(questions.len(), 2);
             println!("Generated Questions: {:?}", questions);

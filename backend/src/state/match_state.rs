@@ -8,6 +8,7 @@ pub struct PlayerState {
     pub user_id: Uuid,
     pub username: String,
     pub score: i64,
+    pub icon_url: Option<String>,
     pub correct_answers: i32,
 }
 
@@ -20,18 +21,28 @@ pub enum RoomStatus {
     Finished,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum RoomVisibility {
+    Public,
+    Private,
+    Followers,
+}
+
 #[derive(Debug, Clone)]
 pub struct MatchQuestion {
     pub id: Uuid,
     pub question_text: String,
     pub description_text: Option<String>,
-    pub correct_answer: String,
+    pub correct_answers: Vec<String>,
 }
 
 #[derive(Debug)]
 pub struct RoomState {
     pub room_id: Uuid,
     pub host_id: Uuid,
+    pub host_username: String,
+    pub visibility: RoomVisibility,
     pub status: RoomStatus,
     pub players: HashMap<Uuid, PlayerState>,
     // The actual questions (including answers for server-side validation)
@@ -42,14 +53,24 @@ pub struct RoomState {
     pub tx: broadcast::Sender<String>,
     pub round_sequence: i32,
     pub active_buzzer: Option<Uuid>,
+    pub submitted_user_ids: Vec<Uuid>,
 }
 
 impl RoomState {
-    pub fn new(room_id: Uuid, host_id: Uuid, questions: Vec<MatchQuestion>, max_buzzes: usize) -> Self {
+    pub fn new(
+        room_id: Uuid,
+        host_id: Uuid,
+        host_username: String,
+        questions: Vec<MatchQuestion>,
+        max_buzzes: usize,
+        visibility: RoomVisibility,
+    ) -> Self {
         let (tx, _) = broadcast::channel(100);
         Self {
             room_id,
             host_id,
+            host_username,
+            visibility,
             status: RoomStatus::Waiting,
             players: HashMap::new(),
             questions,
@@ -59,6 +80,7 @@ impl RoomState {
             tx,
             round_sequence: 0,
             active_buzzer: None,
+            submitted_user_ids: Vec::new(),
         }
     }
 }

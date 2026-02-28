@@ -1,11 +1,13 @@
 import { apiClient } from '@/src/shared/api/apiClient';
+import { FilterType, SortKey } from '@/src/entities/quiz';
 
 export interface CreateMatchRoomRequest {
     collectionIds: string[];
-    filterTypes: string[];
-    sortKeys: string[];
+    filterTypes: FilterType[];
+    sortKeys: SortKey[];
     totalQuestions: number;
     maxBuzzesPerRound: number;
+    visibility?: 'public' | 'private' | 'followers';
 }
 
 export interface CreateMatchRoomResponse {
@@ -13,10 +15,25 @@ export interface CreateMatchRoomResponse {
     joinToken: string;
 }
 
+export interface MatchRoomListItem {
+    roomId: string;
+    hostId: string;
+    hostUsername: string;
+    playerCount: number;
+    status: string;
+    totalQuestions: number;
+}
+
 export const createMatchRoom = async (req: CreateMatchRoomRequest): Promise<CreateMatchRoomResponse> => {
     return await apiClient<CreateMatchRoomResponse>('/match/room', {
         method: 'POST',
         body: JSON.stringify(req),
+        authenticated: true,
+    });
+};
+
+export const getPublicRooms = async (): Promise<MatchRoomListItem[]> => {
+    return await apiClient<MatchRoomListItem[]>('/match/room', {
         authenticated: true,
     });
 };

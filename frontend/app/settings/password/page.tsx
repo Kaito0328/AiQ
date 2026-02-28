@@ -68,7 +68,7 @@ export default function PasswordChangePage() {
                     <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/settings')}
                         className="gap-1.5 text-foreground/60 w-fit"
                     >
                         <ArrowLeft size={16} />

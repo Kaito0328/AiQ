@@ -16,11 +16,12 @@ import { CollectionCard } from '@/src/features/collections/components/Collection
 import { QuizOptionModal } from '@/src/features/quiz/components/QuizOptionModal';
 import { startCasualQuiz } from '@/src/features/quiz/api';
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { FolderOpen, Play, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { FolderOpen, Play, Plus } from 'lucide-react';
 import { useUserCollections } from '@/src/features/collections/hooks/useCollections';
 import { Card } from '@/src/design/baseComponents/Card';
 import { cn } from '@/src/shared/utils/cn';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
+import { FilterCondition, SortCondition } from '@/src/entities/quiz';
 
 export default function CollectionSetPage() {
     const params = useParams();
@@ -38,7 +39,7 @@ export default function CollectionSetPage() {
 
     const isOwner = !!(user && set && user.id === set.userId);
 
-    const handleStartQuiz = async (filters: any[], sorts: any[], limit: number) => {
+    const handleStartQuiz = async (filters: FilterCondition[], sorts: SortCondition[], limit: number) => {
         setIsStartingQuiz(true);
         try {
             const resp = await startCasualQuiz({

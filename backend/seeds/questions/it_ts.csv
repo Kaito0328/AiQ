@@ -1,0 +1,11 @@
+question,answer,description
+"What is the main advantage of TypeScript over JavaScript?","Static Typing;Type Safety","Catches errors at compile time."
+"Which keyword is used to define a custom type alias?","type","Example: type UserID = string;"
+"How do you define an optional property in an interface?","Question mark;?","Example: name?: string;"
+"What is the 'any' type?","Escape hatch;Type of all values","Disables type checking for a variable."
+"What is the better alternative to 'any' for unknown values?","unknown","Forcing a type check before usage."
+"What is a 'Union Type'?","A type that can be one of several types","Example: string | number;"
+"What is an 'Intersection Type'?","A type that combines multiple types","Example: User & Admin;"
+"Which tool compiles TS into JS?","tsc;TypeScript Compiler","The core CLI tool."
+"What are 'Generics' used for?","Reusable components;Parameterized types","Example: Array<T>."
+"What is the 'readonly' modifier for?","Preventing modification","Makes a property immutable after initialization."

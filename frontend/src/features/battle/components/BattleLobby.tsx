@@ -6,8 +6,8 @@ import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
-import { MatchRoom } from '@/src/entities/battle';
-import { User, Shield, Users, Play, Copy, Check, Library } from 'lucide-react';
+import { User, Shield, Users, Play, Copy, Check, Library, Settings2, Globe, Lock } from 'lucide-react';
+import { MatchRoom, RoomVisibility } from '@/src/entities/battle';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
 import { View } from '@/src/design/primitives/View';
 import { cn } from '@/src/shared/utils/cn';
@@ -16,6 +16,8 @@ import { QuizOptionsModal } from '@/src/features/quiz/components/QuizOptionsModa
 import { CollectionBrowser } from '@/src/features/collections/components/CollectionBrowser';
 import { FixedSelectionTray } from '@/src/features/collections/components/FixedSelectionTray';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
+import { Slider } from '@/src/design/baseComponents/Slider';
+import { useEffect } from 'react';
 
 interface BattleLobbyProps {
     room: MatchRoom;
@@ -23,11 +25,12 @@ interface BattleLobbyProps {
     isHost: boolean;
     onUpdateConfig: (maxBuzzes: number) => void;
     maxBuzzes: number;
+    onUpdateVisibility: (visibility: RoomVisibility) => void;
     onResetMatch: (collectionIds: string[], filters: FilterCondition[], sorts: SortCondition[], totalQuestions: number) => void;
     selfId: string | null;
 }
 
-export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, onResetMatch, selfId }: BattleLobbyProps) {
+export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, onUpdateVisibility, onResetMatch, selfId }: BattleLobbyProps) {
     const [copied, setCopied] = useState(false);
     const [selectedCollections, setSelectedCollections] = useState<{ id: string, name: string, questionCount: number }[]>([]);
     const [appliedCollectionCount, setAppliedCollectionCount] = useState(0);
@@ -39,9 +42,20 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
     const [isManualLimit, setIsManualLimit] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-    // Add to set state
+    // Add to set/UI state
     const [targetCollectionId, setTargetCollectionId] = useState<string | null>(null);
     const [isAddToSetModalOpen, setIsAddToSetModalOpen] = useState(false);
+    const [hasManuallyChangedBuzz, setHasManuallyChangedBuzz] = useState(false);
+
+    // Auto-adjust maxBuzzes based on player count until manual change
+    useEffect(() => {
+        if (!hasManuallyChangedBuzz && isHost && room.players.length > 0) {
+            const defaultBuzzes = Math.max(1, Math.floor(room.players.length / 2));
+            if (maxBuzzes !== defaultBuzzes) {
+                onUpdateConfig(defaultBuzzes);
+            }
+        }
+    }, [room.players.length, hasManuallyChangedBuzz, isHost, maxBuzzes, onUpdateConfig]);
 
     const totalQuestions = selectedCollections.reduce((sum, c) => sum + (c.questionCount || 0), 0);
 
@@ -51,7 +65,7 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
 
     const handleCopy = () => {
         if (typeof window !== 'undefined') {
-            navigator.clipboard.writeText(window.location.href);
+            navigator.clipboard.writeText(room.room_id);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
         }
@@ -95,10 +109,10 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
     };
 
     return (
-        <Stack gap="xl" className="w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+        <Stack gap="xl" className="w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-40">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* 参加情報のカード */}
-                <Card padding="lg" className="lg:col-span-2 border-2 border-brand-primary/20 shadow-xl overflow-visible relative h-fit">
+                <Card padding="lg" border="primary" className="lg:col-span-2 shadow-xl overflow-visible relative h-fit">
                     <View className="absolute -top-4 left-6 px-4 py-1 bg-brand-primary text-white text-xs font-bold rounded-full shadow-lg">
                         WAITING FOR PLAYERS
                     </View>
@@ -130,9 +144,10 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                                     return (
                                         <View
                                             key={player.user_id}
+                                            border={isMe ? "primary" : "base"}
                                             className={cn(
-                                                "p-4 rounded-xl border transition-all flex items-center justify-between group",
-                                                isMe ? "border-brand-primary bg-brand-primary/5 shadow-sm" : "border-surface-muted bg-surface-base hover:border-brand-primary/30"
+                                                "p-4 rounded-xl transition-all flex items-center justify-between group",
+                                                isMe ? "bg-brand-primary/5 shadow-sm" : "bg-surface-base hover:border-brand-primary/30"
                                             )}
                                         >
                                             <Flex gap="md" align="center">
@@ -159,29 +174,39 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                             </div>
                         </Stack>
 
-                        {isHost ? (
-                            <>
-                                <Button
-                                    variant="solid"
-                                    color="primary"
-                                    size="lg"
-                                    className="w-full mt-4 py-6 text-lg shadow-lg shadow-brand-primary/20 gap-2"
-                                    onClick={onStart}
-                                    disabled={room.players.length < 1 || appliedCollectionCount === 0}
-                                >
-                                    <Play size={20} fill="currentColor" />
-                                    対戦を開始する
-                                </Button>
-                                {isHost && appliedCollectionCount === 0 && (
-                                    <View className="mt-4 p-4 bg-brand-primary/5 border-2 border-dashed border-brand-primary/30 rounded-xl">
-                                        <Text variant="xs" color="primary" weight="bold" align="center" className="animate-pulse">
-                                            ※下のセレクターから問題集を選んで「適用」してください
-                                        </Text>
-                                    </View>
-                                )}
-                            </>
-                        ) : (
-                            <View className="mt-4 p-4 rounded-xl bg-brand-primary/5 border border-brand-primary/10 flex items-center justify-center gap-3">
+                        {isHost && (
+                            <Stack gap="sm" className="mt-4 pt-6 border-t border-surface-muted/50">
+                                <Text variant="detail" weight="bold">ルームの公開設定</Text>
+                                <div className="flex flex-wrap gap-2">
+                                    <VisibilityButton
+                                        icon={<Globe size={16} />}
+                                        title="公開"
+                                        selected={room.visibility === 'public'}
+                                        onClick={() => onUpdateVisibility('public')}
+                                    />
+                                    <VisibilityButton
+                                        icon={<Lock size={16} />}
+                                        title="非公開"
+                                        selected={room.visibility === 'private'}
+                                        onClick={() => onUpdateVisibility('private')}
+                                    />
+                                    <VisibilityButton
+                                        icon={<Users size={16} />}
+                                        title="フォロワー限定"
+                                        selected={room.visibility === 'followers'}
+                                        onClick={() => onUpdateVisibility('followers')}
+                                    />
+                                </div>
+                                <Text variant="xs" color="secondary" className="px-1 leading-tight">
+                                    {room.visibility === 'public' && "全ユーザーがロビーから参加可能です"}
+                                    {room.visibility === 'private' && "リンクを知っている人のみ参加可能です"}
+                                    {room.visibility === 'followers' && "フォロワーのみ参加可能です"}
+                                </Text>
+                            </Stack>
+                        )}
+
+                        {!isHost && (
+                            <View border="primary" className="mt-4 p-4 rounded-xl bg-brand-primary/5 flex items-center justify-center gap-3">
                                 <Spinner size="sm" />
                                 <Text variant="xs" weight="bold" color="primary">ホストの開始を待っています...</Text>
                             </View>
@@ -191,7 +216,7 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
 
                 <Stack gap="lg" className="h-fit">
                     {/* QRコードカード */}
-                    <Card padding="lg" className="border border-surface-muted shadow-lg bg-surface-base">
+                    <Card padding="lg" border="base" className="shadow-lg bg-surface-base">
                         <Stack gap="md" align="center">
                             <Text variant="detail" weight="bold">スマホでスキャンして参加</Text>
                             {qrCodeUrl && (
@@ -199,31 +224,22 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                                     <img src={qrCodeUrl} alt="QR Code" className="w-40 h-40 md:w-48 md:h-48" />
                                 </View>
                             )}
-                            <Text variant="xs" color="secondary" className="text-center px-2">
-                                スキャンするとすぐに参加画面へ移動できます
-                            </Text>
                         </Stack>
                     </Card>
 
-                    {/* 部屋設定 (ホストのみ、サイドバーへ移動) */}
+                    {/* 部屋設定 (ホストのみ) - カードで囲む */}
                     {isHost && (
-                        <Card padding="lg" className="border border-surface-muted shadow-lg bg-surface-base">
-                            <Stack gap="md">
-                                <Text variant="xs" color="secondary" weight="bold">1人あたりの回答権数</Text>
-                                <Flex gap="sm" align="center" className="flex-wrap">
-                                    {[1, 2, 3, 5].map((val) => (
-                                        <Button
-                                            key={val}
-                                            size="sm"
-                                            variant={maxBuzzes === val ? "solid" : "outline"}
-                                            onClick={() => onUpdateConfig(val)}
-                                            className="px-4"
-                                        >
-                                            {val}回
-                                        </Button>
-                                    ))}
-                                </Flex>
-                            </Stack>
+                        <Card padding="lg" border="base" className="shadow-lg bg-surface-base">
+                            <Slider
+                                label="1問当たりの回答数"
+                                min={1}
+                                max={Math.max(1, room.players.length)}
+                                value={maxBuzzes}
+                                onChange={(val) => {
+                                    setHasManuallyChangedBuzz(true);
+                                    onUpdateConfig(val);
+                                }}
+                            />
                         </Card>
                     )}
                 </Stack>
@@ -231,7 +247,7 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
 
             {/* 問題セレクター（ホスト専用、統合表示） */}
             {isHost && (
-                <Card padding="none" className="border border-surface-muted shadow-xl overflow-hidden bg-surface-base">
+                <Card padding="none" border="base" className="shadow-xl overflow-hidden bg-surface-base">
                     <View className="p-6 border-b border-surface-muted bg-surface-muted/10">
                         <Flex gap="md" align="center">
                             <Library className="text-brand-primary" size={24} />
@@ -266,9 +282,8 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                             setSelectedCollections([]);
                             if (!isManualLimit) setLimit(0);
                         }}
-                        onOpenSettings={() => setIsSettingsOpen(true)}
-                        onStart={handleReset}
-                        startLabel="適用してリセット"
+                        onStart={() => setIsSettingsOpen(true)}
+                        startLabel="クイズを開始"
                         limit={limit}
                     />
 
@@ -283,6 +298,11 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                         onFilterChange={setFilters}
                         onSortChange={setSorts}
                         onLimitChange={handleLimitChange}
+                        onStart={() => {
+                            onResetMatch(selectedCollections.map(c => c.id), filters, sorts, limit);
+                            onStart(); // Send StartMatch message
+                            setIsSettingsOpen(false);
+                        }}
                     />
 
                     {/* セットに追加モーダル */}
@@ -299,5 +319,22 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                 </>
             )}
         </Stack >
+    );
+}
+
+function VisibilityButton({ icon, title, selected, onClick }: any) {
+    return (
+        <View
+            onClick={onClick}
+            className={cn(
+                "p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-2",
+                selected
+                    ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
+                    : "border-surface-muted hover:border-surface-primary bg-surface-base text-secondary"
+            )}
+        >
+            {icon}
+            <Text weight="bold" variant="xs" color="inherit">{title}</Text>
+        </View>
     );
 }

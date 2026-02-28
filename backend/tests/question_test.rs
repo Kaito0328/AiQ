@@ -15,9 +15,9 @@ pub async fn create_test_question(
     question_text: &str,
 ) -> String {
     let body = serde_json::json!({
-        "question_text": question_text,
-        "correct_answer": "正解です",
-        "description_text": "解説テキスト"
+        "questionText": question_text,
+        "correctAnswers": ["正解です"],
+        "descriptionText": "解説テキスト"
     });
 
     let request = Request::builder()
@@ -65,8 +65,8 @@ async fn test_create_question_forbidden(pool: sqlx::PgPool) {
 
     // 他人がそのコレクションに問題を追加しようとする -> FORBIDDEN になるはず
     let create_body = serde_json::json!({
-        "question_text": "ハッキング問題",
-        "correct_answer": "不正解",
+        "questionText": "ハッキング問題",
+        "correctAnswers": ["不正解"],
     });
 
     let req_create = Request::builder()
@@ -163,8 +163,8 @@ async fn test_update_and_delete_question(pool: sqlx::PgPool) {
 
     // 1. 他人が更新しようとする -> FORBIDDEN
     let update_body = serde_json::json!({
-        "question_text": "悪意のある書き換え",
-        "correct_answer": "ハッカー",
+        "questionText": "悪意のある書き換え",
+        "correctAnswers": ["ハッカー"],
     });
     let req_update_other = Request::builder()
         .method(http::Method::PUT)

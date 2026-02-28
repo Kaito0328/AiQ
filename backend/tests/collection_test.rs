@@ -85,8 +85,8 @@ async fn test_update_collection_protection(pool: sqlx::PgPool) {
 
     let update_body = serde_json::json!({
         "name": "Updated Name",
-        "description_text": "Updated Bio",
-        "is_open": false
+        "descriptionText": "Updated Bio",
+        "isOpen": false
     });
 
     // 他人が更新を試みる -> FORBIDDEN

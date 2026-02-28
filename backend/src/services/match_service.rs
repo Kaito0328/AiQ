@@ -1,7 +1,7 @@
-use crate::dtos::match_dto::{CreateMatchRoomRequest, CreateMatchRoomResponse};
+use crate::dtos::match_dto::{CreateMatchRoomRequest, CreateMatchRoomResponse, MatchRoomListItem};
 use crate::error::AppError;
 use crate::repositories::question::QuestionRepository;
-use crate::state::match_state::{MatchQuestion, RoomState, SharedMatchState};
+use crate::state::match_state::{MatchQuestion, RoomState, RoomVisibility, SharedMatchState};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use sqlx::PgPool;
@@ -16,6 +16,12 @@ impl MatchService {
         host_id: Uuid,
         req: CreateMatchRoomRequest,
     ) -> Result<CreateMatchRoomResponse, AppError> {
+        // Fetch host info
+        let host = crate::repositories::user::find_by_id(pool, host_id)
+            .await
+            .map_err(|e| AppError::InternalServerError(format!("Failed to fetch host: {}", e)))?
+            .ok_or_else(|| AppError::BadRequest("Host user not found".to_string()))?;
+
         // Fetch all questions from the given collections
         let mut all_questions = Vec::new();
         for cid in &req.collection_ids {
@@ -39,15 +45,23 @@ impl MatchService {
                 id: q.id,
                 question_text: q.question_text,
                 description_text: q.description_text,
-                correct_answer: q.correct_answer,
+                correct_answers: q.correct_answers,
             })
             .collect();
 
         // Generate a new room ID
         let room_id = Uuid::new_v4();
+        let visibility = req.visibility.unwrap_or(RoomVisibility::Private);
 
         // Create RoomState
-        let room = RoomState::new(room_id, host_id, selected, req.max_buzzes_per_round);
+        let room = RoomState::new(
+            room_id,
+            host_id,
+            host.username,
+            selected,
+            req.max_buzzes_per_round as usize,
+            visibility,
+        );
 
         // Store in memory
         {
@@ -64,5 +78,25 @@ impl MatchService {
                 &Uuid::new_v4().to_string()[..4]
             ),
         })
+    }
+
+    pub async fn list_public_rooms(
+        match_state: &SharedMatchState,
+    ) -> Result<Vec<MatchRoomListItem>, AppError> {
+        let rooms = match_state.read().await;
+        let list: Vec<MatchRoomListItem> = rooms
+            .values()
+            .filter(|r| r.visibility == RoomVisibility::Public && r.status != crate::state::match_state::RoomStatus::Finished)
+            .map(|r| MatchRoomListItem {
+                room_id: r.room_id,
+                host_id: r.host_id,
+                host_username: r.host_username.clone(),
+                player_count: r.players.len(),
+                status: format!("{:?}", r.status),
+                total_questions: r.questions.len(),
+            })
+            .collect();
+
+        Ok(list)
     }
 }

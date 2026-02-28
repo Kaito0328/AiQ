@@ -149,4 +149,20 @@ async fn test_ranking_quiz_flow(pool: sqlx::PgPool) {
     let final_result = resp2.result.unwrap();
     assert_eq!(final_result.total_questions, 2);
     assert_eq!(final_result.correct_count, 1);
+
+    // 8. Test Leaderboard
+    let req_lb = Request::builder()
+        .method("GET")
+        .uri(format!("/api/collections/{}/leaderboard", collection_id))
+        .body(Body::empty())
+        .unwrap();
+    let res_lb = app.clone().oneshot(req_lb).await.unwrap();
+    assert_eq!(res_lb.status(), StatusCode::OK);
+    
+    let body_lb = res_lb.into_body().collect().await.unwrap().to_bytes();
+    let lb_resp: serde_json::Value = serde_json::from_slice(&body_lb).unwrap();
+    let entries = lb_resp.get("entries").unwrap().as_array().unwrap();
+    assert!(!entries.is_empty());
+    // The user should be in the leaderboard
+    assert!(entries.iter().any(|entry| entry.get("username").unwrap().as_str().unwrap() == _username));
 }

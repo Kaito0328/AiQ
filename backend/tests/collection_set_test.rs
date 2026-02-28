@@ -9,8 +9,8 @@ mod common;
 pub async fn create_test_collection_set(app: &axum::Router, token: &str, is_open: bool) -> String {
     let body = serde_json::json!({
         "name": format!("Test Collection Set {}", uuid::Uuid::new_v4()),
-        "description_text": "This is a test collection set.",
-        "is_open": is_open
+        "descriptionText": "This is a test collection set.",
+        "isOpen": is_open
     });
 
     let request = axum::http::Request::builder()
@@ -114,8 +114,8 @@ async fn test_update_and_delete_collection_set(pool: sqlx::PgPool) {
     // 1. 他人が更新しようとする -> FORBIDDEN
     let update_body = serde_json::json!({
         "name": "悪意のある書き換え",
-        "description_text": "ハッカー",
-        "is_open": false
+        "descriptionText": "ハッカー",
+        "isOpen": false
     });
     let req_update_other = Request::builder()
         .method(http::Method::PUT)
@@ -184,8 +184,8 @@ async fn test_add_and_remove_collection_from_set(pool: sqlx::PgPool) {
 
     // 1. 他人がまとめ枠にコレクションを追加しようとする -> FORBIDDEN
     let add_body = serde_json::json!({
-        "collection_id": collection_id,
-        "display_order": 1
+        "collectionId": collection_id,
+        "displayOrder": 1
     });
     let req_add_other = Request::builder()
         .method(http::Method::POST)
@@ -249,8 +249,8 @@ async fn test_add_and_remove_collection_from_set(pool: sqlx::PgPool) {
     // 5. 新機能テスト：他人が作った公開コレクションを自分のまとめ枠に追加する -> CREATED
     let other_public_coll = common::create_test_collection(&app, &other_token, true).await;
     let add_other_public_body = serde_json::json!({
-        "collection_id": other_public_coll,
-        "display_order": 2
+        "collectionId": other_public_coll,
+        "displayOrder": 2
     });
     let req_add_public = Request::builder()
         .method(http::Method::POST)
@@ -268,8 +268,8 @@ async fn test_add_and_remove_collection_from_set(pool: sqlx::PgPool) {
     // 6. 新機能テスト：他人が作った非公開コレクションを自分のまとめ枠に追加する -> FORBIDDEN
     let other_private_coll = common::create_test_collection(&app, &other_token, false).await;
     let add_other_private_body = serde_json::json!({
-        "collection_id": other_private_coll,
-        "display_order": 3
+        "collectionId": other_private_coll,
+        "displayOrder": 3
     });
     let req_add_private = Request::builder()
         .method(http::Method::POST)

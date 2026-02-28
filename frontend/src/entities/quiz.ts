@@ -41,7 +41,7 @@ export interface RankingAnswerRequest {
 
 export interface RankingAnswerResponse {
     isCorrect: boolean;
-    correctAnswer: string;
+    correctAnswer: string; // Display string (e.g. joined by /)
     descriptionText?: string;
     nextQuestion?: {
         id: string;

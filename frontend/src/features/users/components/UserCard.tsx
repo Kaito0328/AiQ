@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
+import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
@@ -17,12 +18,18 @@ interface UserCardProps {
 
 export function UserCard({ user, onClick }: UserCardProps) {
     const content = (
-        <Card className="border border-gray-300 transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer">
+        <Card border="base" className="transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group">
             <Flex gap="md" align="center">
-                <UserCircle size={48} className="text-brand-primary shrink-0" />
+                <View className="w-12 h-12 rounded-full bg-brand-primary/10 flex items-center justify-center overflow-hidden border border-brand-primary/20 shrink-0">
+                    {user.iconUrl ? (
+                        <img src={user.iconUrl} alt={user.displayName || user.username} className="w-full h-full object-cover" />
+                    ) : (
+                        <UserCircle size={24} className="text-brand-primary" />
+                    )}
+                </View>
                 <Stack gap="xs" className="flex-1 min-w-0">
                     <Flex gap="sm" align="center">
-                        <Text weight="bold" className="truncate">{user.username}</Text>
+                        <Text weight="bold" className="truncate group-hover:text-brand-primary transition-colors">{user.displayName || user.username}</Text>
                         {user.isOfficial && (
                             <Badge variant="primary" className="shrink-0">Official</Badge>
                         )}

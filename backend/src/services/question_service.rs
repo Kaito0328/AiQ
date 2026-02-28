@@ -27,7 +27,7 @@ impl QuestionService {
             pool,
             collection_id,
             req.question_text,
-            req.correct_answer,
+            req.correct_answers,
             req.description_text,
         )
         .await
@@ -69,7 +69,7 @@ impl QuestionService {
             pool,
             question_id,
             req.question_text,
-            req.correct_answer,
+            req.correct_answers,
             req.description_text,
         )
         .await

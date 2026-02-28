@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
+import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { UserProfile } from '@/src/entities/user';
@@ -76,7 +77,13 @@ export function UserHeader({ profile }: UserHeaderProps) {
             <Stack gap="xl">
                 <Flex justify="between" align="start" className="flex-wrap gap-6">
                     <Flex gap="lg" align="center">
-                        <UserCircle size={64} className="text-brand-muted" />
+                        <View className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center overflow-hidden border-2 border-brand-primary/20 shrink-0">
+                            {profile.iconUrl ? (
+                                <img src={profile.iconUrl} alt={profile.displayName || profile.username} className="w-full h-full object-cover" />
+                            ) : (
+                                <UserCircle size={40} className="text-brand-primary" />
+                            )}
+                        </View>
                         <Stack gap="xs">
                             <Text variant="h2">{profile.displayName || profile.username}</Text>
                             {profile.displayName && (
@@ -95,7 +102,7 @@ export function UserHeader({ profile }: UserHeaderProps) {
 
                     <Flex gap="md">
                         {isSelf ? (
-                            <Button variant="outline" onClick={() => router.push('/settings/password')} className="gap-1.5">
+                            <Button variant="outline" onClick={() => router.push('/settings')} className="gap-1.5">
                                 設定
                             </Button>
                         ) : isAuthenticated ? (

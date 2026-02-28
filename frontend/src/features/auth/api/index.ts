@@ -52,11 +52,21 @@ export const getProfile = async (userId: string): Promise<UserProfile> => {
     return await apiClient<UserProfile>(`/users/${userId}`, { authenticated: true });
 };
 
-export const getUsers = async (): Promise<UserProfile[]> => {
-    return await apiClient<UserProfile[]>('/users', { authenticated: true });
+export const getUsers = async (params?: { q?: string; sort?: string; page?: number; limit?: number }): Promise<UserProfile[]> => {
+    let url = '/users';
+    if (params) {
+        const searchParams = new URLSearchParams();
+        if (params.q) searchParams.append('q', params.q);
+        if (params.sort) searchParams.append('sort', params.sort);
+        if (params.page) searchParams.append('page', params.page.toString());
+        if (params.limit) searchParams.append('limit', params.limit.toString());
+        const queryString = searchParams.toString();
+        if (queryString) url += `?${queryString}`;
+    }
+    return await apiClient<UserProfile[]>(url, { authenticated: true });
 };
 
-export const updateProfile = async (data: { username?: string; displayName?: string; bio?: string }): Promise<UserProfile> => {
+export const updateProfile = async (data: { username?: string; displayName?: string; bio?: string; iconUrl?: string }): Promise<UserProfile> => {
     return await apiClient<UserProfile>('/user', {
         method: 'PUT',
         body: JSON.stringify(data),

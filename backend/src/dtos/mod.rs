@@ -9,6 +9,7 @@ pub mod user_dto;
 pub mod ai_dto;
 pub mod match_dto;
 pub mod match_ws_dto;
+pub mod edit_request_dto;
 
 // src/dtos/common.rs
 use serde::Deserialize;
