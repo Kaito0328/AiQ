@@ -27,7 +27,7 @@ export function Header() {
         <>
             <View
                 as="header"
-                className="sticky top-0 z-50 border-b-2 border-brand-primary/20 h-16 flex items-center shadow-sm bg-sky-100/95 dark:bg-surface-base/80 backdrop-blur-md transition-colors"
+                className="sticky top-0 z-50 border-b-2 border-brand-primary/30 h-16 flex items-center shadow-sm bg-sky-200/90 dark:bg-surface-base/80 backdrop-blur-md transition-colors"
             >
                 <Container className="relative h-full px-4">
                     <div className="flex items-center justify-between h-full">

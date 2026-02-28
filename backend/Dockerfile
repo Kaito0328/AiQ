@@ -27,6 +27,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 # ビルドしたバイナリだけをコピー
 COPY --from=builder /app/target/release/backend /app/backend
+# シードデータもコピー
+COPY --from=builder /app/seeds /app/seeds
 EXPOSE 8080
 CMD ["./backend"]
 
