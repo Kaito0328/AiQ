@@ -49,16 +49,13 @@ async fn handle_socket(
 
     if let Some(token) = token {
         if let Ok(claims) = crate::utils::jwt::verify_token(&token) {
-            // The `Row` trait is needed for `record.get()`
-            use sqlx::Row;
-            if let Ok(Some(record)) = sqlx::query("SELECT username, icon_url FROM users WHERE id = $1")
-                .bind(claims.sub)
+            if let Ok(Some(record)) = sqlx::query!("SELECT username, icon_url FROM users WHERE id = $1", claims.sub)
                 .fetch_optional(&state.db)
                 .await 
             {
                 user_id = claims.sub;
-                username = record.get("username");
-                icon_url = record.get("icon_url");
+                username = record.username;
+                icon_url = record.icon_url;
             }
         }
     }

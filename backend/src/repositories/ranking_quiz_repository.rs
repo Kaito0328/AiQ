@@ -1,4 +1,4 @@
-use sqlx::{PgPool, Row};
+use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::models::ranking_quiz::RankingQuiz;
@@ -13,17 +13,18 @@ impl RankingQuizRepository {
         question_ids: Vec<Uuid>,
         total_questions: i32,
     ) -> Result<RankingQuiz, sqlx::Error> {
-        let quiz = sqlx::query_as::<_, RankingQuiz>(
+        let quiz = sqlx::query_as!(
+            RankingQuiz,
             r#"
             INSERT INTO ranking_quizzes (user_id, collection_id, question_ids, total_questions)
             VALUES ($1, $2, $3, $4)
             RETURNING id, user_id, collection_id, question_ids, answered_question_ids, total_questions, correct_count, started_at, completed_at, is_active, created_at, updated_at
             "#,
+            user_id,
+            collection_id,
+            &question_ids,
+            total_questions
         )
-        .bind(user_id)
-        .bind(collection_id)
-        .bind(&question_ids)
-        .bind(total_questions)
         .fetch_one(pool)
         .await?;
 
@@ -34,14 +35,15 @@ impl RankingQuizRepository {
         pool: &PgPool,
         quiz_id: Uuid,
     ) -> Result<RankingQuiz, sqlx::Error> {
-        sqlx::query_as::<_, RankingQuiz>(
+        sqlx::query_as!(
+            RankingQuiz,
             r#"
             SELECT id, user_id, collection_id, question_ids, answered_question_ids, total_questions, correct_count, started_at, completed_at, is_active, created_at, updated_at
             FROM ranking_quizzes
             WHERE id = $1 AND is_active = true
             "#,
+            quiz_id
         )
-        .bind(quiz_id)
         .fetch_one(pool)
         .await
     }
@@ -57,17 +59,17 @@ impl RankingQuizRepository {
 
         // 1. Insert all answers
         for (ans, is_correct) in answers.iter().zip(correct_results.iter()) {
-            sqlx::query(
+            sqlx::query!(
                 r#"
                 INSERT INTO ranking_quiz_answers (ranking_quiz_id, question_id, user_answer, is_correct, time_taken_millis)
                 VALUES ($1, $2, $3, $4, $5)
                 "#,
+                quiz_id,
+                ans.question_id,
+                ans.answer,
+                *is_correct,
+                ans.time_taken_millis
             )
-            .bind(quiz_id)
-            .bind(ans.question_id)
-            .bind(&ans.answer)
-            .bind(*is_correct)
-            .bind(ans.time_taken_millis)
             .execute(&mut *tx)
             .await?;
         }
@@ -76,7 +78,8 @@ impl RankingQuizRepository {
         let correct_count = correct_results.iter().filter(|&&c| c).count() as i32;
         let answered_ids: Vec<Uuid> = answers.iter().map(|a| a.question_id).collect();
 
-        let updated_quiz = sqlx::query_as::<_, RankingQuiz>(
+        let updated_quiz = sqlx::query_as!(
+            RankingQuiz,
             r#"
             UPDATE ranking_quizzes
             SET answered_question_ids = $2::uuid[],
@@ -87,10 +90,10 @@ impl RankingQuizRepository {
             WHERE id = $1
             RETURNING id, user_id, collection_id, question_ids, answered_question_ids, total_questions, correct_count, started_at, completed_at, is_active, created_at, updated_at
             "#,
+            quiz_id,
+            &answered_ids,
+            correct_count as i32
         )
-        .bind(quiz_id)
-        .bind(&answered_ids)
-        .bind(correct_count as i32)
         .fetch_one(&mut *tx)
         .await?;
 
@@ -111,17 +114,17 @@ impl RankingQuizRepository {
         let mut tx = pool.begin().await?;
 
         // Insert into answers
-        sqlx::query(
+        sqlx::query!(
             r#"
             INSERT INTO ranking_quiz_answers (ranking_quiz_id, question_id, user_answer, is_correct, time_taken_millis)
             VALUES ($1, $2, $3, $4, $5)
             "#,
+            quiz_id,
+            question_id,
+            user_answer,
+            is_correct,
+            time_taken_millis
         )
-        .bind(quiz_id)
-        .bind(question_id)
-        .bind(user_answer)
-        .bind(is_correct)
-        .bind(time_taken_millis)
         .execute(&mut *tx)
         .await?;
 
@@ -134,7 +137,8 @@ impl RankingQuizRepository {
         };
         let is_active = !is_completed;
 
-        let updated_quiz = sqlx::query_as::<_, RankingQuiz>(
+        let updated_quiz = sqlx::query_as!(
+            RankingQuiz,
             r#"
             UPDATE ranking_quizzes
             SET answered_question_ids = array_append(answered_question_ids, $2),
@@ -145,12 +149,12 @@ impl RankingQuizRepository {
             WHERE id = $1
             RETURNING id, user_id, collection_id, question_ids, answered_question_ids, total_questions, correct_count, started_at, completed_at, is_active, created_at, updated_at
             "#,
+            quiz_id,
+            question_id,
+            correct_inc,
+            is_active,
+            completed_at
         )
-        .bind(quiz_id)
-        .bind(question_id)
-        .bind(correct_inc)
-        .bind(is_active)
-        .bind(completed_at)
         .fetch_one(&mut *tx)
         .await?;
 
@@ -168,18 +172,18 @@ impl RankingQuizRepository {
         total_questions: i32,
         total_time_millis: i64,
     ) -> Result<(), sqlx::Error> {
-        sqlx::query(
+        sqlx::query!(
             r#"
             INSERT INTO ranking_records (user_id, collection_id, score, correct_count, total_questions, total_time_millis)
             VALUES ($1, $2, $3, $4, $5, $6)
             "#,
+            user_id,
+            collection_id,
+            score,
+            correct_count,
+            total_questions,
+            total_time_millis
         )
-        .bind(user_id)
-        .bind(collection_id)
-        .bind(score)
-        .bind(correct_count)
-        .bind(total_questions)
-        .bind(total_time_millis)
         .execute(pool)
         .await?;
 
@@ -191,7 +195,7 @@ impl RankingQuizRepository {
         user_id: Uuid,
         collection_id: Uuid,
     ) -> Result<Option<i64>, sqlx::Error> {
-        let row = sqlx::query(
+        let result = sqlx::query!(
             r#"
             WITH RankedScores AS (
                 SELECT 
@@ -211,23 +215,24 @@ impl RankingQuizRepository {
             )
             SELECT rank FROM Ranks WHERE user_id = $1
             "#,
+            user_id,
+            collection_id
         )
-        .bind(user_id)
-        .bind(collection_id)
         .fetch_optional(pool)
         .await?;
 
-        Ok(row.map(|r| r.get::<i64, _>("rank")))
+        Ok(result.and_then(|r| r.rank))
     }
 
     pub async fn get_leaderboard(
         pool: &PgPool,
         collection_id: Uuid,
     ) -> Result<Vec<crate::dtos::collection_dto::LeaderboardEntry>, sqlx::Error> {
-        let entries = sqlx::query_as::<_, crate::dtos::collection_dto::LeaderboardEntry>(
-            include_str!("../queries/ranking/get_leaderboard.sql")
+        let entries = sqlx::query_file_as!(
+            crate::dtos::collection_dto::LeaderboardEntry,
+            "src/queries/ranking/get_leaderboard.sql",
+            collection_id
         )
-        .bind(collection_id)
         .fetch_all(pool)
         .await?;
 

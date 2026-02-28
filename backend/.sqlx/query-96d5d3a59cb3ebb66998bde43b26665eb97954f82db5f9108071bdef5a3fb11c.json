@@ -1,0 +1,62 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO questions (id, collection_id, question_text, correct_answers, description_text)\n            SELECT u.id, u.collection_id, u.question_text, \n                   CASE WHEN u.correct_answers_raw IS NULL THEN NULL ELSE string_to_array(u.correct_answers_raw, ';') END as correct_answers, \n                   u.description_text\n            FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::text[]) \n            AS u(id, collection_id, question_text, correct_answers_raw, description_text)\n            ON CONFLICT (id) DO UPDATE SET\n                question_text = COALESCE(EXCLUDED.question_text, questions.question_text),\n                correct_answers = COALESCE(EXCLUDED.correct_answers, questions.correct_answers),\n                description_text = COALESCE(EXCLUDED.description_text, questions.description_text),\n                updated_at = NOW()\n            RETURNING id, collection_id, question_text, correct_answers, description_text, created_at, updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "collection_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "correct_answers",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "UuidArray",
+        "UuidArray",
+        "TextArray",
+        "TextArray",
+        "TextArray"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "96d5d3a59cb3ebb66998bde43b26665eb97954f82db5f9108071bdef5a3fb11c"
+}

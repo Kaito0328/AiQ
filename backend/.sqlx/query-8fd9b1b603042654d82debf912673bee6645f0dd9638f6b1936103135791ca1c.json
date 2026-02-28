@@ -1,0 +1,100 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,\n                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,\n                   c.name as collection_name\n            FROM edit_requests er\n            JOIN questions q ON er.question_id = q.id\n            JOIN collections c ON q.collection_id = c.id\n            JOIN users u ON er.requester_id = u.id\n            WHERE c.user_id = $1 AND er.status = 'pending'\n            ORDER BY er.created_at DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "question_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "requester_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "requester_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "correct_answers",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "reason_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "original_question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "original_correct_answers",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 12,
+        "name": "original_description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "collection_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "8fd9b1b603042654d82debf912673bee6645f0dd9638f6b1936103135791ca1c"
+}

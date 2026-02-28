@@ -88,28 +88,22 @@ pub async fn seed_data(pool: &PgPool) {
             for m_coll in m_user.collections {
                 // Determine if we should delete existing
                 if force_reseed {
-                    if let Ok(Some(existing_id)) = sqlx::query_scalar::<_, Uuid>(
+                    if let Ok(Some(existing)) = sqlx::query!(
                         "SELECT id FROM collections WHERE user_id = $1 AND name = $2",
-                    )
-                    .bind(user.id)
-                    .bind(&m_coll.name)
-                    .fetch_optional(pool)
-                    .await {
+                        user.id,
+                        m_coll.name
+                    ).fetch_optional(pool).await {
                         println!("Force Reseed: Deleting collection '{}' for user '{}'.", m_coll.name, user.username);
-                        let _ = CollectionService::delete_collection(pool, existing_id, user.id).await;
+                        let _ = CollectionService::delete_collection(pool, existing.id, user.id).await;
                     }
                 }
 
                 // Check if collection already exists for this user
-                let existing = sqlx::query_scalar::<_, Uuid>(
+                let existing = sqlx::query!(
                     "SELECT id FROM collections WHERE user_id = $1 AND name = $2",
-                )
-                .bind(user.id)
-                .bind(&m_coll.name)
-                .fetch_optional(pool)
-                .await
-                .ok()
-                .flatten();
+                    user.id,
+                    m_coll.name
+                ).fetch_optional(pool).await.ok().flatten();
 
                 if existing.is_none() {
                     let req = CreateCollectionRequest {
@@ -148,21 +142,17 @@ pub async fn seed_data(pool: &PgPool) {
 
     // 5. Seeding Favorites
     for (username, collection_name) in manifest.favorites {
-        if let (Ok(Some(user)), Ok(Some(collection_id))) = (
+        if let (Ok(Some(user)), Ok(Some(collection))) = (
             find_by_username(pool, &username).await,
-            sqlx::query_scalar::<_, Uuid>("SELECT id FROM collections WHERE name = $1 LIMIT 1")
-                .bind(collection_name)
-                .fetch_optional(pool)
-                .await
+            sqlx::query!("SELECT id FROM collections WHERE name = $1 LIMIT 1", collection_name).fetch_optional(pool).await
         ) {
+            let collection_id = collection.id;
             // Directly insert into favorites if not exists
-            let _ = sqlx::query(
+            let _ = sqlx::query!(
                 "INSERT INTO favorite_collections (user_id, collection_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-            )
-            .bind(user.id)
-            .bind(collection_id)
-            .execute(pool)
-            .await;
+                user.id,
+                collection_id
+            ).execute(pool).await;
         }
     }
 
@@ -170,39 +160,30 @@ pub async fn seed_data(pool: &PgPool) {
     for m_set in manifest.collection_sets {
         if let Ok(Some(owner)) = find_by_username(pool, &m_set.owner).await {
             // Check if exists
-            let set_id = if let Ok(Some(existing_id)) = sqlx::query_scalar::<_, Uuid>(
+            let set_id = if let Ok(Some(existing)) = sqlx::query!(
                 "SELECT id FROM collection_sets WHERE user_id = $1 AND name = $2",
-            )
-            .bind(owner.id)
-            .bind(&m_set.name)
-            .fetch_optional(pool)
-            .await {
-                existing_id
+                owner.id,
+                m_set.name
+            ).fetch_optional(pool).await {
+                existing.id
             } else {
-                match sqlx::query_scalar::<_, Uuid>(
+                match sqlx::query!(
                     "INSERT INTO collection_sets (user_id, name) VALUES ($1, $2) RETURNING id",
-                )
-                .bind(owner.id)
-                .bind(&m_set.name)
-                .fetch_one(pool)
-                .await {
-                    Ok(id) => id,
+                    owner.id,
+                    m_set.name
+                ).fetch_one(pool).await {
+                    Ok(r) => r.id,
                     Err(_) => continue,
                 }
             };
 
             for coll_name in m_set.collections {
-                if let Ok(Some(coll_id)) = sqlx::query_scalar::<_, Uuid>("SELECT id FROM collections WHERE name = $1 LIMIT 1")
-                    .bind(coll_name)
-                    .fetch_optional(pool)
-                    .await {
-                    let _ = sqlx::query(
+                if let Ok(Some(coll)) = sqlx::query!("SELECT id FROM collections WHERE name = $1 LIMIT 1", coll_name).fetch_optional(pool).await {
+                    let _ = sqlx::query!(
                         "INSERT INTO collection_set_collections (collection_set_id, collection_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-                    )
-                    .bind(set_id)
-                    .bind(coll_id)
-                    .execute(pool)
-                    .await;
+                        set_id,
+                        coll.id
+                    ).execute(pool).await;
                 }
             }
         }
@@ -211,31 +192,29 @@ pub async fn seed_data(pool: &PgPool) {
     // 7. Seed mock resumable quizzes and edit requests for official user (for UI testing)
     if let Ok(Some(official)) = find_by_username(pool, "official_user").await {
         // Only seed if none exist to avoid bloat
-        let existing_quizzes = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM casual_quizzes WHERE user_id = $1")
-            .bind(official.id)
+        let existing_quizzes = sqlx::query!("SELECT COUNT(*) as count FROM casual_quizzes WHERE user_id = $1", official.id)
             .fetch_one(pool)
             .await
+            .map(|r| r.count.unwrap_or(0))
             .unwrap_or(0);
 
         if existing_quizzes == 0 {
             let mock_colls = ["世界史：ルネサンス", "心理学入門", "TypeScript発展", "ワインの知識"];
-            for &name in mock_colls.iter() {
-                let _ = sqlx::query(
+            for (i, &name) in mock_colls.iter().enumerate() {
+                let _ = sqlx::query!(
                     "INSERT INTO casual_quizzes (user_id, collection_names, total_questions, answered_question_ids, is_active) VALUES ($1, $2, $3, $4, true)",
-                )
-                .bind(official.id)
-                .bind(&[name.to_string()])
-                .bind(20_i32)
-                .bind(&[Uuid::new_v4(); 7][..])
-                .execute(pool)
-                .await;
+                    official.id,
+                    &[name.to_string()],
+                    20,
+                    &[Uuid::new_v4(); 7][..] 
+                ).execute(pool).await;
             }
         }
 
-        let existing_requests = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM edit_requests WHERE requester_id = $1")
-            .bind(official.id)
+        let existing_requests = sqlx::query!("SELECT COUNT(*) as count FROM edit_requests WHERE requester_id = $1", official.id)
             .fetch_one(pool)
             .await
+            .map(|r| r.count.unwrap_or(0))
             .unwrap_or(0);
 
         if existing_requests == 0 {
@@ -248,21 +227,17 @@ pub async fn seed_data(pool: &PgPool) {
             ];
 
             for (coll_name, req_text) in mock_req_data.iter() {
-                if let Ok(Some(question_id)) = sqlx::query_scalar::<_, Uuid>(
+                if let Ok(Some(question)) = sqlx::query!(
                     "SELECT q.id FROM questions q JOIN collections c ON q.collection_id = c.id WHERE c.name = $1 LIMIT 1",
-                )
-                .bind(coll_name)
-                .fetch_optional(pool)
-                .await {
-                    let _ = sqlx::query(
+                    coll_name
+                ).fetch_optional(pool).await {
+                    let _ = sqlx::query!(
                         "INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, reason_id, status) VALUES ($1, $2, $3, $4, 1, 'pending')",
-                    )
-                    .bind(question_id)
-                    .bind(official.id)
-                    .bind(req_text)
-                    .bind(&vec!["修正済みの内容が入ります".to_string()])
-                    .execute(pool)
-                    .await;
+                        question.id,
+                        official.id,
+                        req_text,
+                        &vec!["修正済みの内容が入ります".to_string()]
+                    ).execute(pool).await;
                 }
             }
         }
@@ -275,8 +250,7 @@ async fn ensure_user(pool: &PgPool, username: &str, password: &str, is_official:
     match find_by_username(pool, username).await {
         Ok(Some(user)) => {
             if is_official && !user.is_official {
-                sqlx::query("UPDATE users SET is_official = true WHERE id = $1")
-                    .bind(user.id)
+                sqlx::query!("UPDATE users SET is_official = true WHERE id = $1", user.id)
                     .execute(pool)
                     .await
                     .ok();
@@ -286,8 +260,7 @@ async fn ensure_user(pool: &PgPool, username: &str, password: &str, is_official:
         _ => {
             let user = register_user(pool, username, password).await?;
             if is_official {
-                sqlx::query("UPDATE users SET is_official = true WHERE id = $1")
-                    .bind(user.id)
+                sqlx::query!("UPDATE users SET is_official = true WHERE id = $1", user.id)
                     .execute(pool)
                     .await
                     .ok();

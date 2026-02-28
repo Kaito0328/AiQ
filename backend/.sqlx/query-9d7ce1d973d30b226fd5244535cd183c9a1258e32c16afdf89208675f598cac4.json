@@ -1,0 +1,105 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH inserted AS (\n                INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, description_text, reason_id)\n                VALUES ($1, $2, $3, $4, $5, $6)\n                RETURNING *\n            )\n            SELECT i.id, i.question_id, i.requester_id, u.username as requester_name, i.question_text, i.correct_answers, i.description_text, i.reason_id, i.status, i.created_at,\n                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,\n                   c.name as collection_name\n            FROM inserted i\n            JOIN users u ON i.requester_id = u.id\n            JOIN questions q ON i.question_id = q.id\n            JOIN collections c ON q.collection_id = c.id\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "question_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "requester_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 3,
+        "name": "requester_name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 4,
+        "name": "question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "correct_answers",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "reason_id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "status",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "original_question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 11,
+        "name": "original_correct_answers",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 12,
+        "name": "original_description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "collection_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "TextArray",
+        "Text",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "9d7ce1d973d30b226fd5244535cd183c9a1258e32c16afdf89208675f598cac4"
+}

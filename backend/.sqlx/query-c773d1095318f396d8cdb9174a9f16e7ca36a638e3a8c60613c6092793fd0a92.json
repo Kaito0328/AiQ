@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT id, collection_id, question_text, correct_answer, description_text, created_at, updated_at\nFROM questions\nWHERE collection_id = $1\nORDER BY created_at ASC;",
+  "query": "SELECT id, collection_id, question_text, correct_answers, description_text, created_at, updated_at\nFROM questions\nWHERE id = $1;",
   "describe": {
     "columns": [
       {
@@ -20,8 +20,8 @@
       },
       {
         "ordinal": 3,
-        "name": "correct_answer",
-        "type_info": "Text"
+        "name": "correct_answers",
+        "type_info": "TextArray"
       },
       {
         "ordinal": 4,
@@ -54,5 +54,5 @@
       false
     ]
   },
-  "hash": "b0c0589e9a52fd8fbb54a6629847b826162fda33dad59021cb5b7b364f3b7011"
+  "hash": "c773d1095318f396d8cdb9174a9f16e7ca36a638e3a8c60613c6092793fd0a92"
 }

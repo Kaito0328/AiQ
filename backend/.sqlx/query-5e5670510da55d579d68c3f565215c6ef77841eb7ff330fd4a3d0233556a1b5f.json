@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO casual_quizzes (user_id, collection_names, total_questions, answered_question_ids, is_active) VALUES ($1, $2, $3, $4, true)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "TextArray",
+        "Int4",
+        "UuidArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5e5670510da55d579d68c3f565215c6ef77841eb7ff330fd4a3d0233556a1b5f"
+}
