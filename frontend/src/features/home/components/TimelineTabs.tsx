@@ -25,8 +25,8 @@ interface TimelineListProps {
 
 function TimelineList({ type, onAddToSet, onQuickPlay }: TimelineListProps) {
     const { isAuthenticated } = useAuth();
-    const recent = useRecentCollections();
-    const followee = useFolloweeCollections();
+    const recent = useRecentCollections(type === 'recent');
+    const followee = useFolloweeCollections(isAuthenticated && type === 'following');
 
     const currentData = type === 'following' ? followee : recent;
 

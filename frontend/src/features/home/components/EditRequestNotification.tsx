@@ -10,14 +10,20 @@ import { MessageSquare, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
+import { useAuth } from '@/src/shared/auth/useAuth';
 
 export function EditRequestNotification() {
+    const { user } = useAuth();
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         const fetchRequests = async () => {
+            if (!user) {
+                setLoading(false);
+                return;
+            }
             try {
                 const data = await getMyPendingRequests();
                 setRequests(data);
@@ -28,9 +34,9 @@ export function EditRequestNotification() {
             }
         };
         fetchRequests();
-    }, []);
+    }, [user]);
 
-    if (loading) return null;
+    if (!user || loading) return null;
     if (requests.length === 0) {
         return (
             <Card border="secondary" bg="transparent" className="border-dashed py-4">

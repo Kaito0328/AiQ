@@ -111,23 +111,6 @@ export function CollectionHeader({
                     </Stack>
 
                     <Flex gap="sm" align="center">
-                        {isAuthenticated && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleFavoriteToggle}
-                                className={cn(
-                                    "gap-1.5 transition-colors",
-                                    isFavorited ? "text-brand-heart" : "text-foreground/50"
-                                )}
-                            >
-                                <Heart
-                                    size={20}
-                                    className={cn(isFavorited && "fill-brand-heart")}
-                                />
-                                <Text variant="xs" weight="bold">{favCount}</Text>
-                            </Button>
-                        )}
                         {isOwner && onEdit && (
                             <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5">
                                 <Edit size={16} />
@@ -168,19 +151,21 @@ export function CollectionHeader({
                                 variant="outline"
                                 size="sm"
                                 onClick={onImportCsv}
-                                className="h-8 shadow-sm px-3"
+                                className="h-8 shadow-sm px-2 sm:px-3"
+                                title="インポート"
                             >
-                                <FileUp size={14} className="mr-1.5" />
-                                <Text variant="xs" weight="bold">インポート</Text>
+                                <FileUp size={14} className="sm:mr-1.5" />
+                                <Text variant="xs" weight="bold" className="hidden sm:inline">インポート</Text>
                             </Button>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={onExportCsv}
-                                className="h-8 shadow-sm px-3"
+                                className="h-8 shadow-sm px-2 sm:px-3"
+                                title="エクスポート"
                             >
-                                <Download size={14} className="mr-1.5" />
-                                <Text variant="xs" weight="bold">エクスポート</Text>
+                                <Download size={14} className="sm:mr-1.5" />
+                                <Text variant="xs" weight="bold" className="hidden sm:inline">エクスポート</Text>
                             </Button>
                         </Flex>
                     )}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Container } from '@/src/design/primitives/Container';
 import { Flex } from '@/src/design/primitives/Flex';
@@ -10,17 +10,24 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { Menu } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 import { useAuth } from '@/src/shared/auth/useAuth';
+import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from '@/src/shared/contexts/ThemeContext';
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { isAuthenticated } = useAuth();
+    const { theme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     return (
         <>
             <View
                 as="header"
-                bg="base"
-                className="sticky top-0 z-50 border-b border-surface-muted h-16 flex items-center shadow-sm"
+                className="sticky top-0 z-50 border-b-2 border-brand-primary/20 h-16 flex items-center shadow-sm bg-sky-100/95 dark:bg-surface-base/80 backdrop-blur-md transition-colors"
             >
                 <Container className="relative h-full px-4">
                     <div className="flex items-center justify-between h-full">
@@ -43,7 +50,7 @@ export function Header() {
                                 className="flex items-center gap-2 group pointer-events-auto"
                             >
                                 <img
-                                    src="/logo_black.png"
+                                    src={mounted && theme === 'dark' ? "/logo_white.png" : "/logo_black.png"}
                                     alt="AiQ Logo"
                                     className="h-8 w-8 transition-transform group-hover:scale-110"
                                 />
@@ -51,8 +58,10 @@ export function Header() {
                             </Link>
                         </div>
 
-                        {/* 右側: レイアウトバランスのための空要素 */}
-                        <div className="w-10 h-10" />
+                        {/* 右側: テーマ切替ボタン */}
+                        <div className="z-10">
+                            <ThemeToggle />
+                        </div>
                     </div>
                 </Container>
             </View>

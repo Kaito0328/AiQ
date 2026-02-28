@@ -52,8 +52,9 @@ pub async fn seed_data(pool: &PgPool) {
     let _ = ensure_user(pool, official_username, &official_password, true).await;
 
     // 2. Read Manifest
-    let manifest_path = "seeds/manifest.json";
-    let file_content = match fs::read_to_string(manifest_path) {
+    let seed_dir = std::env::var("SEED_PATH").unwrap_or_else(|_| "seeds".to_string());
+    let manifest_path = format!("{}/manifest.json", seed_dir);
+    let file_content = match fs::read_to_string(&manifest_path) {
         Ok(c) => c,
         Err(_) => {
             println!("manifest.json not found at {}. Skipping seeding.", manifest_path);
@@ -113,7 +114,7 @@ pub async fn seed_data(pool: &PgPool) {
                     };
                     if let Ok(collection) = CollectionService::create_collection(pool, user.id, req).await {
                         // Import CSV
-                        let csv_path = format!("seeds/questions/{}", m_coll.csv_file);
+                        let csv_path = format!("{}/questions/{}", seed_dir, m_coll.csv_file);
                         if let Ok(csv_bytes) = fs::read(csv_path) {
                             if let Ok(items) = crate::services::csv_service::CsvService::parse_csv(&csv_bytes) {
                                 for item in items {

@@ -142,6 +142,7 @@ export default function CollectionDetailPage() {
                         />
                     )}
 
+
                     <QuestionList
                         questions={questions}
                         isOwner={isOwner}
@@ -152,16 +153,8 @@ export default function CollectionDetailPage() {
                         onAddQuestion={handleAddQuestion}
                         onImportCsv={() => setIsCsvModalOpen(true)}
                         onSuccess={handleQuestionSaved}
+                        collectionId={collectionId}
                     />
-
-                    {isOwner && !isEditMode && (
-                        <View className="mt-8 border-t border-gray-200 pt-8">
-                            <AiQuickBar
-                                collectionId={collectionId}
-                                onSuccess={handleQuestionSaved}
-                            />
-                        </View>
-                    )}
                 </Stack>
             </Container>
 

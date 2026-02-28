@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Collection, CollectionSet } from '@/src/entities/collection';
 import { getRecentCollections, getUserCollections, getFolloweeCollections, getUserCollectionSets } from '../api';
 
-export function useRecentCollections() {
+export function useRecentCollections(enabled: boolean = true) {
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -21,8 +21,10 @@ export function useRecentCollections() {
     };
 
     useEffect(() => {
-        refresh();
-    }, []);
+        if (enabled) {
+            refresh();
+        }
+    }, [enabled]);
 
     return { collections, loading, error, refresh };
 }
@@ -53,7 +55,7 @@ export function useUserCollections(userId: string | undefined) {
     return { collections, loading, error, refresh };
 }
 
-export function useFolloweeCollections() {
+export function useFolloweeCollections(enabled: boolean = true) {
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -72,8 +74,10 @@ export function useFolloweeCollections() {
     };
 
     useEffect(() => {
-        refresh();
-    }, []);
+        if (enabled) {
+            refresh();
+        }
+    }, [enabled]);
 
     return { collections, loading, error, refresh };
 }

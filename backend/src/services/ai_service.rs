@@ -25,27 +25,36 @@ impl AiService {
             api_key
         );
 
-        let mut format_instruction = String::new();
+        let mut format_rules = String::new();
         if let Some(qf) = question_format {
-            format_instruction.push_str(&format!("\n- Question Format: {}", qf));
+            format_rules.push_str(&format!("\n- [MANDATORY] Question Style/Language: {}", qf));
         }
         if let Some(af) = answer_format {
-            format_instruction.push_str(&format!("\n- Answer Format: {}", af));
+            format_rules.push_str(&format!("\n- [MANDATORY] Answer Style/Language: {}", af));
         }
         if let (Some(eq), Some(ea)) = (example_question, example_answer) {
-            format_instruction.push_str(&format!(
-                "\n- Example: Question: \"{}\", Answer: \"{}\"",
+            format_rules.push_str(&format!(
+                "\n- [REFERENCE EXAMPLE] Question: \"{}\", Answer: \"{}\"",
                 eq, ea
             ));
         }
 
         let system_instruction = format!(
-            "You are a helpful quiz generator. Generate exactly {} questions based on the provided topic or text. \
-            Output must be purely in a JSON array format where each element is an object strictly containing:\
-            \n- \"questionText\" (string)\n- \"correctAnswers\" (array of strings: MUST be very short phrases, ideally single words, nouns, numbers, or booleans suitable for exact-match grading. If there are multiple valid interpretations or spellings, include them all in this array)\n- \"descriptionText\" (string or null).{}\
-            \nDo not include Markdown blocks (like ```json), just output the raw JSON array. Make sure the output is a valid JSON array.",
+            "You are a professional quiz generator. Your task is to generate exactly {} questions based on the user's prompt or text.\n\n\
+            ## STRICT STYLE AND FORMAT RULES:\n\
+            You MUST follow these rules for every question. If a rule contradicts a common pattern (e.g., TOEIC format), the rule here TAKES PRECEDENCE.\n\
+            {}\n\n\
+            ## OUTPUT JSON SPECIFICATION:\n\
+            Return a JSON array of objects. Each object MUST strictly contain:\n\
+            1. \"questionText\": (string) The question following the Style Rules.\n\
+            2. \"correctAnswers\": (array of strings) Short, concise answers (ideally single words/nouns). Include common variations.\n\
+            3. \"descriptionText\": (string or null) A brief explanation.\n\n\
+            ## CONSTRAINTS:\n\
+            - If '単語' (word) is requested for a format, do NOT generate full sentences or cloze deletion.\n\
+            - Respect the requested language for each field.\n\
+            - Output raw JSON only. Do NOT use markdown backticks.",
             count,
-            format_instruction
+            if format_rules.is_empty() { "Use the most appropriate style for the topic." } else { &format_rules }
         );
 
         let mut contents_parts = Vec::new();
@@ -77,6 +86,18 @@ impl AiService {
             ],
             "generationConfig": {
                 "responseMimeType": "application/json",
+                "responseSchema": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "questionText": { "type": "string" },
+                            "correctAnswers": { "type": "array", "items": { "type": "string" } },
+                            "descriptionText": { "type": "string" }
+                        },
+                        "required": ["questionText", "correctAnswers"]
+                    }
+                }
             }
         });
 
@@ -137,12 +158,12 @@ impl AiService {
             api_key
         );
 
-        let mut format_instruction = String::new();
+        let mut format_rules = String::new();
         if let Some(qf) = question_format {
-            format_instruction.push_str(&format!("\n- Question Format Rule: {}", qf));
+            format_rules.push_str(&format!("\n- [MANDATORY] Question Style/Language: {}", qf));
         }
         if let Some(af) = answer_format {
-            format_instruction.push_str(&format!("\n- Answer Format Rule: {}", af));
+            format_rules.push_str(&format!("\n- [MANDATORY] Answer Style/Language: {}", af));
         }
 
         let items_count = items.len();
@@ -153,17 +174,24 @@ impl AiService {
         };
 
         let system_instruction = format!(
-            "You are a quiz data completion assistant. \
-            Your task is to review a list of {} items and fill in the missing fields. \
-            Follow these rules strictly:\
-            1. DO NOT change any fields that already have content. Treat empty strings or null as missing content.\
-            2. Infer content based on other fields in the SAME item and neighboring items to maintain language, style, and difficulty.\
-            {}\
-            4. If filling Question Text for a given Answer, ensure the question specifically leads to that answer. Do not hallucinate unrelated topics.\
-            5. Return a JSON array of EXACTLY {} objects. Maintain the EXACT same order and use the EXACT same 'id' for each item as provided in the input.\
-            {}\
-            7. Each object must contain: 'id' (from input), 'questionText' (string), 'correctAnswers' (array of strings), and 'descriptionText' (string or null).",
-            items_count, description_rule, items_count, format_instruction
+            "You are a professional quiz data completion assistant. Your task is to review a list of {} items and fill in the missing fields.\n\n\
+            ## STRICT STYLE AND FORMAT RULES:\n\
+            You MUST follow these rules for every field you fill. If a rule contradicts common patterns, the rule here TAKES PRECEDENCE.\n\
+            {}\n\n\
+            ## COMPLETION LOGIC:\n\
+            1. DO NOT change any fields that already have content. Treat empty strings or null as missing content.\n\
+            2. Infer content based on other fields in the SAME item and neighboring items to maintain language, style, and difficulty.\n\
+            {}\n\
+            4. If filling 'questionText' for a given Answer, ensure the question specifically leads to that answer.\n\
+            5. Return a JSON array of EXACTLY {} objects. Maintain the EXACT same order and use the EXACT same 'id' for each item as provided in the input.\n\n\
+            ## CONSTRAINTS:\n\
+            - If '単語' (word) is requested for a format, do NOT generate full sentences or cloze deletion.\n\
+            - Respect the requested language for each field.\n\
+            - Output raw JSON only.",
+            items_count,
+            if format_rules.is_empty() { "No specific format rules. Use the most appropriate style for the topic." } else { &format_rules },
+            description_rule,
+            items_count
         );
 
         let user_prompt = serde_json::to_string(&items).map_err(|e| {
