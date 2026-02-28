@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "INSERT INTO questions (collection_id, question_text, correct_answer, description_text)\nVALUES ($1, $2, $3, $4)\nRETURNING id, collection_id, question_text, correct_answer, description_text, created_at, updated_at;",
+  "query": "INSERT INTO questions (collection_id, question_text, correct_answers, description_text)\nVALUES ($1, $2, $3, $4)\nRETURNING id, collection_id, question_text, correct_answers, description_text, created_at, updated_at;",
   "describe": {
     "columns": [
       {
@@ -20,8 +20,8 @@
       },
       {
         "ordinal": 3,
-        "name": "correct_answer",
-        "type_info": "Text"
+        "name": "correct_answers",
+        "type_info": "TextArray"
       },
       {
         "ordinal": 4,
@@ -43,7 +43,7 @@
       "Left": [
         "Uuid",
         "Text",
-        "Text",
+        "TextArray",
         "Text"
       ]
     },
@@ -57,5 +57,5 @@
       false
     ]
   },
-  "hash": "79eb65cf9d92f272cec9f4c6d72ecba4d101a1f58f531b39d61c87d58ef4360a"
+  "hash": "dc058f0e95f5d27f12274b9443b024ba3bb570fdc16a770e67a1cfa450b6d4fd"
 }

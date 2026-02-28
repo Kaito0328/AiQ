@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO questions (id, collection_id, question_text, correct_answer, description_text)\n            SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::text[])\n            ON CONFLICT (id) DO UPDATE SET\n                question_text = COALESCE(EXCLUDED.question_text, questions.question_text),\n                correct_answer = COALESCE(EXCLUDED.correct_answer, questions.correct_answer),\n                description_text = COALESCE(EXCLUDED.description_text, questions.description_text),\n                updated_at = NOW()\n            RETURNING *\n            ",
+  "query": "UPDATE questions\nSET\n    question_text = $1,\n    correct_answers = $2,\n    description_text = $3,\n    updated_at = NOW()\nWHERE id = $4\nRETURNING id, collection_id, question_text, correct_answers, description_text, created_at, updated_at;",
   "describe": {
     "columns": [
       {
@@ -20,8 +20,8 @@
       },
       {
         "ordinal": 3,
-        "name": "correct_answer",
-        "type_info": "Text"
+        "name": "correct_answers",
+        "type_info": "TextArray"
       },
       {
         "ordinal": 4,
@@ -41,11 +41,10 @@
     ],
     "parameters": {
       "Left": [
-        "UuidArray",
-        "UuidArray",
+        "Text",
         "TextArray",
-        "TextArray",
-        "TextArray"
+        "Text",
+        "Uuid"
       ]
     },
     "nullable": [
@@ -58,5 +57,5 @@
       false
     ]
   },
-  "hash": "3fd9535044008c5069d473a84313b687b02c2d4167f8894cfc098489f4bb53fc"
+  "hash": "157667aab28eca5bf8f279875e417095e1fa486735b57f61c75efaf1a215c57e"
 }

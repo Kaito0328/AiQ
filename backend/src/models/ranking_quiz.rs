@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RankingQuiz {
     pub id: Uuid,
     pub user_id: Uuid,
@@ -18,7 +18,7 @@ pub struct RankingQuiz {
     pub updated_at: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::FromRow)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RankingQuizAnswer {
     pub id: Uuid,
     pub ranking_quiz_id: Uuid,

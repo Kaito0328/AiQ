@@ -22,19 +22,22 @@ impl QuizRepository {
         let elapsed_time_millis = 0;
         let is_active = true;
 
-        let quiz = sqlx::query_as::<_, CasualQuiz>(include_str!("../queries/quiz/insert_casual_quiz.sql"))
-            .bind(user_id)
-            .bind(&filter_types)
-            .bind(&sort_keys)
-            .bind(&collection_names)
-            .bind(&question_ids)
-            .bind(&answered_question_ids)
-            .bind(total_questions)
-            .bind(correct_count)
-            .bind(elapsed_time_millis)
-            .bind(is_active)
-            .fetch_one(pool)
-            .await?;
+        let quiz = sqlx::query_file_as!(
+            CasualQuiz,
+            "src/queries/quiz/insert_casual_quiz.sql",
+            user_id,
+            &filter_types,
+            &sort_keys,
+            &collection_names,
+            &question_ids,
+            &answered_question_ids,
+            total_questions,
+            correct_count,
+            elapsed_time_millis,
+            is_active
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(quiz)
     }
@@ -43,10 +46,13 @@ impl QuizRepository {
         pool: &PgPool,
         user_id: Uuid,
     ) -> Result<Vec<CasualQuiz>, sqlx::Error> {
-        let quizzes = sqlx::query_as::<_, CasualQuiz>(include_str!("../queries/quiz/find_active_quizzes.sql"))
-            .bind(user_id)
-            .fetch_all(pool)
-            .await?;
+        let quizzes = sqlx::query_file_as!(
+            CasualQuiz,
+            "src/queries/quiz/find_active_quizzes.sql",
+            user_id
+        )
+        .fetch_all(pool)
+        .await?;
 
         Ok(quizzes)
     }
@@ -55,10 +61,13 @@ impl QuizRepository {
         pool: &PgPool,
         quiz_id: Uuid,
     ) -> Result<CasualQuiz, sqlx::Error> {
-        let quiz = sqlx::query_as::<_, CasualQuiz>(include_str!("../queries/quiz/find_by_id.sql"))
-            .bind(quiz_id)
-            .fetch_one(pool)
-            .await?;
+        let quiz = sqlx::query_file_as!(
+            CasualQuiz,
+            "src/queries/quiz/find_by_id.sql",
+            quiz_id
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(quiz)
     }
@@ -71,14 +80,17 @@ impl QuizRepository {
         elapsed_time_millis: i64,
         is_active: bool,
     ) -> Result<CasualQuiz, sqlx::Error> {
-        let quiz = sqlx::query_as::<_, CasualQuiz>(include_str!("../queries/quiz/update_quiz_progress.sql"))
-            .bind(quiz_id)
-            .bind(&answered_question_ids)
-            .bind(correct_count)
-            .bind(elapsed_time_millis)
-            .bind(is_active)
-            .fetch_one(pool)
-            .await?;
+        let quiz = sqlx::query_file_as!(
+            CasualQuiz,
+            "src/queries/quiz/update_quiz_progress.sql",
+            quiz_id,
+            &answered_question_ids,
+            correct_count,
+            elapsed_time_millis,
+            is_active
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(quiz)
     }
@@ -88,11 +100,14 @@ impl QuizRepository {
         user_id: Uuid,
         limit: i64,
     ) -> Result<Option<CasualQuiz>, sqlx::Error> {
-        let deleted = sqlx::query_as::<_, CasualQuiz>(include_str!("../queries/quiz/delete_oldest_active.sql"))
-            .bind(user_id)
-            .bind(limit)
-            .fetch_optional(pool)
-            .await?;
+        let deleted = sqlx::query_file_as!(
+            CasualQuiz,
+            "src/queries/quiz/delete_oldest_active.sql",
+            user_id,
+            limit
+        )
+        .fetch_optional(pool)
+        .await?;
 
         Ok(deleted)
     }
@@ -104,13 +119,16 @@ impl QuizRepository {
         user_answer: Option<String>,
         is_correct: bool,
     ) -> Result<CasualQuizAnswer, sqlx::Error> {
-        let answer = sqlx::query_as::<_, CasualQuizAnswer>(include_str!("../queries/quiz/insert_answer.sql"))
-            .bind(quiz_id)
-            .bind(question_id)
-            .bind(user_answer)
-            .bind(is_correct)
-            .fetch_one(pool)
-            .await?;
+        let answer = sqlx::query_file_as!(
+            CasualQuizAnswer,
+            "src/queries/quiz/insert_answer.sql",
+            quiz_id,
+            question_id,
+            user_answer,
+            is_correct
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(answer)
     }
@@ -121,12 +139,15 @@ impl QuizRepository {
         question_id: Uuid,
         is_correct: bool,
     ) -> Result<UserQuestionStat, sqlx::Error> {
-        let stat = sqlx::query_as::<_, UserQuestionStat>(include_str!("../queries/quiz/upsert_stat.sql"))
-            .bind(user_id)
-            .bind(question_id)
-            .bind(is_correct)
-            .fetch_one(pool)
-            .await?;
+        let stat = sqlx::query_file_as!(
+            UserQuestionStat,
+            "src/queries/quiz/upsert_stat.sql",
+            user_id,
+            question_id,
+            is_correct
+        )
+        .fetch_one(pool)
+        .await?;
 
         Ok(stat)
     }
@@ -135,10 +156,13 @@ impl QuizRepository {
         pool: &PgPool,
         quiz_id: Uuid,
     ) -> Result<Vec<CasualQuizAnswer>, sqlx::Error> {
-        let answers = sqlx::query_as::<_, CasualQuizAnswer>(include_str!("../queries/quiz/find_answers.sql"))
-            .bind(quiz_id)
-            .fetch_all(pool)
-            .await?;
+        let answers = sqlx::query_file_as!(
+            CasualQuizAnswer,
+            "src/queries/quiz/find_answers.sql",
+            quiz_id
+        )
+        .fetch_all(pool)
+        .await?;
 
         Ok(answers)
     }

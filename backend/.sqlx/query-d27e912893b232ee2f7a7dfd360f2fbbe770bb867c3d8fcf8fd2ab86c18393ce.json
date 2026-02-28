@@ -1,0 +1,22 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT q.id FROM questions q JOIN collections c ON q.collection_id = c.id WHERE c.name = $1 LIMIT 1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d27e912893b232ee2f7a7dfd360f2fbbe770bb867c3d8fcf8fd2ab86c18393ce"
+}

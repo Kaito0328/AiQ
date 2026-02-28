@@ -8,14 +8,16 @@ use uuid::Uuid; // 追加: 共通のResultを読み込む
 pub async fn create_user(pool: &PgPool, username: &str, hashed_password: &str) -> Result<User> {
     let mut tx = pool.begin().await?;
 
-    let user = sqlx::query_as::<_, User>(include_str!("../queries/users/insert_user.sql"))
-        .bind(username)
-        .bind(hashed_password)
-        .fetch_one(&mut *tx)
-        .await?;
+    let user = sqlx::query_file_as!(
+        User,
+        "src/queries/users/insert_user.sql",
+        username,
+        hashed_password
+    )
+    .fetch_one(&mut *tx)
+    .await?;
 
-    sqlx::query(include_str!("../queries/user_stats/insert_user_stats.sql"))
-        .bind(user.id)
+    sqlx::query_file!("src/queries/user_stats/insert_user_stats.sql", user.id)
         .execute(&mut *tx)
         .await?;
 
@@ -25,8 +27,7 @@ pub async fn create_user(pool: &PgPool, username: &str, hashed_password: &str) -
 }
 
 pub async fn find_by_id(pool: &PgPool, user_id: Uuid) -> Result<Option<User>> {
-    let user = sqlx::query_as::<_, User>(include_str!("../queries/users/find_by_id.sql"))
-        .bind(user_id)
+    let user = sqlx::query_file_as!(User, "src/queries/users/find_by_id.sql", user_id)
         .fetch_optional(pool)
         .await?;
 
@@ -35,8 +36,7 @@ pub async fn find_by_id(pool: &PgPool, user_id: Uuid) -> Result<Option<User>> {
 
 // こちらも Result<Option<User>> に変更
 pub async fn find_by_username(pool: &PgPool, username: &str) -> Result<Option<User>> {
-    let user = sqlx::query_as::<_, User>(include_str!("../queries/users/find_by_username.sql"))
-        .bind(username)
+    let user = sqlx::query_file_as!(User, "src/queries/users/find_by_username.sql", username)
         .fetch_optional(pool)
         .await?;
 
@@ -48,11 +48,14 @@ pub async fn get_profile(
     login_user_id: Option<Uuid>,
     target_user_id: Uuid,
 ) -> Result<Option<UserProfileResponse>> {
-    let profile = sqlx::query_as::<_, UserProfileResponse>(include_str!("../queries/users/get_user_profile.sql"))
-        .bind(login_user_id)
-        .bind(target_user_id)
-        .fetch_optional(pool)
-        .await?;
+    let profile = sqlx::query_file_as!(
+        UserProfileResponse,
+        "src/queries/users/get_user_profile.sql",
+        login_user_id,
+        target_user_id
+    )
+    .fetch_optional(pool)
+    .await?;
 
     Ok(profile)
 }
@@ -143,11 +146,13 @@ pub async fn search_users(
 // src/repositories/user.rs の末尾に追記
 
 pub async fn update_password(pool: &PgPool, user_id: Uuid, new_password_hash: &str) -> Result<()> {
-    sqlx::query(include_str!("../queries/users/update_password.sql"))
-        .bind(new_password_hash)
-        .bind(user_id)
-        .execute(pool)
-        .await?;
+    sqlx::query_file!(
+        "src/queries/users/update_password.sql",
+        new_password_hash,
+        user_id
+    )
+    .execute(pool)
+    .await?;
 
     Ok(())
 }
@@ -161,14 +166,17 @@ pub async fn update_profile(
 ) -> Result<User> {
     // AppErrorを返すため Result<User> (crate::error::Result) を使用
 
-    let res = sqlx::query_as::<_, User>(include_str!("../queries/users/update_profile.sql"))
-        .bind(username)
-        .bind(display_name)
-        .bind(bio)
-        .bind(icon_url)
-        .bind(user_id)
-        .fetch_one(pool)
-        .await;
+    let res = sqlx::query_file_as!(
+        User,
+        "src/queries/users/update_profile.sql",
+        username,
+        display_name,
+        bio,
+        icon_url,
+        user_id
+    )
+    .fetch_one(pool)
+    .await;
 
     match res {
         Ok(user) => Ok(user),
