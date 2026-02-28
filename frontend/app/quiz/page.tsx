@@ -24,6 +24,7 @@ export default function QuizPage() {
     const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
     const [userAnswers, setUserAnswers] = useState<AnswerHistory[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isRetry, setIsRetry] = useState(false);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -32,11 +33,13 @@ export default function QuizPage() {
             const data = JSON.parse(stored);
             if (data.quizId && data.questions) {
                 // Ranking Quiz (Bulk Mode)
+                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRankingQuizId(data.quizId);
-                const qs = data.questions.map((q: any) => ({
+
+                const qs = data.questions.map((q: { id: string; questionText: string }) => ({
                     id: q.id,
                     questionText: q.questionText,
-                    correctAnswer: '???', // Hide until the end
+                    correctAnswers: ['???'], // Hide until the end
                     collectionId: data.collectionId
                 }));
                 setQuestions(qs);
@@ -44,16 +47,14 @@ export default function QuizPage() {
                 // Casual Quiz
                 setQuestions(data.questions || []);
                 setQuiz(data.quiz || null);
+                setIsRetry(!!data.isRetry);
             }
         }
     }, []);
 
-    const judgeAnswer = useCallback((userAnswer: string, correctAnswer: string): boolean => {
+    const judgeAnswer = useCallback((userAnswer: string, correctAnswers: string[]): boolean => {
         const normalized = userAnswer.trim().toLowerCase();
-        const correctAnswers = correctAnswer
-            .split(/[,|]/)
-            .map(ans => ans.trim().toLowerCase());
-        return correctAnswers.includes(normalized);
+        return correctAnswers.some(ans => ans.trim().toLowerCase() === normalized);
     }, []);
 
     const handleAnswer = useCallback(async (userAnswerText: string) => {
@@ -73,6 +74,7 @@ export default function QuizPage() {
                 // Finish and submit all
                 setIsSubmitting(true);
                 try {
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
                     const submission = updatedAnswers.map(a => ({
                         question_id: a.question.id,
                         answer: a.userAnswer,
@@ -100,7 +102,7 @@ export default function QuizPage() {
                                 correct: result.isCorrect,
                                 question: {
                                     ...a.question,
-                                    correctAnswer: result.correctAnswer,
+                                    correctAnswers: [result.correctAnswer],
                                 }
                             };
                         } else {
@@ -119,9 +121,9 @@ export default function QuizPage() {
             } else {
                 setCurrentIndex(prev => prev + 1);
             }
-        } else if (quiz) {
-            // Casual mode: Show feedback
-            const correct = judgeAnswer(userAnswerText, q.correctAnswer);
+        } else if (quiz || isRetry) {
+            // Casual mode or Retry: Show feedback
+            const correct = judgeAnswer(userAnswerText, q.correctAnswers);
             setIsCorrect(correct);
 
             const answer: AnswerHistory = {
@@ -132,11 +134,14 @@ export default function QuizPage() {
             setUserAnswers(prev => [...prev, answer]);
 
             try {
-                await submitAnswer(quiz.id, {
-                    questionId: q.id,
-                    userAnswer: userAnswerText,
-                    elapsedMillis: 0,
-                });
+                // Only submit to backend if it's a real new casual session (not retry)
+                if (!isRetry && quiz) {
+                    await submitAnswer(quiz.id, {
+                        questionId: q.id,
+                        userAnswer: userAnswerText,
+                        elapsedMillis: 0,
+                    });
+                }
             } catch (err) {
                 console.error('Failed to submit casual answer', err);
             }
@@ -190,9 +195,10 @@ export default function QuizPage() {
                 {isCorrect !== null ? (
                     <Result
                         isCorrect={isCorrect}
-                        correctAnswer={currentQuestion.correctAnswer}
+                        correctAnswer={currentQuestion.correctAnswers.join(' / ')}
                         description={currentQuestion.descriptionText}
                         onNext={handleNext}
+                        question={currentQuestion}
                     />
                 ) : (
                     <QuizForm

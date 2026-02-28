@@ -1,0 +1,11 @@
+question,answer,description
+"What is the core concept in Rust for memory safety?","Ownership","Value ownership ensures safety without GC."
+"What are the two types of borrowing in Rust?","Immutable and Mutable;shared and exclusive","&T and &mut T."
+"Can you have multiple mutable references at once?","No","Only one mutable reference is allowed in a scope."
+"What is the term for a reference that outlives its data?","Dangling reference","Rust prevents this using lifetimes."
+"Which keyword is used to transfer ownership from a thread?","move","Commonly used with closures."
+"What is the default mutability of variables in Rust?","Immutable","Variables are immutable unless 'mut' is used."
+"What is the Rust tool for package management?","Cargo","Handles builds, dependencies, and more."
+"What is the term for 'cleaning up' data when it leaves scope?","Drop","Rust calls the Drop trait automatically."
+"What are 'lifetimes' used for in Rust?","Reference validity","Ensures references point to valid memory."
+"Which data structure is used for a resizeable array?","Vec;Vector","Stored on the heap."

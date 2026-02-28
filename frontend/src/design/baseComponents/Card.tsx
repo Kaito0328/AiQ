@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/src/shared/utils/cn';
 import { View, type ViewProps } from '../primitives/View';
 
-export interface CardProps extends ViewProps { }
+export type CardProps = ViewProps;
 
 /**
  * 情報を整理して表示するためのコンテナコンポーネントです。

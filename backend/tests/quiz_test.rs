@@ -21,10 +21,10 @@ async fn test_casual_quiz_flow(pool: sqlx::PgPool) {
 
     // 2. Start a casual quiz
     let start_body = serde_json::json!({
-        "collection_ids": [collection_id],
-        "filter_types": ["ALL"],
-        "sort_keys": ["RANDOM"],
-        "total_questions": 2
+        "collectionIds": [collection_id],
+        "filterTypes": ["ALL"],
+        "sortKeys": ["RANDOM"],
+        "totalQuestions": 2
     });
 
     let req_start = Request::builder()
@@ -39,18 +39,19 @@ async fn test_casual_quiz_flow(pool: sqlx::PgPool) {
     assert_eq!(res_start.status(), StatusCode::OK);
 
     let body_bytes = res_start.into_body().collect().await.unwrap().to_bytes();
-    let quiz: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+    let start_resp: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
+    let quiz = start_resp.get("quiz").unwrap();
     let quiz_id = quiz.get("id").unwrap().as_str().unwrap().to_string();
-    let q_ids = quiz.get("question_ids").unwrap().as_array().unwrap();
+    let q_ids = quiz.get("questionIds").unwrap().as_array().unwrap();
     assert_eq!(q_ids.len(), 2);
 
     let target_question_id = q_ids[0].as_str().unwrap().to_string();
 
     // 3. Submit an answer to the first question
     let submit_body = serde_json::json!({
-        "question_id": target_question_id,
-        "user_answer": "Answer",
-        "elapsed_millis": 1500
+        "questionId": target_question_id,
+        "userAnswer": "Answer",
+        "elapsedMillis": 1500
     });
 
     let req_submit = Request::builder()
@@ -67,10 +68,10 @@ async fn test_casual_quiz_flow(pool: sqlx::PgPool) {
     let body_bytes = res_submit.into_body().collect().await.unwrap().to_bytes();
     let updated_quiz: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(
-        updated_quiz.get("correct_count").unwrap().as_i64().unwrap(),
+        updated_quiz.get("correctCount").unwrap().as_i64().unwrap(),
         1
     );
-    assert!(updated_quiz.get("is_active").unwrap().as_bool().unwrap()); // Still active, 1 question left
+    assert!(updated_quiz.get("isActive").unwrap().as_bool().unwrap()); // Still active, 1 question left
 
     // 4. Check get resumes
     let req_resumes = Request::builder()
@@ -90,9 +91,9 @@ async fn test_casual_quiz_flow(pool: sqlx::PgPool) {
     // 5. Submit final answer
     let target_question_id_2 = q_ids[1].as_str().unwrap().to_string();
     let submit_body_2 = serde_json::json!({
-        "question_id": target_question_id_2,
-        "user_answer": "Wrong",
-        "elapsed_millis": 1000
+        "questionId": target_question_id_2,
+        "userAnswer": "Wrong",
+        "elapsedMillis": 1000
     });
 
     let req_submit_2 = Request::builder()
@@ -108,5 +109,5 @@ async fn test_casual_quiz_flow(pool: sqlx::PgPool) {
 
     let body_bytes = res_submit_2.into_body().collect().await.unwrap().to_bytes();
     let final_quiz: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert!(!final_quiz.get("is_active").unwrap().as_bool().unwrap()); // No longer active!
+    assert!(!final_quiz.get("isActive").unwrap().as_bool().unwrap()); // No longer active!
 }

@@ -7,7 +7,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { cn } from '@/src/shared/utils/cn';
-import { X, Home, Book, User, Users, LogOut, Heart, Settings } from 'lucide-react';
+import { X, Home, Book, User, Users, LogOut, Heart, Settings, MessageSquare, History, LogIn } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/shared/auth/useAuth';
 
@@ -52,36 +52,77 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 <View className="h-full p-6">
                     <Stack gap="xl" className="h-full">
                         <Flex justify="between" align="center">
-                            <Text variant="h3">メニュー</Text>
-                            <Button variant="ghost" size="sm" onClick={onClose} className="p-1 h-auto">
-                                <X size={24} />
+                            <Text variant="detail" color="secondary" weight="bold">AiQ MENU</Text>
+                            <Button variant="ghost" size="sm" onClick={onClose} className="p-1 h-auto hover:bg-surface-muted transition-colors rounded-full">
+                                <X size={20} className="text-foreground/60" />
                             </Button>
                         </Flex>
 
-                        <Stack gap="md" className="flex-1">
-                            <MenuLink icon={<Home size={20} />} label="ホーム" onClick={() => handleNavigate('/home')} />
-                            <MenuLink icon={<Book size={20} />} label="公式コレクション" onClick={() => handleNavigate('/users/official')} />
-                            <MenuLink icon={<Users size={20} />} label="ユーザー一覧" onClick={() => handleNavigate('/users')} />
-                            {isAuthenticated && (
-                                <>
-                                    <MenuLink icon={<User size={20} />} label="プロファイル" onClick={() => handleNavigate(`/users/${user?.id}`)} />
-                                    <MenuLink icon={<Heart size={20} />} label="お気に入り" onClick={() => handleNavigate(`/users/${user?.id}/favorites`)} />
-                                    <MenuLink icon={<Settings size={20} />} label="パスワード変更" onClick={() => handleNavigate('/settings/password')} />
-                                </>
-                            )}
-                        </Stack>
+                        {isAuthenticated ? (
+                            <Stack gap="xl" className="flex-1">
+                                {/* Profile Section */}
+                                <Stack gap="md">
+                                    <Flex gap="md" align="center">
+                                        <View className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center overflow-hidden border-2 border-brand-primary/20 shrink-0">
+                                            {user?.iconUrl ? (
+                                                <img src={user.iconUrl} alt={user.username} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User size={32} className="text-brand-primary" />
+                                            )}
+                                        </View>
+                                        <Stack gap="none" className="min-w-0">
+                                            <Text variant="h3" weight="bold" className="truncate">
+                                                {user?.displayName || user?.username}
+                                            </Text>
+                                            <Text variant="xs" color="secondary" className="truncate">
+                                                @{user?.username}
+                                            </Text>
+                                        </Stack>
+                                    </Flex>
 
-                        {isAuthenticated && (
-                            <View className="border-t border-surface-muted pt-6">
-                                <Button
-                                    variant="ghost"
-                                    className="w-full justify-start gap-3 text-status-danger hover:bg-status-danger/10"
-                                    onClick={handleLogout}
-                                >
-                                    <LogOut size={20} />
-                                    ログアウト
-                                </Button>
-                            </View>
+                                    <View className="h-px bg-surface-muted w-full" />
+                                </Stack>
+
+                                {/* Links Section */}
+                                <Stack gap="xs">
+                                    <MenuLink icon={<User size={20} />} label="プロフィール" onClick={() => handleNavigate(`/users/${user?.id}`)} />
+                                    <MenuLink icon={<Heart size={20} />} label="お気に入り" onClick={() => handleNavigate(`/users/${user?.id}/favorites`)} />
+                                    <MenuLink icon={<MessageSquare size={20} />} label="修正依頼の管理" onClick={() => handleNavigate('/edit-requests')} />
+                                    <MenuLink icon={<History size={20} />} label="中断したクイズ" onClick={() => handleNavigate('/quiz/resume')} />
+                                    <MenuLink icon={<Settings size={20} />} label="設定" onClick={() => handleNavigate('/settings')} />
+                                </Stack>
+
+                                {/* Footer Section with Logout */}
+                                <View className="mt-auto pt-6 border-t border-surface-muted">
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full justify-start gap-4 p-3 h-auto text-status-danger hover:bg-status-danger/10 group transition-all"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut size={20} className="transition-transform group-hover:-translate-x-1" />
+                                        <Text weight="bold">ログアウト</Text>
+                                    </Button>
+                                </View>
+                            </Stack>
+                        ) : (
+                            <Stack gap="xl" align="center" className="flex-1 justify-center py-12">
+                                <View className="p-6 bg-brand-primary/5 rounded-full">
+                                    <LogIn size={48} className="text-brand-primary/40" />
+                                </View>
+                                <Stack gap="md" align="center">
+                                    <Text variant="detail" color="secondary" align="center">
+                                        全ての機能を利用するには<br />ログインが必要です
+                                    </Text>
+                                    <Button
+                                        variant="solid"
+                                        color="primary"
+                                        className="w-full px-12"
+                                        onClick={() => handleNavigate('/login')}
+                                    >
+                                        ログイン / 新規登録
+                                    </Button>
+                                </Stack>
+                            </Stack>
                         )}
                     </Stack>
                 </View>

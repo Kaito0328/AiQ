@@ -12,7 +12,7 @@ const variantMap: Partial<Record<BrandColorKey, string>> = {
 };
 
 const checkboxVariants = cva(
-    'h-5 w-5 rounded border border-gray-300 transition-all focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 disabled:opacity-50',
+    'h-5 w-5 rounded border border-gray-500 bg-white transition-all focus:ring-2 focus:ring-focus-ring focus:ring-offset-2 disabled:opacity-50 cursor-pointer hover:border-brand-primary/70',
     {
         variants: {
             variant: variantMap,

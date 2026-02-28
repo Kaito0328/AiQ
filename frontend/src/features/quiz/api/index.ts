@@ -90,7 +90,7 @@ export const getLeaderboard = async (collectionId: string): Promise<LeaderboardR
 export interface RankingAnswerResultDto {
     questionId: string;
     isCorrect: boolean;
-    correctAnswer: string;
+    correctAnswer: string; // This is the joined string for display
 }
 
 export interface RankingQuizResultDto {

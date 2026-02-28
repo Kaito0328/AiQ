@@ -43,6 +43,9 @@ impl MatchWsService {
             WsClientMessage::ResetMatch { collection_ids, filter_types, sort_keys, total_questions } => {
                 Self::handle_reset_match(state, room_id, user_id, collection_ids, filter_types, sort_keys, total_questions).await;
             }
+            WsClientMessage::UpdateVisibility { visibility } => {
+                Self::handle_update_visibility(&state.match_state, room_id, user_id, visibility).await;
+            }
         }
     }
 
@@ -106,6 +109,7 @@ impl MatchWsService {
             }
             room.current_question_index = index;
             room.buzzed_user_ids.clear();
+            room.submitted_user_ids.clear();
             room.round_sequence += 1; // Increment for new round
             let current_sequence = room.round_sequence;
 
@@ -147,11 +151,6 @@ impl MatchWsService {
                 return;
             }
 
-            // ONLY buzz if nobody is currently answering
-            if room.active_buzzer.is_some() {
-                return;
-            }
-
             // Check if player hasn't already buzzed (already failed or already buzzed)
             if room.buzzed_user_ids.contains(&user_id) {
                 return;
@@ -160,20 +159,22 @@ impl MatchWsService {
             // Check capacity lock
             if room.buzzed_user_ids.len() < room.max_buzzes_per_round {
                 room.buzzed_user_ids.push(user_id);
-                room.active_buzzer = Some(user_id);
-                room.round_sequence += 1; // SUSPEND current question timer
-                let current_sequence = room.round_sequence;
-
-                let expires_at_ms = get_now_ms() + 10000; // 10 seconds to answer
+                
+                // Everyone who buzzes gets 10 seconds to answer
+                let expires_at_ms = get_now_ms() + 10000;
+                
                 let msg = WsServerMessage::PlayerBuzzed {
                     user_id,
                     expires_at_ms,
+                    buzzed_user_ids: room.buzzed_user_ids.clone(),
+                    submitted_user_ids: room.submitted_user_ids.clone(),
                 };
                 let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
 
-                // Spawn timeout for not answering
+                // Individual timeout for this person
                 let state = state.clone();
                 let current_index = room.current_question_index;
+                let current_sequence = room.round_sequence;
                 tokio::spawn(async move {
                     tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
                     Self::handle_answer_timeout(&state, room_id, current_index, current_sequence, user_id).await;
@@ -188,7 +189,8 @@ impl MatchWsService {
              if room.status == RoomStatus::Playing 
                 && room.current_question_index == index 
                 && room.round_sequence == sequence
-                && room.active_buzzer == Some(user_id)
+                && room.buzzed_user_ids.contains(&user_id)
+                && !room.submitted_user_ids.contains(&user_id)
             {
                 drop(rooms);
                 // Trigger incorrect answer
@@ -200,28 +202,26 @@ impl MatchWsService {
     async fn handle_answer(state: &SharedMatchState, room_id: Uuid, user_id: Uuid, answer: String) {
         let mut rooms = state.write().await;
         if let Some(room) = rooms.get_mut(&room_id) {
-            eprintln!("[DEBUG] Handling answer from user: {} | room: {} | status: {:?} | buzzed_users: {:?}", user_id, room_id, room.status, room.buzzed_user_ids);
             if room.status != RoomStatus::Playing {
-                eprintln!("[DEBUG] Room is not in Playing status");
                 return;
             }
 
-            // Verify they actually buzzed
-            if !room.buzzed_user_ids.contains(&user_id) {
-                eprintln!("[DEBUG] User did not buzz");
+            // Verify they actually buzzed and haven't submitted
+            if !room.buzzed_user_ids.contains(&user_id) || room.submitted_user_ids.contains(&user_id) {
                 return;
             }
+
+            room.submitted_user_ids.push(user_id);
 
             let current_q = &room.questions[room.current_question_index];
-            let is_correct = answer
-                .trim()
-                .eq_ignore_ascii_case(current_q.correct_answer.trim());
+            let trimmed_ans = answer.trim();
+            let is_correct = current_q.correct_answers.iter().any(|correct| {
+                trimmed_ans.eq_ignore_ascii_case(correct.trim())
+            });
             
-            eprintln!("[DEBUG] Answer: {} | Correct: {} | Result: {}", answer, current_q.correct_answer, is_correct);
-
             if let Some(player) = room.players.get_mut(&user_id) {
                 if is_correct {
-                    player.score += 1000;
+                    player.score += 10;
                     player.correct_answers += 1;
                 }
 
@@ -229,57 +229,30 @@ impl MatchWsService {
                     user_id,
                     is_correct,
                     new_score: player.score,
+                    submitted_user_ids: room.submitted_user_ids.clone(),
                 };
                 let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
             }
 
-            room.active_buzzer = None;
-
-            // Decide if we should end the round
-            let is_max_buzzes = room.buzzed_user_ids.len() >= room.max_buzzes_per_round;
-            let should_end_round = is_correct || is_max_buzzes;
-
-            if should_end_round {
+            // Round ends when:
+            // 1. Timer expires (handled by separate spawn)
+            // 2. All participants in room have buzzed and submitted (optional optimization)
+            // For now, let's keep it timer-based or end if EVERYONE has submitted.
+            if room.submitted_user_ids.len() == room.players.len() || (room.buzzed_user_ids.len() >= room.max_buzzes_per_round && room.submitted_user_ids.len() >= room.buzzed_user_ids.len()) {
                 Self::end_round_internal(room, state.clone());
-            } else {
-                // If incorrect but more buzzes available, resume round with 10s extension
-                let next_index = room.current_question_index;
-                drop(rooms);
-                Self::resume_round(&state, room_id, next_index).await;
             }
         }
     }
 
-    async fn resume_round(state: &SharedMatchState, room_id: Uuid, index: usize) {
-        let mut rooms = state.write().await;
-        if let Some(room) = rooms.get_mut(&room_id) {
-            if room.status != RoomStatus::Playing || room.current_question_index != index {
-                return;
-            }
-            // Keep buzzed_user_ids to know who already failed
-            room.round_sequence += 1;
-            let current_sequence = room.round_sequence;
-            
-            let expires_at_ms = get_now_ms() + 10000; // 10s extension for others to buzz
-            let msg = WsServerMessage::RoundStarted {
-                question_index: index,
-                expires_at_ms,
-            };
-            let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
-
-            let state = state.clone();
-            tokio::spawn(async move {
-                tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-                Self::handle_round_timeout(&state, room_id, index, current_sequence).await;
-            });
-        }
+    async fn resume_round(_state: &SharedMatchState, _room_id: Uuid, _index: usize) {
+        // Obsolete in simultaneous mode
     }
 
     fn end_round_internal(room: &mut crate::state::match_state::RoomState, state: SharedMatchState) {
         room.active_buzzer = None;
         room.round_sequence += 1;
         let current_q = &room.questions[room.current_question_index];
-        let correct_answer = current_q.correct_answer.clone();
+        let correct_answer = current_q.correct_answers.join(" / ");
         let scores: Vec<PlayerScoreDto> = room
             .players
             .values()
@@ -287,6 +260,7 @@ impl MatchWsService {
                 user_id: p.user_id,
                 username: p.username.clone(),
                 score: p.score,
+                icon_url: p.icon_url.clone(),
             })
             .collect();
 
@@ -331,6 +305,16 @@ impl MatchWsService {
             let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
         }
     }
+    
+    async fn handle_update_visibility(state: &SharedMatchState, room_id: Uuid, user_id: Uuid, visibility: crate::state::match_state::RoomVisibility) {
+        let mut rooms = state.write().await;
+        if let Some(room) = rooms.get_mut(&room_id) {
+            if room.host_id != user_id { return; }
+            room.visibility = visibility.clone();
+            let msg = WsServerMessage::RoomVisibilityUpdated { visibility };
+            let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
+        }
+    }
 
     async fn handle_back_to_lobby(state: &SharedMatchState, room_id: Uuid, user_id: Uuid) {
         let mut rooms = state.write().await;
@@ -339,6 +323,7 @@ impl MatchWsService {
             room.status = RoomStatus::Waiting;
             room.current_question_index = 0;
             room.buzzed_user_ids.clear();
+            room.submitted_user_ids.clear();
             room.active_buzzer = None;
             for player in room.players.values_mut() {
                 player.score = 0;
@@ -348,6 +333,7 @@ impl MatchWsService {
                 user_id: p.user_id,
                 username: p.username.clone(),
                 score: p.score,
+                icon_url: p.icon_url.clone(),
             }).collect();
             let msg = WsServerMessage::RoomStateUpdate {
                 players,
@@ -363,7 +349,7 @@ impl MatchWsService {
         room_id: Uuid,
         user_id: Uuid,
         collection_ids: Vec<Uuid>,
-        filter_types: Vec<String>,
+        _filter_types: Vec<String>,
         sort_keys: Vec<String>,
         total_questions: usize
     ) {
@@ -402,7 +388,7 @@ impl MatchWsService {
                 id: q.id,
                 question_text: q.question_text,
                 description_text: q.description_text,
-                correct_answer: q.correct_answer,
+                correct_answers: q.correct_answers,
             })
             .collect();
 
@@ -413,6 +399,7 @@ impl MatchWsService {
             room.status = RoomStatus::Waiting; 
             room.current_question_index = 0;
             room.buzzed_user_ids.clear();
+            room.submitted_user_ids.clear();
             room.active_buzzer = None;
             for player in room.players.values_mut() {
                 player.score = 0;
@@ -423,6 +410,7 @@ impl MatchWsService {
                 user_id: p.user_id,
                 username: p.username.clone(),
                 score: p.score,
+                icon_url: p.icon_url.clone(),
             }).collect();
             let msg = WsServerMessage::RoomStateUpdate {
                 players,

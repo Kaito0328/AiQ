@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/src/shared/utils/cn';
 import { View, type ViewProps } from '../primitives/View';
 
-export interface SkeletonProps extends ViewProps { }
+export type SkeletonProps = ViewProps;
 
 /**
  * コンテンツの読み込み中を表示するためのスケルトンコンポーネントです。

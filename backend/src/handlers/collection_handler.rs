@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, State, Query},
     http::StatusCode,
 };
 use uuid::Uuid;
@@ -9,9 +9,86 @@ use crate::{extractors::auth::OptionalClaims, state::AppState};
 use crate::{models::user::User, utils::jwt::Claims};
 
 // --- Collection Handlers ---
+use axum::extract::Multipart;
 use crate::dtos::collection_dto::{CreateCollectionRequest, UpdateCollectionRequest};
 use crate::models::collection::Collection;
 use crate::services::collection_service::CollectionService;
+use crate::services::csv_service::CsvService;
+use crate::services::question_service::QuestionService;
+use axum::response::IntoResponse;
+
+pub async fn upload_csv(
+    State(state): State<AppState>,
+    claims: Claims,
+    Path(collection_id): Path<Uuid>,
+    mut multipart: Multipart,
+) -> Result<StatusCode, StatusCode> {
+    let mut csv_data: Option<axum::body::Bytes> = None;
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let field_name: Option<&str> = field.name();
+        if field_name == Some("file") {
+            let bytes_res = field.bytes().await;
+            let bytes: axum::body::Bytes = bytes_res.map_err(|e| {
+                eprintln!("Multipart error: {:?}", e);
+                StatusCode::INTERNAL_SERVER_ERROR
+            })?;
+            csv_data = Some(bytes);
+            break;
+        }
+    }
+
+    let csv_data = csv_data.ok_or(StatusCode::BAD_REQUEST)?;
+    let upsert_items = crate::services::csv_service::CsvService::parse_csv(csv_data.as_ref()).map_err(|_| StatusCode::BAD_REQUEST)?;
+
+    let batch_req = crate::dtos::question_dto::BatchQuestionsRequest {
+        upsert_items,
+        delete_ids: vec![],
+    };
+
+    crate::services::question_service::QuestionService::batch_questions(&state.db, collection_id, claims.user_id(), batch_req)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(StatusCode::OK)
+}
+
+pub async fn export_csv(
+    State(state): State<AppState>,
+    claims: Claims,
+    Path(collection_id): Path<Uuid>,
+) -> Result<impl IntoResponse, StatusCode> {
+    // Check ownership
+    let collection = CollectionService::get_collection(&state.db, collection_id, Some(claims.user_id()))
+        .await
+        .map_err(|_| StatusCode::FORBIDDEN)?;
+
+    if collection.user_id != claims.user_id() {
+        return Err(StatusCode::FORBIDDEN);
+    }
+
+    let questions: Vec<crate::models::question::Question> = QuestionService::get_collection_questions(&state.db, collection_id, Some(claims.user_id()))
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let csv_string = CsvService::generate_csv(&questions).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    let mut headers = axum::http::HeaderMap::new();
+    headers.insert(
+        axum::http::header::CONTENT_TYPE,
+        axum::http::header::HeaderValue::from_static("text/csv"),
+    );
+    headers.insert(
+        axum::http::header::CONTENT_DISPOSITION,
+        axum::http::header::HeaderValue::from_str(&format!(
+            "attachment; filename=\"{}.csv\"",
+            collection.name
+        ))
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?,
+    );
+
+    Ok((headers, csv_string))
+}
 
 pub async fn create_collection(
     State(state): State<AppState>,
@@ -99,7 +176,7 @@ pub struct TimelineQuery {
 pub async fn get_followee_collections(
     State(state): State<AppState>,
     claims: Claims,
-    axum::extract::Query(query): axum::extract::Query<TimelineQuery>,
+    Query(query): Query<TimelineQuery>,
 ) -> Result<Json<Vec<crate::dtos::collection_dto::CollectionResponse>>, StatusCode> {
     let limit = query.limit.unwrap_or(20);
     let offset = query.offset.unwrap_or(0);
@@ -115,7 +192,7 @@ pub async fn get_followee_collections(
 pub async fn get_recent_collections(
     State(state): State<AppState>,
     OptionalClaims(claims): OptionalClaims,
-    axum::extract::Query(query): axum::extract::Query<TimelineQuery>,
+    Query(query): Query<TimelineQuery>,
 ) -> Result<Json<Vec<crate::dtos::collection_dto::CollectionResponse>>, StatusCode> {
     let limit = query.limit.unwrap_or(20);
     let offset = query.offset.unwrap_or(0);

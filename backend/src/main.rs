@@ -1,6 +1,6 @@
 use backend::app;
 use backend::state::AppState;
-use backend::services::seed_service::seed_official_data;
+use backend::services::seed_service::seed_data;
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use axum::http::HeaderValue;
@@ -25,7 +25,7 @@ async fn main() {
         .expect("Failed to run database migrations");
 
     // Seed the database with official user and data if it doesn't exist
-    seed_official_data(&pool).await;
+    seed_data(&pool).await;
 
     let state = AppState::new(pool);
     

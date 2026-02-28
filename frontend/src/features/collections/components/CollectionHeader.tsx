@@ -13,19 +13,36 @@ import { useAuth } from '@/src/shared/auth/useAuth';
 import { Heart, Edit, Globe, Lock, BookOpen } from 'lucide-react';
 import { addFavorite, removeFavorite } from '@/src/features/favorites/api';
 import { cn } from '@/src/shared/utils/cn';
+import { MoreVertical, Sparkles, FileText, Download, FileUp } from 'lucide-react';
+import { CsvImportModal } from './CsvImportModal';
+import { AiGenerationModal } from './AiGenerationModal';
+import { PdfGenerationModal } from './PdfGenerationModal';
+import { exportCsv } from '../api';
+import { useToast } from '@/src/shared/contexts/ToastContext';
 
 interface CollectionHeaderProps {
     collection: Collection;
     isOwner: boolean;
     questionCount: number;
     onEdit?: () => void;
+    onImportCsv?: () => void;
+    onExportCsv?: () => void;
 }
 
-export function CollectionHeader({ collection, isOwner, questionCount, onEdit }: CollectionHeaderProps) {
+export function CollectionHeader({
+    collection,
+    isOwner,
+    questionCount,
+    onEdit,
+    onImportCsv,
+    onExportCsv
+}: CollectionHeaderProps) {
     const { isAuthenticated } = useAuth();
+    const { showToast } = useToast();
     const [isFavorited, setIsFavorited] = useState(collection.isFavorited || false);
     const [favCount, setFavCount] = useState(collection.favoriteCount || 0);
     const [loading, setLoading] = useState(false);
+    const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
     React.useEffect(() => {
         setIsFavorited(collection.isFavorited || false);
@@ -47,8 +64,26 @@ export function CollectionHeader({ collection, isOwner, questionCount, onEdit }:
             }
         } catch (err) {
             console.error('お気に入り操作に失敗しました', err);
+            showToast({ message: 'お気に入り操作に失敗しました', variant: 'danger' });
         } finally {
             setLoading(false);
+        }
+    };
+    const handleExportCsv = async () => {
+        try {
+            const blob = await exportCsv(collection.id);
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${collection.name}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            showToast({ message: 'CSVをエクスポートしました', variant: 'success' });
+        } catch (err) {
+            console.error(err);
+            showToast({ message: 'エクスポートに失敗しました', variant: 'danger' });
         }
     };
 
@@ -110,22 +145,47 @@ export function CollectionHeader({ collection, isOwner, questionCount, onEdit }:
                     </View>
                 )}
 
-                <Flex gap="lg" className="border-t border-gray-200 pt-4">
-                    <Flex gap="xs" align="center" className="text-foreground/60">
-                        <BookOpen size={16} />
-                        <Text variant="xs" weight="bold">{questionCount} 問</Text>
+                <Flex justify="between" align="end" className="border-t border-gray-200 pt-4">
+                    <Flex gap="lg">
+                        <Flex gap="xs" align="center" className="text-foreground/60">
+                            <BookOpen size={16} />
+                            <Text variant="xs" weight="bold">{questionCount} 問</Text>
+                        </Flex>
+                        <Flex gap="xs" align="center" className="text-foreground/60">
+                            <Heart size={16} />
+                            <Text variant="xs" weight="bold">{favCount} お気に入り</Text>
+                        </Flex>
+                        {collection.authorName && (
+                            <Text variant="xs" color="secondary" className="hidden sm:block">
+                                作成者: {collection.authorName}
+                            </Text>
+                        )}
                     </Flex>
-                    <Flex gap="xs" align="center" className="text-foreground/60">
-                        <Heart size={16} />
-                        <Text variant="xs" weight="bold">{favCount} お気に入り</Text>
-                    </Flex>
-                    {collection.authorName && (
-                        <Text variant="xs" color="secondary">
-                            作成者: {collection.authorName}
-                        </Text>
+
+                    {isOwner && (
+                        <Flex gap="sm">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={onImportCsv}
+                                className="h-8 shadow-sm px-3"
+                            >
+                                <FileUp size={14} className="mr-1.5" />
+                                <Text variant="xs" weight="bold">インポート</Text>
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={onExportCsv}
+                                className="h-8 shadow-sm px-3"
+                            >
+                                <Download size={14} className="mr-1.5" />
+                                <Text variant="xs" weight="bold">エクスポート</Text>
+                            </Button>
+                        </Flex>
                     )}
                 </Flex>
-            </Stack>
-        </Card>
+            </Stack >
+        </Card >
     );
 }

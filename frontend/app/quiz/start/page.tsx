@@ -91,10 +91,7 @@ export default function QuizStartPage() {
             <Container className="pt-20">
                 <Stack gap="xl">
                     <Stack gap="xs">
-                        <Flex gap="sm" align="baseline">
-                            <Text variant="h2" weight="bold">クイズをカスタマイズ</Text>
-                            <Text variant="detail" weight="bold" color="primary">{limit}問</Text>
-                        </Flex>
+                        <Text variant="h2" weight="bold">クイズをカスタマイズ</Text>
                         <Text color="secondary">好きな問題集をいくつか選んで、自分だけのクイズセットを作成しましょう</Text>
                     </Stack>
 
@@ -131,8 +128,7 @@ export default function QuizStartPage() {
                     setSelectedCollections([]);
                     if (!isManualLimit) setLimit(0);
                 }}
-                onOpenSettings={() => setIsSettingsOpen(true)}
-                onStart={handleStartQuiz}
+                onStart={() => setIsSettingsOpen(true)}
                 startLabel="クイズを開始"
                 isLoading={isLoading}
                 limit={limit}
@@ -146,9 +142,11 @@ export default function QuizStartPage() {
                 sorts={sorts}
                 limit={limit}
                 maxLimit={totalQuestions > 0 ? totalQuestions : 0}
+                isLoading={isLoading}
                 onFilterChange={setFilters}
                 onSortChange={setSortCondition}
                 onLimitChange={handleLimitChange}
+                onStart={handleStartQuiz}
             />
 
             {/* セットに追加モーダル */}

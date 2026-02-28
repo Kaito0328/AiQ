@@ -20,7 +20,7 @@ export async function apiClient<T>(
     const url = `${API_BASE_URL}${API_PREFIX}${endpoint}`;
     const headers = new Headers(customHeaders);
 
-    if (!headers.has('Content-Type')) {
+    if (!headers.has('Content-Type') && !(rest.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
     }
 

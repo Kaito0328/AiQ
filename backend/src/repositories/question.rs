@@ -9,7 +9,7 @@ impl QuestionRepository {
         pool: &PgPool,
         collection_id: Uuid,
         question_text: String,
-        correct_answer: String,
+        correct_answers: Vec<String>,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
         let question = sqlx::query_file_as!(
@@ -17,7 +17,7 @@ impl QuestionRepository {
             "src/queries/questions/insert_question.sql",
             collection_id,
             question_text,
-            correct_answer,
+            &correct_answers,
             description_text
         )
         .fetch_one(pool)
@@ -57,14 +57,14 @@ impl QuestionRepository {
         pool: &PgPool,
         question_id: Uuid,
         question_text: String,
-        correct_answer: String,
+        correct_answers: Vec<String>,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
         let question = sqlx::query_file_as!(
             Question,
             "src/queries/questions/update_question.sql",
             question_text,
-            correct_answer,
+            &correct_answers,
             description_text,
             question_id
         )
@@ -109,7 +109,7 @@ impl QuestionRepository {
                     None
                 }
             }));
-            answers.push(item.correct_answer.or_else(|| {
+            answers.push(item.correct_answers.map(|v| v.join(";")).or_else(|| {
                 if is_new {
                     Some("".to_string())
                 } else {
@@ -122,14 +122,18 @@ impl QuestionRepository {
         let results = sqlx::query_as!(
             Question,
             r#"
-            INSERT INTO questions (id, collection_id, question_text, correct_answer, description_text)
-            SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::text[])
+            INSERT INTO questions (id, collection_id, question_text, correct_answers, description_text)
+            SELECT u.id, u.collection_id, u.question_text, 
+                   CASE WHEN u.correct_answers_raw IS NULL THEN NULL ELSE string_to_array(u.correct_answers_raw, ';') END as correct_answers, 
+                   u.description_text
+            FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::text[]) 
+            AS u(id, collection_id, question_text, correct_answers_raw, description_text)
             ON CONFLICT (id) DO UPDATE SET
                 question_text = COALESCE(EXCLUDED.question_text, questions.question_text),
-                correct_answer = COALESCE(EXCLUDED.correct_answer, questions.correct_answer),
+                correct_answers = COALESCE(EXCLUDED.correct_answers, questions.correct_answers),
                 description_text = COALESCE(EXCLUDED.description_text, questions.description_text),
                 updated_at = NOW()
-            RETURNING *
+            RETURNING id, collection_id, question_text, correct_answers, description_text, created_at, updated_at
             "#,
             &ids,
             &coll_ids,

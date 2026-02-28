@@ -9,3 +9,4 @@ pub mod ai_handler;
 pub mod match_handler;
 pub mod match_ws_handler;
 pub mod favorite_collection_handler;
+pub mod edit_request_handler;

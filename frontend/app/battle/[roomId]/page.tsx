@@ -11,8 +11,9 @@ import { Spinner } from '@/src/design/baseComponents/Spinner';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Zap } from 'lucide-react';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
+import { Stack } from '@/src/design/primitives/Stack';
 
 export default function BattlePage() {
     const params = useParams();
@@ -27,18 +28,22 @@ export default function BattlePage() {
         questions,
         currentQuestionIndex,
         buzzedUserId,
+        buzzedUserIds,
+        submittedUserIds,
         lastRoundResult,
         answerResult,
         expiresAtMs,
+        isPreparing,
         maxBuzzes,
         selfId,
-        selfUsername,
+        roundSummaries,
         error,
         isConnected,
         startMatch,
         buzz,
         submitAnswer,
         updateConfig,
+        updateVisibility,
         backToLobby,
         resetMatch
     } = useBattle(roomId, joinToken);
@@ -81,15 +86,39 @@ export default function BattlePage() {
                         onStart={startMatch}
                         onUpdateConfig={updateConfig}
                         maxBuzzes={maxBuzzes}
+                        onUpdateVisibility={updateVisibility}
                         onResetMatch={resetMatch}
                         selfId={selfId}
                     />
                 )}
 
-                {room.status === 'Playing' && questions.length > 0 && currentQuestionIndex >= 0 && (
+                {room.status === 'Playing' && isPreparing && (
+                    <Flex direction="column" align="center" justify="center" className="min-h-[60vh] gap-8 animate-in fade-in zoom-in duration-500">
+                        <View className="relative">
+                            <View className="absolute inset-0 bg-brand-primary/20 blur-3xl rounded-full scale-150 animate-pulse" />
+                            <View className="relative p-8 md:p-12 rounded-full bg-surface-base border-4 border-brand-primary/30 shadow-2xl flex flex-col items-center justify-center">
+                                <Zap size={64} className="text-brand-primary animate-bounce mb-4" />
+                                <Text variant="h2" weight="bold" color="primary" className="tracking-widest">GET READY</Text>
+                            </View>
+                        </View>
+
+                        <Stack gap="sm" align="center">
+                            <Text color="secondary" weight="bold" className="uppercase tracking-[0.3em] opacity-60">クイズを準備中...</Text>
+                            <Flex gap="xs" align="center">
+                                <View className="w-2 h-2 rounded-full bg-brand-primary animate-ping" />
+                                <View className="w-2 h-2 rounded-full bg-brand-primary animate-ping [animation-delay:0.2s]" />
+                                <View className="w-2 h-2 rounded-full bg-brand-primary animate-ping [animation-delay:0.4s]" />
+                            </Flex>
+                        </Stack>
+                    </Flex>
+                )}
+
+                {room.status === 'Playing' && !isPreparing && questions.length > 0 && currentQuestionIndex >= 0 && currentQuestionIndex < questions.length && (
                     <BattleQuiz
                         question={questions[currentQuestionIndex]}
                         buzzedUserId={buzzedUserId}
+                        buzzedUserIds={buzzedUserIds}
+                        submittedUserIds={submittedUserIds}
                         lastRoundResult={lastRoundResult}
                         players={room.players}
                         selfId={selfId}
@@ -99,6 +128,7 @@ export default function BattlePage() {
                         answerResult={answerResult}
                         currentQuestionIndex={currentQuestionIndex}
                         totalQuestions={questions.length}
+                        maxBuzzes={maxBuzzes}
                     />
                 )}
 
@@ -108,6 +138,7 @@ export default function BattlePage() {
                         isHost={isHost}
                         onBackToLobby={backToLobby}
                         onReplay={startMatch} // Replay same questions
+                        roundSummaries={roundSummaries}
                     />
                 )}
             </div>

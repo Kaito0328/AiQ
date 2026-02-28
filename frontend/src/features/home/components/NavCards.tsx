@@ -22,14 +22,15 @@ function NavCard({ label, icon, onClick }: NavCardProps) {
   return (
     <Card
       onClick={onClick}
-      className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 active:scale-95 border border-gray-300"
+      className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 active:scale-95 group"
       bg="base"
+      border="base"
     >
       <Stack gap="md" align="center" className="py-6">
         <View bg="muted" className="p-4 rounded-brand-full text-brand-primary">
           {icon}
         </View>
-        <Text weight="bold" align="center">
+        <Text weight="bold" align="center" className="transition-colors group-hover:text-brand-primary">
           {label}
         </Text>
       </Stack>
@@ -65,36 +66,29 @@ export function NavCards() {
   };
 
   return (
-    <Stack gap="lg" className="w-full mx-auto px-4">
-      <SectionHeader
-        icon={LayoutGrid}
-        title="クイックアクセス"
-        description="クイズの作成や公式問題集の確認はこちらから"
+    <Grid cols={{ sm: 1, md: 2, lg: 4 }} gap="md">
+      <NavCard
+        label="クイズを始める"
+        icon={<PlayCircle size={32} />}
+        onClick={handleNavigateToQuizStart}
       />
-      <Grid cols={{ sm: 1, md: 2, lg: 4 }} gap="md">
+      <NavCard
+        label="公式の問題集"
+        icon={<Book size={32} />}
+        onClick={handleNavigateToOfficial}
+      />
+      {user && (
         <NavCard
-          label="クイズを始める"
-          icon={<PlayCircle size={32} />}
-          onClick={handleNavigateToQuizStart}
+          label="自分の問題集"
+          icon={<User size={32} />}
+          onClick={handleNavigateToMe}
         />
-        <NavCard
-          label="公式の問題集"
-          icon={<Book size={32} />}
-          onClick={handleNavigateToOfficial}
-        />
-        {user && (
-          <NavCard
-            label="自分の問題集"
-            icon={<User size={32} />}
-            onClick={handleNavigateToMe}
-          />
-        )}
-        <NavCard
-          label="ユーザーリスト"
-          icon={<Users size={32} />}
-          onClick={handleNavigateToUsers}
-        />
-      </Grid>
-    </Stack>
+      )}
+      <NavCard
+        label="ユーザーリスト"
+        icon={<Users size={32} />}
+        onClick={handleNavigateToUsers}
+      />
+    </Grid>
   );
 }

@@ -14,9 +14,11 @@ interface QuizOptionsModalProps {
     sorts: SortCondition[];
     limit: number;
     maxLimit: number;
+    isLoading?: boolean;
     onFilterChange: (filters: FilterCondition[]) => void;
     onSortChange: (sorts: SortCondition[]) => void;
     onLimitChange: (limit: number) => void;
+    onStart: () => void;
 }
 
 export function QuizOptionsModal({
@@ -26,9 +28,11 @@ export function QuizOptionsModal({
     sorts,
     limit,
     maxLimit,
+    isLoading = false,
     onFilterChange,
     onSortChange,
     onLimitChange,
+    onStart,
 }: QuizOptionsModalProps) {
     return (
         <Modal
@@ -37,9 +41,18 @@ export function QuizOptionsModal({
             title="出題設定"
             size="md"
             footer={
-                <Flex justify="end">
-                    <Button variant="solid" color="primary" onClick={onClose}>
-                        閉じる
+                <Flex justify="end" gap="sm" className="w-full">
+                    <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+                        キャンセル
+                    </Button>
+                    <Button
+                        variant="solid"
+                        color="primary"
+                        onClick={onStart}
+                        loading={isLoading}
+                        className="px-8"
+                    >
+                        クイズを開始
                     </Button>
                 </Flex>
             }

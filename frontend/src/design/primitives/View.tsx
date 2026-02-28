@@ -1,7 +1,7 @@
 import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/src/shared/utils/cn';
-import { SurfaceColorKey, RadiusKey, ShadowKey, SpacingKey, ZIndexKey, AnimationKey } from '../tokens/keys';
+import { BrandColorKey, SurfaceColorKey, RadiusKey, ShadowKey, SpacingKey, ZIndexKey, AnimationKey } from '../tokens/keys';
 
 const bgMap: Record<SurfaceColorKey, string> = {
     transparent: 'bg-transparent',
@@ -17,12 +17,16 @@ const bgMap: Record<SurfaceColorKey, string> = {
     info: 'bg-brand-info text-white',
 };
 
-const borderMap: Record<'none' | 'base' | 'primary' | 'danger' | 'heart', string> = {
+const borderMap: Record<'none' | 'base' | BrandColorKey, string> = {
     none: 'border-0',
-    base: 'border border-surface-muted/50',
-    primary: 'border border-brand-primary/30',
-    danger: 'border border-brand-danger/30',
-    heart: 'border border-brand-heart/30',
+    base: 'border border-slate-400',
+    primary: 'border border-brand-primary/50',
+    secondary: 'border border-brand-secondary/50',
+    danger: 'border border-brand-danger/50',
+    success: 'border border-brand-success/50',
+    heart: 'border border-brand-heart/50',
+    warning: 'border border-brand-warning/50',
+    info: 'border border-brand-info/50',
 };
 
 const radiusMap: Record<RadiusKey, string> = {

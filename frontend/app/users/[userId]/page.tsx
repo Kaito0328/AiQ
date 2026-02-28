@@ -13,7 +13,6 @@ import { useProfile } from '@/src/features/users/hooks/useProfile';
 import { Plus } from 'lucide-react';
 
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { cn } from '@/src/shared/utils/cn';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 
 import { Collection, CollectionSet } from '@/src/entities/collection';
@@ -172,7 +171,7 @@ export default function UserPage() {
             {editingCollection && (
                 <CollectionEditModal
                     collection={editingCollection}
-                    onUpdated={(updated) => {
+                    onUpdated={() => {
                         setEditingCollection(null);
                         window.location.reload();
                     }}
@@ -182,7 +181,7 @@ export default function UserPage() {
 
             {showCreateSetForm && (
                 <CollectionSetForm
-                    onSuccess={(s) => {
+                    onSuccess={() => {
                         setShowCreateSetForm(false);
                         refreshSets();
                     }}

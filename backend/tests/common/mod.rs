@@ -64,8 +64,8 @@ pub async fn create_test_user(app: &Router) -> (String, String) {
 pub async fn create_test_collection(app: &Router, token: &str, is_open: bool) -> String {
     let body = serde_json::json!({
         "name": format!("Test Collection {}", uuid::Uuid::new_v4()),
-        "description_text": "This is a test.",
-        "is_open": is_open
+        "descriptionText": "This is a test.",
+        "isOpen": is_open
     });
 
     let request = Request::builder()
@@ -88,9 +88,9 @@ pub async fn create_test_collection(app: &Router, token: &str, is_open: bool) ->
 #[allow(dead_code)]
 pub async fn create_test_question(app: &Router, token: &str, collection_id: &str) -> String {
     let body = serde_json::json!({
-        "question_text": format!("Question {}", uuid::Uuid::new_v4()),
-        "correct_answer": "Answer",
-        "description_text": "Desc"
+        "questionText": format!("Question {}", uuid::Uuid::new_v4()),
+        "correctAnswers": ["Answer"],
+        "descriptionText": "Desc"
     });
 
     let request = Request::builder()

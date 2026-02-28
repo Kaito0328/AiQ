@@ -6,3 +6,4 @@ pub mod user;
 pub mod quiz;
 pub mod ranking_quiz_repository;
 pub mod favorite_collection;
+pub mod edit_request;

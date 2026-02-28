@@ -21,6 +21,7 @@ const buttonVariants = cva(
                 solid: '',
                 outline: 'border-2 bg-transparent',
                 ghost: 'bg-transparent',
+                soft: '',
             },
             color: variantMap,
             size: {
@@ -66,6 +67,15 @@ const buttonVariants = cva(
             { variant: 'ghost', color: 'success', className: 'text-brand-success hover:bg-brand-success/10' },
             { variant: 'ghost', color: 'warning', className: 'text-brand-warning hover:bg-brand-warning/10' },
             { variant: 'ghost', color: 'info', className: 'text-brand-info hover:bg-brand-info/10' },
+
+            // Soft variants
+            { variant: 'soft', color: 'primary', className: 'bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20' },
+            { variant: 'soft', color: 'secondary', className: 'bg-brand-secondary/10 text-brand-secondary hover:bg-brand-secondary/20' },
+            { variant: 'soft', color: 'danger', className: 'bg-brand-danger/10 text-brand-danger hover:bg-brand-danger/20' },
+            { variant: 'soft', color: 'success', className: 'bg-brand-success/10 text-brand-success hover:bg-brand-success/20' },
+            { variant: 'soft', color: 'heart', className: 'bg-brand-heart/10 text-brand-heart hover:bg-brand-heart/20' },
+            { variant: 'soft', color: 'warning', className: 'bg-brand-warning/10 text-brand-warning hover:bg-brand-warning/20' },
+            { variant: 'soft', color: 'info', className: 'bg-brand-info/10 text-brand-info hover:bg-brand-info/20' },
         ],
         defaultVariants: {
             variant: 'solid',

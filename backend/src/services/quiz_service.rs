@@ -146,7 +146,12 @@ impl QuizService {
         })?;
 
         let is_correct = match &user_answer {
-            Some(ans) => ans.trim().eq_ignore_ascii_case(question.correct_answer.trim()),
+            Some(ans) => {
+                let trimmed_ans = ans.trim();
+                question.correct_answers.iter().any(|correct| {
+                    trimmed_ans.eq_ignore_ascii_case(correct.trim())
+                })
+            },
             None => false,
         };
 

@@ -1,0 +1,177 @@
+{
+    "users": [
+        {
+            "username": "kenji",
+            "displayName": "Kenji",
+            "bio": "History enthusiast. Living in the stories of the past.",
+            "collections": [
+                {
+                    "name": "Ancient Rome",
+                    "description": "Explore the rise and fall of the Roman Empire.",
+                    "csvFile": "history_rome.csv"
+                },
+                {
+                    "name": "Sengoku Period",
+                    "description": "The age of warring states in Japan.",
+                    "csvFile": "history_sengoku.csv"
+                }
+            ]
+        },
+        {
+            "username": "elena",
+            "displayName": "Elena",
+            "bio": "Curious about how things work. Physics and Chemistry.",
+            "collections": [
+                {
+                    "name": "Newton's Laws",
+                    "description": "The foundation of classical mechanics.",
+                    "csvFile": "science_newton.csv"
+                },
+                {
+                    "name": "Periodic Table",
+                    "description": "Elements and their properties.",
+                    "csvFile": "science_periodic.csv"
+                }
+            ]
+        },
+        {
+            "username": "sophie",
+            "displayName": "Sophie",
+            "bio": "Traveler and polyglot. Always learning a new word.",
+            "collections": [
+                {
+                    "name": "Travel French",
+                    "description": "Speak like a local in Paris.",
+                    "csvFile": "lang_french.csv"
+                },
+                {
+                    "name": "Spanish Basics",
+                    "description": "Hola! Essential Spanish for beginners.",
+                    "csvFile": "lang_spanish.csv"
+                }
+            ]
+        },
+        {
+            "username": "hiroki",
+            "displayName": "Hiroki",
+            "bio": "Rust developer. Optimized for performance.",
+            "collections": [
+                {
+                    "name": "Rust Ownership",
+                    "description": "Mastering ownership, borrowing, and lifetimes.",
+                    "csvFile": "it_rust.csv"
+                },
+                {
+                    "name": "TypeScript Tips",
+                    "description": "Advanced typing for better code.",
+                    "csvFile": "it_ts.csv"
+                }
+            ]
+        },
+        {
+            "username": "yumi",
+            "displayName": "Yumi",
+            "bio": "Art lover and UI designer. Making things beautiful.",
+            "collections": [
+                {
+                    "name": "Impressionism",
+                    "description": "Monet, Renoir, and the play of light.",
+                    "csvFile": "art_impressionism.csv"
+                },
+                {
+                    "name": "Color Theory",
+                    "description": "The science and psychology of colors.",
+                    "csvFile": "art_color.csv"
+                }
+            ]
+        },
+        {
+            "jsonFieldAlias": "alex",
+            "username": "alex",
+            "displayName": "Alex",
+            "bio": "Foodie and home chef. Exploring global flavors.",
+            "collections": [
+                {
+                    "name": "Italian Pasta",
+                    "description": "Beyond spaghetti: Authenic pasta knowledge.",
+                    "csvFile": "cook_pasta.csv"
+                },
+                {
+                    "name": "Spice Science",
+                    "description": "Unlock the secrets of aromatic spices.",
+                    "csvFile": "cook_spice.csv"
+                }
+            ]
+        }
+    ],
+    "follows": [
+        [
+            "kenji",
+            "official_user"
+        ],
+        [
+            "sophie",
+            "official_user"
+        ],
+        [
+            "alex",
+            "official_user"
+        ],
+        [
+            "elena",
+            "sophie"
+        ],
+        [
+            "elena",
+            "hiroki"
+        ],
+        [
+            "hiroki",
+            "elena"
+        ],
+        [
+            "yumi",
+            "kenji"
+        ],
+        [
+            "alex",
+            "yumi"
+        ],
+        [
+            "alex",
+            "sophie"
+        ]
+    ],
+    "favorites": [
+        [
+            "kenji",
+            "Italian Pasta"
+        ],
+        [
+            "elena",
+            "Rust Ownership"
+        ],
+        [
+            "yumi",
+            "Ancient Rome"
+        ]
+    ],
+    "collectionSets": [
+        {
+            "owner": "elena",
+            "name": "STEM Essentials",
+            "collections": [
+                "Newton's Laws",
+                "Rust Ownership"
+            ]
+        },
+        {
+            "owner": "kenji",
+            "name": "Cultural Journey",
+            "collections": [
+                "Ancient Rome",
+                "Impressionism"
+            ]
+        }
+    ]
+}

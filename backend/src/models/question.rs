@@ -9,7 +9,7 @@ pub struct Question {
     pub id: Uuid,
     pub collection_id: Uuid,
     pub question_text: String,
-    pub correct_answer: String,
+    pub correct_answers: Vec<String>,
     pub description_text: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

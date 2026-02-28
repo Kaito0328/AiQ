@@ -45,9 +45,11 @@ export function CollectionCard({
     hideExtras = false
 }: CollectionCardProps) {
     const router = useRouter();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const [isFavorited, setIsFavorited] = useState(collection.isFavorited || false);
     const [favCount, setFavCount] = useState(collection.favoriteCount || 0);
+
+    const isOwner = user?.id === collection.userId;
 
     useEffect(() => {
         setIsFavorited(collection.isFavorited || false);
@@ -98,30 +100,6 @@ export function CollectionCard({
 
     return (
         <View className="relative group h-full">
-            {/* チェックボックス — 選択モードまたは selectable の場合に表示 */}
-            {(isSelectionMode || selectable) && (
-                <View
-                    zIndex="docked"
-                    className={cn(
-                        "absolute top-2 left-2 transition-all duration-300 p-2 rounded-full",
-                        selected
-                            ? "opacity-100 scale-100 bg-brand-primary/10"
-                            : "opacity-40 group-hover:opacity-100 scale-95"
-                    )}
-                >
-                    <Checkbox
-                        checked={selected}
-                        onChange={(e) => {
-                            e.stopPropagation();
-                            onSelect?.(collection.id, collection.name, collection.questionCount);
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                        }}
-                        className="w-5 h-5 cursor-pointer shadow-sm"
-                    />
-                </View>
-            )}
 
 
             {/* カード本体 — クリックで詳細ページへ遷移 (選択モード時は無効化) */}
@@ -141,34 +119,23 @@ export function CollectionCard({
                 <Card
                     border="primary"
                     shadow={selected ? "lg" : "sm"}
-                    bg={selected ? "primary" : "card"}
+                    bg={selected ? "muted" : "card"}
                     className={cn(
-                        "h-full transition-all duration-500 group-hover:shadow-lg group-hover:border-brand-primary/60 group-hover:-translate-y-0.5 overflow-hidden relative",
-                        selected && "ring-4 ring-brand-primary/20 bg-brand-primary/[0.02]"
+                        "h-full transition-all duration-500 overflow-hidden relative",
+                        "group-hover:shadow-lg group-hover:border-brand-primary/60 group-hover:-translate-y-0.5",
+                        selected && "ring-2 ring-brand-primary/20"
                     )}
                 >
+                    {/* Checkbox moved into the title flex for better layout */}
                     {/* 操作ボタン */}
                     <View zIndex="docked" className="absolute top-3 right-3 flex gap-2">
-                        {onAddToSet && !hideExtras && (
+                        {onEdit && isOwner && (
                             <Button
                                 size="sm"
-                                variant="ghost"
-                                className="p-2 h-auto rounded-full text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/30 shadow-sm transition-all active:scale-90 border-2 border-brand-primary/20"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    onAddToSet(collection.id);
-                                }}
-                                title="セットに追加"
-                            >
-                                <FolderPlus size={16} strokeWidth={2.5} />
-                            </Button>
-                        )}
-                        {onEdit && (
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="p-2 h-auto rounded-full text-brand-primary bg-brand-primary/10 hover:bg-brand-primary/30 shadow-sm transition-all active:scale-90"
+                                variant="soft"
+                                color="primary"
+                                rounded="full"
+                                className="p-2 h-auto shadow-sm"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -182,24 +149,57 @@ export function CollectionCard({
                         {onDelete && (
                             <Button
                                 size="sm"
-                                variant="ghost"
+                                variant="soft"
                                 color="danger"
-                                className="p-2 h-auto rounded-full text-brand-danger bg-brand-danger/10 hover:bg-brand-danger/30 shadow-sm transition-all active:scale-90"
+                                rounded="full"
+                                className="p-2 h-auto shadow-sm"
                                 onClick={handleDelete}
                                 title="コレクションを削除"
                             >
                                 <Trash2 size={16} strokeWidth={2.5} />
                             </Button>
                         )}
+                        {onAddToSet && !hideExtras && (
+                            <Button
+                                size="sm"
+                                variant="soft"
+                                color="primary"
+                                rounded="full"
+                                className="p-2 h-auto shadow-sm"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    onAddToSet(collection.id);
+                                }}
+                                title="セットに追加"
+                            >
+                                <FolderPlus size={16} strokeWidth={2.5} />
+                            </Button>
+                        )}
                     </View>
                     <Stack gap="lg" className="h-full p-1">
-                        <Flex justify="between" align="start">
+                        <Flex gap="md" align="center" className="w-full">
+                            {(isSelectionMode || selectable) && (
+                                <Checkbox
+                                    checked={selected}
+                                    onChange={(e) => {
+                                        e.stopPropagation();
+                                        onSelect?.(collection.id, collection.name, collection.questionCount);
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                    }}
+                                    className={cn(
+                                        "transition-all duration-300",
+                                        selected ? "scale-110" : "opacity-90 group-hover:opacity-100"
+                                    )}
+                                />
+                            )}
                             <Stack gap="xs" className={cn(
                                 "flex-1",
-                                (selectable || isSelectionMode) && "pl-10",
                                 (onEdit || onDelete || (onAddToSet && !hideExtras)) && "pr-24"
                             )}>
-                                <Text weight="bold" variant="detail" className="line-clamp-1 group-hover:text-brand-primary transition-colors text-brand-primary/90">
+                                <Text weight="bold" variant="detail" color="primary" className="line-clamp-1 group-hover:opacity-100 transition-opacity opacity-90">
                                     {collection.name}
                                 </Text>
                                 <Flex gap="xs" align="center">
@@ -243,16 +243,16 @@ export function CollectionCard({
                                         <Heart
                                             size={16}
                                             strokeWidth={2.5}
-                                            className={cn(isFavorited ? "text-brand-heart fill-brand-heart" : "text-brand-heart/50")}
+                                            className={cn(isFavorited ? "text-brand-heart fill-brand-heart" : "text-brand-heart/80")}
                                         />
                                         <Text variant="xs" weight="bold" color={isFavorited ? "danger" : "secondary"}>{favCount}</Text>
                                     </Flex>
                                 )}
                                 {collection.userRank && (
-                                    <Flex gap="xs" align="center" title="あなたの順位" className="bg-brand-primary/10 px-2 py-0.5 rounded-full">
+                                    <View bg="primary" padding="xs" rounded="full" className="px-2 py-0.5 flex flex-row gap-1 items-center bg-opacity-10">
                                         <Trophy size={14} className="text-brand-primary" />
                                         <Text variant="xs" weight="bold" color="primary">{collection.userRank}位</Text>
-                                    </Flex>
+                                    </View>
                                 )}
                             </Flex>
 
@@ -261,7 +261,9 @@ export function CollectionCard({
                                     <Button
                                         size="sm"
                                         variant="ghost"
-                                        className="p-2 h-auto rounded-full text-brand-primary hover:bg-brand-primary/10 transition-transform active:scale-90"
+                                        color="primary"
+                                        rounded="full"
+                                        className="p-2 h-auto"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();

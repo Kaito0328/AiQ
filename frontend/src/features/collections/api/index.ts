@@ -60,3 +60,29 @@ export const getUserCollectionSets = async (userId: string): Promise<CollectionS
 export const getCollectionSet = async (setId: string): Promise<CollectionSetResponse> => {
     return await apiClient<CollectionSetResponse>(`/collection-sets/${setId}`, { authenticated: true });
 };
+
+export const uploadCsv = async (collectionId: string, file: File): Promise<void> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    await apiClient<void>(`/collections/${collectionId}/csv`, {
+        method: 'POST',
+        body: formData, // apiClient will handle FormData
+        authenticated: true,
+        // No explicit Content-Type, browser sets it for FormData
+    });
+};
+
+export const exportCsv = async (collectionId: string): Promise<Blob> => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/collections/${collectionId}/csv`, {
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to export CSV');
+    }
+
+    return await response.blob();
+};
