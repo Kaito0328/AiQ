@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
+import { Grid } from '@/src/design/primitives/Grid';
 import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
@@ -129,12 +130,12 @@ export function UserHeader({ profile }: UserHeaderProps) {
                     </Flex>
                 </Flex>
 
-                <Flex justify="around" className="border-t border-surface-muted pt-6 flex-wrap gap-y-4">
+                <Grid cols={2} gap="md" className="border-t border-surface-muted pt-6 sm:grid-cols-4">
                     <Stat label="フォロワー" value={followerCount} icon={<Users size={18} />} />
                     <Stat label="フォロー中" value={profile.followingCount || 0} icon={<Users size={18} />} />
                     <Stat label="問題集" value={profile.collectionCount || 0} icon={<BookOpen size={18} />} />
                     <Stat label="まとめ枠" value={profile.setCount || 0} icon={<Layers size={18} />} />
-                </Flex>
+                </Grid>
             </Stack>
         </Card>
     );

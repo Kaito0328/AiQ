@@ -14,6 +14,7 @@ import { Eye, EyeOff, Trash2, Edit, Plus, Sparkles, FileUp, Save, X, RotateCcw, 
 import { deleteQuestion, batchQuestions, completeQuestions } from '@/src/features/questions/api';
 import { cn } from '@/src/shared/utils/cn';
 import { useToast } from '@/src/shared/contexts/ToastContext';
+import { AiQuickBar } from '@/src/features/collections/components/AiQuickBar';
 import { EditRequestModal } from './EditRequestModal';
 import { AiSettingsModal } from './AiSettingsModal';
 
@@ -38,6 +39,7 @@ interface QuestionListProps {
     onAddQuestion: () => void;
     onImportCsv: () => void;
     onSuccess: () => void;
+    collectionId?: string;
 }
 
 export function QuestionList({
@@ -50,6 +52,7 @@ export function QuestionList({
     onAddQuestion,
     onImportCsv,
     onSuccess,
+    collectionId,
 }: QuestionListProps) {
     const { showToast } = useToast();
     const [visibleAnswers, setVisibleAnswers] = useState<Set<string>>(new Set());
@@ -271,47 +274,45 @@ export function QuestionList({
     if (isEditMode) {
         return (
             <Stack gap="lg">
-                <Flex justify="between" align="center">
+                <Flex justify="between" align="start" className="flex-col md:flex-row gap-4">
                     <Stack gap="xs">
                         <Text variant="h3" weight="bold">一括編集モード</Text>
                         <Text variant="xs" color="secondary">変更は「保存」ボタンを押すまで確定されません。</Text>
                     </Stack>
-                    <Stack gap="xs" align="end">
-                        <Flex gap="sm" align="center" className="flex-wrap justify-end">
-                            <Button
-                                variant="outline"
-                                size="lg"
-                                onClick={() => setIsAiSettingsModalOpen(true)}
-                                className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5 h-8"
-                                loading={isAutoFilling}
-                                disabled={isSaving}
-                            >
-                                <Sparkles size={14} />
-                                AIで補完
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="lg"
-                                onClick={onToggleEditMode}
-                                className="gap-1.5 h-8 text-xs"
-                                disabled={isSaving || isAutoFilling}
-                            >
-                                <X size={14} />
-                                キャンセル
-                            </Button>
-                            <Button
-                                variant="solid"
-                                color="primary"
-                                size="lg"
-                                onClick={handleBatchSave}
-                                className="gap-1.5 h-8 text-xs font-bold"
-                                loading={isSaving}
-                            >
-                                <Save size={14} />
-                                変更を保存
-                            </Button>
-                        </Flex>
-                    </Stack>
+                    <Flex gap="sm" align="center" className="flex-wrap justify-start md:justify-end w-full md:w-auto">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={() => setIsAiSettingsModalOpen(true)}
+                            className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5 h-8 flex-1 sm:flex-none"
+                            loading={isAutoFilling}
+                            disabled={isSaving}
+                        >
+                            <Sparkles size={14} />
+                            <Text variant="xs" weight="bold">AIで補完</Text>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="lg"
+                            onClick={onToggleEditMode}
+                            className="gap-1.5 h-8 flex-1 sm:flex-none"
+                            disabled={isSaving || isAutoFilling}
+                        >
+                            <X size={14} />
+                            <Text variant="xs" weight="bold">キャンセル</Text>
+                        </Button>
+                        <Button
+                            variant="solid"
+                            color="primary"
+                            size="lg"
+                            onClick={handleBatchSave}
+                            className="gap-1.5 h-8 font-bold flex-1 sm:flex-none"
+                            loading={isSaving}
+                        >
+                            <Save size={14} />
+                            <Text variant="xs" weight="bold">保存</Text>
+                        </Button>
+                    </Flex>
                 </Flex>
 
                 <Card padding="none" border="primary" className="overflow-hidden">
@@ -439,42 +440,49 @@ export function QuestionList({
 
     return (
         <Stack gap="lg">
-            <Flex justify="between" align="center">
-                <Text variant="h3" weight="bold">問題一覧 ({questions.length})</Text>
-                <Flex gap="sm">
+            <Flex justify="between" align="start" className="flex-col sm:flex-row gap-4">
+                <Text variant="h3" weight="bold" className="shrink-0">問題一覧 ({questions.length})</Text>
+                <Flex gap="sm" className="flex-wrap justify-start sm:justify-end w-full">
                     <Button
                         variant="ghost"
-                        size="lg"
+                        size="sm"
                         onClick={toggleAllAnswers}
-                        className="gap-1.5 text-foreground/60"
+                        className="gap-1.5 text-foreground/60 h-9"
                     >
                         {allVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                        {allVisible ? '全て隠す' : '全て表示'}
+                        <Text variant="xs" weight="bold">{allVisible ? '全て隠す' : '全て表示'}</Text>
                     </Button>
                     {isOwner && (
                         <>
                             <Button
                                 variant="outline"
-                                size="lg"
+                                size="sm"
                                 onClick={onToggleEditMode}
-                                className="gap-1.5 border-gray-200"
+                                className="gap-1.5 border-gray-200 h-9"
                             >
                                 <Edit size={16} />
-                                編集モード
+                                <Text variant="xs" weight="bold">編集モード</Text>
                             </Button>
                             <Button
                                 variant="solid" color="primary"
-                                size="lg"
+                                size="sm"
                                 onClick={onAddQuestion}
-                                className="gap-1.5"
+                                className="gap-1.5 h-9"
                             >
                                 <Plus size={16} />
-                                問題を追加
+                                <Text variant="xs" weight="bold">問題を追加</Text>
                             </Button>
                         </>
                     )}
                 </Flex>
             </Flex>
+
+            {isOwner && !isEditMode && collectionId && (
+                <AiQuickBar
+                    collectionId={collectionId}
+                    onSuccess={onSuccess}
+                />
+            )}
 
             {questions.length === 0 ? (
                 <Card border="base" bg="muted" className="border-dashed">

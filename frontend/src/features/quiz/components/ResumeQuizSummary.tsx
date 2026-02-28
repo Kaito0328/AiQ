@@ -12,14 +12,20 @@ import { Spinner } from '@/src/design/baseComponents/Spinner';
 import { Grid } from '@/src/design/primitives/Grid';
 import { Stack } from '@/src/design/primitives/Stack';
 import { View } from '@/src/design/primitives/View';
+import { useAuth } from '@/src/shared/auth/useAuth';
 
 export function ResumeQuizSummary() {
+    const { user } = useAuth();
     const [quizzes, setQuizzes] = useState<CasualQuiz[]>([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
         const fetchQuizzes = async () => {
+            if (!user) {
+                setLoading(false);
+                return;
+            }
             try {
                 const data = await getResumableQuizzes();
                 // 日付順にソート
@@ -34,9 +40,9 @@ export function ResumeQuizSummary() {
             }
         };
         fetchQuizzes();
-    }, []);
+    }, [user]);
 
-    if (loading) return null;
+    if (!user || loading) return null;
     if (quizzes.length === 0) {
         return (
             <Card border="primary" bg="transparent" className="border-dashed py-4">

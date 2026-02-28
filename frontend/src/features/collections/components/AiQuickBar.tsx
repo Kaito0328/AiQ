@@ -119,29 +119,29 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
             onDrop={onDrop}
         >
             <Stack gap="md">
-                <Flex gap="md" align="start" className="flex-wrap md:flex-nowrap">
-                    <Stack gap="sm" className="flex-1 min-w-[300px]">
+                <Flex gap="sm" align="start" className="flex-col sm:flex-row">
+                    <Stack gap="sm" className="flex-1 w-full">
                         <View className="relative">
                             <Input
-                                placeholder={isDragging ? "ここにPDFをドロップ" : "AIへの指示（例：中学レベルの英単語、日本の歴史...）"}
+                                placeholder={isDragging ? "ここにPDFをドロップ" : "AIへの指示（例：中学レベルの英単語...）"}
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 disabled={isProcessing}
-                                className="pr-10 h-12 text-base border-brand-primary/10 focus:border-brand-primary/30"
+                                className="pr-10 h-11 text-sm sm:h-12 sm:text-base border-brand-primary/10 focus:border-brand-primary/30"
                             />
-                            <View className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
+                            <View className="absolute right-3 top-1/2 -translate-y-1/2">
                                 {isProcessing ? (
-                                    <Loader2 size={20} className="text-brand-primary animate-spin" />
+                                    <Loader2 size={18} className="text-brand-primary animate-spin" />
                                 ) : (
-                                    <Sparkles size={20} className={cn("text-brand-primary/30", prompt && "text-brand-primary animate-pulse")} />
+                                    <Sparkles size={18} className={cn("text-brand-primary/30", prompt && "text-brand-primary animate-pulse")} />
                                 )}
                             </View>
                         </View>
 
                         {pdfFile && (
-                            <Flex align="center" gap="sm" className="bg-brand-primary/10 px-3 py-1.5 rounded-full w-fit max-w-full">
-                                <FileText size={14} className="text-brand-primary shrink-0" />
-                                <Text variant="xs" weight="medium" className="truncate text-brand-primary">
+                            <Flex align="center" gap="xs" className="bg-brand-primary/10 px-2 py-1 rounded-full w-fit max-w-full">
+                                <FileText size={12} className="text-brand-primary shrink-0" />
+                                <Text variant="xs" weight="medium" className="truncate text-brand-primary max-w-[150px] sm:max-w-[300px]">
                                     {pdfFile.name}
                                 </Text>
                                 <Button
@@ -150,7 +150,7 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                                     onClick={() => { setPdfFile(null); setPdfBase64(null); }}
                                     className="p-0 h-auto text-brand-primary hover:text-brand-danger"
                                 >
-                                    <X size={14} />
+                                    <X size={12} />
                                 </Button>
                             </Flex>
                         )}
@@ -162,7 +162,7 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                         onClick={handleGenerate}
                         disabled={isProcessing || (!prompt.trim() && !pdfFile)}
                         loading={isProcessing}
-                        className="h-12 px-8 gap-2 shrink-0 shadow-lg shadow-brand-primary/20"
+                        className="h-11 sm:h-12 px-6 sm:px-8 gap-2 w-full sm:w-auto shrink-0 shadow-lg shadow-brand-primary/20 font-bold"
                     >
                         {!isProcessing && <Sparkles size={18} />}
                         生成開始
@@ -176,29 +176,20 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
-                                className="text-foreground/60 hover:text-brand-primary gap-1.5 h-auto px-1"
-                            >
-                                <Settings size={14} />
-                                詳細設定
-                                {isAdvancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => fileInputRef.current?.click()}
                                 className={cn(
-                                    "gap-1.5 h-auto px-1",
-                                    pdfFile ? "text-brand-primary" : "text-foreground/60 hover:text-brand-primary"
+                                    "gap-1.5 h-8 px-2 rounded-lg transition-colors",
+                                    isAdvancedOpen ? "bg-brand-primary/10 text-brand-primary" : "text-foreground/60 hover:text-brand-primary"
                                 )}
                             >
-                                <Upload size={14} />
-                                PDFを添付
+                                <Settings size={14} />
+                                <Text variant="xs" weight="bold">詳細設定・PDF</Text>
+                                {isAdvancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                             </Button>
 
-                            {/* Question Count Controls */}
-                            <Flex gap="sm" align="center" className="ml-2 pl-4 border-l border-brand-primary/10">
+                            {/* Question Count (Desktop only) */}
+                            <Flex gap="sm" align="center" className="hidden sm:flex ml-2 pl-4 border-l border-brand-primary/10">
                                 <Text variant="xs" color="secondary" weight="medium" className="shrink-0">問題数:</Text>
-                                <View className="w-32 md:w-40 lg:w-48">
+                                <View className="w-32 md:w-40">
                                     <Range
                                         min={1}
                                         max={100}
@@ -215,7 +206,7 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                                     value={count}
                                     onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
                                     disabled={isProcessing}
-                                    className="w-16 h-8 text-center text-xs px-1 border-brand-primary/10"
+                                    className="w-14 h-7 text-center text-xs px-1 border-brand-primary/10"
                                 />
                             </Flex>
 
@@ -229,20 +220,23 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                         </Flex>
 
                         {status !== 'idle' && (
-                            <Flex gap="sm" align="center">
+                            <Flex gap="sm" align="center" className="bg-surface-muted/50 px-3 py-1 rounded-lg border border-brand-primary/5">
                                 {status === 'error' ? (
                                     <>
                                         <AlertCircle size={14} className="text-brand-danger" />
-                                        <Text variant="xs" color="danger">{message}</Text>
-                                        <Button variant="ghost" size="sm" onClick={reset} className="text-brand-danger underline h-auto p-0 ml-1">リセット</Button>
+                                        <Text variant="xs" color="danger" weight="medium">{message}</Text>
+                                        <Button variant="ghost" size="sm" onClick={reset} className="text-brand-danger underline h-auto p-0 ml-1 text-xs">リセット</Button>
                                     </>
                                 ) : status === 'completed' ? (
                                     <>
                                         <CheckCircle size={14} className="text-green-500" />
-                                        <Text variant="xs" className="text-green-600">完了して追加されました</Text>
+                                        <Text variant="xs" className="text-green-600 font-bold">完了しました</Text>
                                     </>
                                 ) : (
-                                    <Text variant="xs" color="secondary" className="animate-pulse">{message}</Text>
+                                    <>
+                                        <Loader2 size={14} className="text-brand-primary animate-spin" />
+                                        <Text variant="xs" color="secondary" weight="medium" className="animate-pulse">{message}</Text>
+                                    </>
                                 )}
                             </Flex>
                         )}
@@ -251,48 +245,91 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                     {isAdvancedOpen && (
                         <View className="mt-4 p-4 bg-surface-muted rounded-xl border border-brand-primary/10">
                             <Stack gap="md">
-                                <Flex gap="lg" className="flex-wrap">
-                                    <Stack gap="xs" className="flex-1 min-w-[200px]">
+                                <Flex gap="lg" className="flex-col sm:flex-row">
+                                    <Stack gap="xs" className="flex-1">
+                                        <Flex justify="between">
+                                            <Text variant="xs" weight="bold" color="secondary">PDFから問題を生成</Text>
+                                            {pdfFile && <Text variant="xs" color="primary" weight="bold">添付済み</Text>}
+                                        </Flex>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className={cn(
+                                                "w-full h-10 gap-2 border-dashed",
+                                                pdfFile ? "border-brand-primary bg-brand-primary/5 text-brand-primary" : "border-gray-300 text-secondary"
+                                            )}
+                                        >
+                                            <Upload size={16} />
+                                            {pdfFile ? "別のPDFを選択" : "PDFをアップロード"}
+                                        </Button>
+                                    </Stack>
+
+                                    <Stack gap="xs" className="flex-1">
+                                        <Text variant="xs" weight="bold" color="secondary">生成する問題数</Text>
+                                        <Flex gap="md" align="center" className="h-10">
+                                            <Range
+                                                min={1}
+                                                max={100}
+                                                value={count}
+                                                onChange={(e) => setCount(parseInt(e.target.value))}
+                                                disabled={isProcessing}
+                                                className="flex-1"
+                                            />
+                                            <Input
+                                                type="number"
+                                                min={1}
+                                                max={100}
+                                                value={count}
+                                                onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                                                disabled={isProcessing}
+                                                className="w-16 h-9 text-center text-sm border-brand-primary/10"
+                                            />
+                                        </Flex>
+                                    </Stack>
+                                </Flex>
+
+                                <Flex gap="lg" className="flex-col sm:flex-row">
+                                    <Stack gap="xs" className="flex-1">
                                         <Text variant="xs" weight="bold" color="secondary">問題の形式</Text>
                                         <Input
                                             placeholder="例：日本語、記述式、4択..."
                                             value={questionFormat}
                                             onChange={(e) => setQuestionFormat(e.target.value)}
                                             disabled={isProcessing}
-                                            className="h-9 text-sm"
+                                            className="h-10 text-sm"
                                         />
                                     </Stack>
-                                    <Stack gap="xs" className="flex-1 min-w-[200px]">
+                                    <Stack gap="xs" className="flex-1">
                                         <Text variant="xs" weight="bold" color="secondary">回答の形式</Text>
                                         <Input
                                             placeholder="例：英単語、一言で、A/B..."
                                             value={answerFormat}
                                             onChange={(e) => setAnswerFormat(e.target.value)}
                                             disabled={isProcessing}
-                                            className="h-9 text-sm"
+                                            className="h-10 text-sm"
                                         />
                                     </Stack>
                                 </Flex>
 
-                                <Flex gap="lg" className="flex-wrap">
-                                    <Stack gap="xs" className="flex-1 min-w-[200px]">
+                                <Flex gap="lg" className="flex-col sm:flex-row">
+                                    <Stack gap="xs" className="flex-1">
                                         <Text variant="xs" weight="bold" color="secondary">問題の例</Text>
                                         <Input
                                             placeholder="例：The capital of Japan is..."
                                             value={exampleQuestion}
                                             onChange={(e) => setExampleQuestion(e.target.value)}
                                             disabled={isProcessing}
-                                            className="h-9 text-sm"
+                                            className="h-10 text-sm"
                                         />
                                     </Stack>
-                                    <Stack gap="xs" className="flex-1 min-w-[200px]">
+                                    <Stack gap="xs" className="flex-1">
                                         <Text variant="xs" weight="bold" color="secondary">解答の例</Text>
                                         <Input
                                             placeholder="例：Tokyo"
                                             value={exampleAnswer}
                                             onChange={(e) => setExampleAnswer(e.target.value)}
                                             disabled={isProcessing}
-                                            className="h-9 text-sm"
+                                            className="h-10 text-sm"
                                         />
                                     </Stack>
                                 </Flex>

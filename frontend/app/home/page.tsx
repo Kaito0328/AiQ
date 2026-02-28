@@ -92,23 +92,27 @@ export default function Home() {
             <NavCards />
           </Stack>
 
-          <Stack gap="lg">
-            <SectionHeader
-              icon={Newspaper}
-              title="お知らせ"
-              description="修正依頼の状況や運営からの通知を確認できます"
-            />
-            <EditRequestNotification />
-          </Stack>
+          {user && (
+            <Stack gap="lg">
+              <SectionHeader
+                icon={Newspaper}
+                title="お知らせ"
+                description="修正依頼の状況や運営からの通知を確認できます"
+              />
+              <EditRequestNotification />
+            </Stack>
+          )}
 
-          <Stack gap="lg">
-            <SectionHeader
-              icon={History}
-              title="最近のクイズ"
-              description="中断したクイズの再開や最近アクセスした問題集"
-            />
-            <ResumeQuizSummary />
-          </Stack>
+          {user && (
+            <Stack gap="lg">
+              <SectionHeader
+                icon={History}
+                title="最近のクイズ"
+                description="中断したクイズの再開や最近アクセスした問題集"
+              />
+              <ResumeQuizSummary />
+            </Stack>
+          )}
 
           {/* 対戦（バトル）セクション */}
           <Stack gap="lg" id="battle">
