@@ -16,19 +16,19 @@ impl CollectionRepository {
         let mut tx = pool.begin().await?;
 
         // 1. 問題集本体の作成
-        let collection = sqlx::query_file_as!(
-            Collection,
-            "src/queries/collections/insert_collection.sql",
-            user_id,
-            name,
-            description_text,
-            is_open
+        let collection = sqlx::query_as::<_, Collection>(
+            include_str!("../queries/collections/insert_collection.sql")
         )
+        .bind(user_id)
+        .bind(name)
+        .bind(description_text)
+        .bind(is_open)
         .fetch_one(&mut *tx)
         .await?;
 
         // 2. 統計情報の初期レコード作成
-        sqlx::query_file!("src/queries/collections/insert_stats.sql", collection.id)
+        sqlx::query(include_str!("../queries/collections/insert_stats.sql"))
+            .bind(collection.id)
             .execute(&mut *tx)
             .await?;
 
@@ -43,12 +43,11 @@ impl CollectionRepository {
         collection_id: Uuid,
         requester_id: Option<Uuid>,
     ) -> Result<crate::dtos::collection_dto::CollectionResponse, sqlx::Error> {
-        let collection = sqlx::query_file_as!(
-            crate::dtos::collection_dto::CollectionResponse,
-            "src/queries/collections/find_by_id_as_response.sql",
-            collection_id,
-            requester_id
+        let collection = sqlx::query_as::<_, crate::dtos::collection_dto::CollectionResponse>(
+            include_str!("../queries/collections/find_by_id_as_response.sql")
         )
+        .bind(collection_id)
+        .bind(requester_id)
         .fetch_one(pool)
         .await?;
 
@@ -57,11 +56,10 @@ impl CollectionRepository {
 
     // IDによる問題集の取得
     pub async fn find_by_id(pool: &PgPool, collection_id: Uuid) -> Result<Collection, sqlx::Error> {
-        let collection = sqlx::query_file_as!(
-            Collection,
-            "src/queries/collections/find_by_id.sql",
-            collection_id
+        let collection = sqlx::query_as::<_, Collection>(
+            include_str!("../queries/collections/find_by_id.sql")
         )
+        .bind(collection_id)
         .fetch_one(pool)
         .await?;
 
@@ -73,11 +71,10 @@ impl CollectionRepository {
         pool: &PgPool,
         user_id: Uuid,
     ) -> Result<Vec<Collection>, sqlx::Error> {
-        let collections = sqlx::query_file_as!(
-            Collection,
-            "src/queries/collections/find_by_user_id.sql",
-            user_id
+        let collections = sqlx::query_as::<_, Collection>(
+            include_str!("../queries/collections/find_by_user_id.sql")
         )
+        .bind(user_id)
         .fetch_all(pool)
         .await?;
 
@@ -89,12 +86,11 @@ impl CollectionRepository {
         user_id: Uuid,
         requester_id: Option<Uuid>,
     ) -> Result<Vec<crate::dtos::collection_dto::CollectionResponse>, sqlx::Error> {
-        let collections = sqlx::query_file_as!(
-            crate::dtos::collection_dto::CollectionResponse,
-            "src/queries/collections/find_by_user_id_as_response.sql",
-            user_id,
-            requester_id
+        let collections = sqlx::query_as::<_, crate::dtos::collection_dto::CollectionResponse>(
+            include_str!("../queries/collections/find_by_user_id_as_response.sql")
         )
+        .bind(user_id)
+        .bind(requester_id)
         .fetch_all(pool)
         .await?;
 
@@ -110,15 +106,14 @@ impl CollectionRepository {
         description_text: Option<String>,
         is_open: bool,
     ) -> Result<Collection, sqlx::Error> {
-        let collection = sqlx::query_file_as!(
-            Collection,
-            "src/queries/collections/update_collection.sql",
-            name,
-            description_text,
-            is_open,
-            collection_id,
-            user_id
+        let collection = sqlx::query_as::<_, Collection>(
+            include_str!("../queries/collections/update_collection.sql")
         )
+        .bind(name)
+        .bind(description_text)
+        .bind(is_open)
+        .bind(collection_id)
+        .bind(user_id)
         .fetch_one(pool)
         .await?;
 
@@ -130,13 +125,11 @@ impl CollectionRepository {
         collection_id: Uuid,
         user_id: Uuid,
     ) -> Result<bool, sqlx::Error> {
-        let result = sqlx::query_file!(
-            "src/queries/collections/delete_collection.sql",
-            collection_id,
-            user_id
-        )
-        .execute(pool)
-        .await?;
+        let result = sqlx::query(include_str!("../queries/collections/delete_collection.sql"))
+            .bind(collection_id)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
 
         Ok(result.rows_affected() > 0)
     }
@@ -175,8 +168,7 @@ impl CollectionRepository {
 
         let mut tx = pool.begin().await?;
 
-        let results = sqlx::query_as!(
-            Collection,
+        let results = sqlx::query_as::<_, Collection>(
             r#"
             INSERT INTO collections (id, user_id, name, description_text, is_open)
             SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::boolean[])
@@ -188,25 +180,25 @@ impl CollectionRepository {
             WHERE collections.user_id = EXCLUDED.user_id
             RETURNING *
             "#,
-            &ids,
-            &user_ids,
-            &names as &[Option<String>],
-            &descriptions as &[Option<String>],
-            &is_opens as &[Option<bool>]
         )
+        .bind(&ids)
+        .bind(&user_ids)
+        .bind(&names as &[Option<String>])
+        .bind(&descriptions as &[Option<String>])
+        .bind(&is_opens as &[Option<bool>])
         .fetch_all(&mut *tx)
         .await?;
 
         // upsert collection_stats for new collections safely
         if !results.is_empty() {
-            sqlx::query!(
+            sqlx::query(
                 r#"
                 INSERT INTO collection_stats (collection_id)
                 SELECT id FROM UNNEST($1::uuid[]) AS id
                 ON CONFLICT (collection_id) DO NOTHING
                 "#,
-                &ids
             )
+            .bind(&ids)
             .execute(&mut *tx)
             .await?;
         }
@@ -225,13 +217,11 @@ impl CollectionRepository {
             return Ok(0);
         }
 
-        let result = sqlx::query!(
-            "DELETE FROM collections WHERE user_id = $1 AND id = ANY($2)",
-            user_id,
-            &collection_ids
-        )
-        .execute(pool)
-        .await?;
+        let result = sqlx::query("DELETE FROM collections WHERE user_id = $1 AND id = ANY($2)")
+            .bind(user_id)
+            .bind(&collection_ids)
+            .execute(pool)
+            .await?;
 
         Ok(result.rows_affected())
     }
@@ -242,13 +232,12 @@ impl CollectionRepository {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<crate::dtos::collection_dto::CollectionResponse>, sqlx::Error> {
-        let collections = sqlx::query_file_as!(
-            crate::dtos::collection_dto::CollectionResponse,
-            "src/queries/collections/get_followee_collections.sql",
-            follower_id,
-            limit,
-            offset
+        let collections = sqlx::query_as::<_, crate::dtos::collection_dto::CollectionResponse>(
+            include_str!("../queries/collections/get_followee_collections.sql")
         )
+        .bind(follower_id)
+        .bind(limit)
+        .bind(offset)
         .fetch_all(pool)
         .await?;
 
@@ -261,13 +250,12 @@ impl CollectionRepository {
         offset: i64,
         requester_id: Option<Uuid>,
     ) -> Result<Vec<crate::dtos::collection_dto::CollectionResponse>, sqlx::Error> {
-        let collections = sqlx::query_file_as!(
-            crate::dtos::collection_dto::CollectionResponse,
-            "src/queries/collections/get_recent_collections.sql",
-            limit,
-            offset,
-            requester_id
+        let collections = sqlx::query_as::<_, crate::dtos::collection_dto::CollectionResponse>(
+            include_str!("../queries/collections/get_recent_collections.sql")
         )
+        .bind(limit)
+        .bind(offset)
+        .bind(requester_id)
         .fetch_all(pool)
         .await?;
 

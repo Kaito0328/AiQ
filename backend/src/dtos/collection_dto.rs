@@ -32,7 +32,7 @@ pub struct BatchCollectionsRequest {
     pub delete_ids: Vec<uuid::Uuid>,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct CollectionResponse {
     pub id: uuid::Uuid,
@@ -51,7 +51,7 @@ pub struct CollectionResponse {
     pub user_rank: Option<i64>,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct LeaderboardEntry {
     pub user_id: uuid::Uuid,
