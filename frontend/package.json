@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "cp ../app_config.json ./src/app_config.json",
     "dev": "next dev",
+    "prebuild": "cp ../app_config.json ./src/app_config.json",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",

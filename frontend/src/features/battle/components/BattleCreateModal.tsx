@@ -21,7 +21,7 @@ type Visibility = 'public' | 'private' | 'followers';
 
 export function BattleCreateModal({ isOpen, onClose }: BattleCreateModalProps) {
     const router = useRouter();
-    const [visibility, setVisibility] = useState<Visibility>('public');
+    const [visibility, setVisibility] = useState<Visibility>('private');
     const [loading, setLoading] = useState(false);
 
     const handleCreate = async () => {
@@ -33,7 +33,8 @@ export function BattleCreateModal({ isOpen, onClose }: BattleCreateModalProps) {
                 sortKeys: [],
                 totalQuestions: 10,
                 maxBuzzesPerRound: 2,
-                visibility: visibility
+                visibility: visibility,
+                preferredMode: 'chips'
             });
             router.push(`/battle/${resp.roomId}?token=${resp.joinToken}`);
             onClose();

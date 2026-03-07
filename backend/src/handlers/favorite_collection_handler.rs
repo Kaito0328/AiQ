@@ -25,7 +25,9 @@ pub async fn remove_favorite(
     Path(collection_id): Path<Uuid>,
 ) -> Result<(), AppError> {
     let service = FavoriteCollectionService::new(Arc::new(state.db.clone()));
-    service.remove_favorite(claims.user_id(), collection_id).await
+    service
+        .remove_favorite(claims.user_id(), collection_id)
+        .await
 }
 
 pub async fn list_favorites(

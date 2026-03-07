@@ -7,89 +7,142 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
-import { MatchQuestion, PlayerScore } from '@/src/entities/battle';
-import { Trophy, Clock, Zap, MessageSquare, Check, X, Bell } from 'lucide-react';
+import { MatchQuestion, PlayerScore, MatchConfig } from '@/src/entities/battle';
+import { Trophy, Clock, Zap, Check, X, AlertCircle, XCircle, ArrowLeft } from 'lucide-react';
 import { cn } from '@/src/shared/utils/cn';
 import { View } from '@/src/design/primitives/View';
+import { FourChoiceInput } from '@/src/features/quiz/components/inputs/FourChoiceInput';
+import { CharacterPoolInput } from '@/src/features/quiz/components/inputs/CharacterPoolInput';
+import { EditRequestModal } from '@/src/features/questions/components/EditRequestModal';
+import { Icon } from '@/src/design/baseComponents/Icon';
 
 interface BattleQuizProps {
     question: MatchQuestion;
     buzzedUserId: string | null;
-    buzzedUserIds: string[];
+    buzzerQueue: string[];
     submittedUserIds: string[];
     lastRoundResult: { correct_answer: string; scores: PlayerScore[] } | null;
     players: PlayerScore[];
     selfId: string | null;
     onBuzz: () => void;
     onSubmit: (answer: string) => void;
+    onPartialSubmit: (answer: string) => void;
+    partialAnswer: string | null;
     expiresAtMs: number | null;
     answerResult: { user_id: string, is_correct: boolean } | null;
     currentQuestionIndex: number;
     totalQuestions: number;
     maxBuzzes: number;
+    preferredMode?: string;
+    dummyCharCount?: number;
+    config: MatchConfig;
+    onBackToLobby: () => void;
+    onUpdateLocalQuestion?: (id: string, updates: any) => void;
+    isHost?: boolean;
 }
 
 export function BattleQuiz({
     question,
     buzzedUserId,
-    buzzedUserIds = [],
+    buzzerQueue = [],
     submittedUserIds = [],
     lastRoundResult,
     players,
     selfId,
     onBuzz,
     onSubmit,
+    onPartialSubmit,
+    partialAnswer,
     expiresAtMs,
     answerResult,
     currentQuestionIndex,
     totalQuestions,
-    maxBuzzes
+    maxBuzzes,
+    preferredMode = 'text',
+    dummyCharCount = 6,
+    config,
+    onBackToLobby,
+    onUpdateLocalQuestion,
+    isHost
 }: BattleQuizProps) {
     const [answer, setAnswer] = useState('');
+    const [activeMode, setActiveMode] = useState<string>(preferredMode);
+    const [showFallback, setShowFallback] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [timeLeftMs, setTimeLeftMs] = useState<number>(0);
+    const [timerTotalMs, setTimerTotalMs] = useState<number>(0); // captures initial timer duration for progress bar
+    const timeLeftMsRef = useRef<number>(0);       // live reading for buzz-time capture
+    const buzzTimesRef = useRef<Map<string, number>>(new Map()); // userId → timeLeftMs when they buzzed
     const inputRef = useRef<HTMLInputElement>(null);
-    const isMyBuzzed = buzzedUserIds.some(id => id.toLowerCase() === selfId?.toLowerCase());
-    const isMySubmitted = submittedUserIds.some(id => id.toLowerCase() === selfId?.toLowerCase());
-    const isMyActiveAnswer = isMyBuzzed && !isMySubmitted;
-    const isSomeoneBuzzed = buzzedUserIds.length > 0;
+    const isMyBuzzed = buzzerQueue.some(id => id.toLowerCase() === selfId?.toLowerCase());
+    const isMyActiveAnswer = buzzedUserId?.toLowerCase() === selfId?.toLowerCase();
 
-    // VFX Overlay
-    const renderVFX = () => {
-        if (!answerResult || lastRoundResult) return null;
-        const isCorrect = answerResult.is_correct;
-        const isSelf = answerResult.user_id === selfId;
+    // Mode fallback logic — runs on every new question AND whenever preferredMode changes
+    useEffect(() => {
+        if (!question) return;
 
-        // Only show large centered VFX for self
-        if (!isSelf) return null;
+        // Always start from the requested mode (prevents stale activeMode from previous question)
+        let targetMode = preferredMode;
 
-        return (
-            <View className="absolute inset-0 z-[2000] flex items-center justify-center pointer-events-none overflow-hidden">
-                <View className={cn(
-                    "flex flex-col items-center animate-in zoom-in duration-300 scale-125 md:scale-[2.5]",
-                    isCorrect ? "text-brand-success/60" : "text-brand-danger/60"
-                )}>
-                    {isCorrect ? (
-                        <View className="relative">
-                            <View className="text-8xl md:text-9xl font-bold border-[12px] border-brand-success/40 rounded-full w-24 h-24 md:w-40 md:h-40 flex items-center justify-center">
-                            </View>
-                        </View>
-                    ) : (
-                        <X size={120} strokeWidth={6} className="md:size-[200px] opacity-60" />
-                    )}
-                </View>
-            </View>
-        );
-    };
+        // 1. Omakase (Auto) Logic
+        if (targetMode === 'omakase') {
+            const rec = question.recommended_mode;
+            if (rec === 'fourChoice' || rec === 'choice') {
+                targetMode = 'fourChoice';
+            } else if (rec === 'text' || rec === 'recall') {
+                targetMode = 'text';
+            } else if (rec === 'chips') {
+                targetMode = 'chips';
+            } else {
+                targetMode = 'chips';
+            }
+        }
+
+        // 2. Compatibility Checks & Fallbacks
+
+        // 4-choice fallback
+        if (targetMode === 'fourChoice' && (!question.distractors || question.distractors.length === 0)) {
+            targetMode = 'text';
+        }
+
+        // Chips fallback: requires either non-empty rubis OR non-empty correct_answers
+        if (targetMode === 'chips') {
+            const hasRubis = question.answer_rubis && question.answer_rubis.some(r => r.trim().length > 0);
+            const hasAnswers = question.correct_answers && question.correct_answers.some(a => a.trim().length > 0);
+
+            if (!hasRubis && !hasAnswers) {
+                targetMode = 'text';
+            }
+        }
+
+        // Always update activeMode so stale state from previous question never persists
+        setActiveMode(targetMode);
+        const didFallback = targetMode !== preferredMode && preferredMode !== 'omakase';
+        setShowFallback(didFallback);
+        if (didFallback) {
+            const timer = setTimeout(() => setShowFallback(false), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [question, preferredMode]);
 
     useEffect(() => {
         if (!expiresAtMs) {
             setTimeLeftMs(0);
+            timeLeftMsRef.current = 0;
             return;
         }
 
+        // Capture the total duration the first time we see a new expiresAtMs
+        const now = Date.now();
+        const remaining = Math.max(0, expiresAtMs - now);
+        setTimerTotalMs(remaining);
+        // Reset buzz timestamps for fresh question
+        buzzTimesRef.current.clear();
+
         const updateTimer = () => {
-            const now = Date.now();
-            const diff = Math.max(0, expiresAtMs - now);
+            const n = Date.now();
+            const diff = Math.max(0, expiresAtMs - n);
+            timeLeftMsRef.current = diff;
             setTimeLeftMs(diff);
         };
 
@@ -98,199 +151,457 @@ export function BattleQuiz({
         return () => clearInterval(interval);
     }, [expiresAtMs]);
 
+    // Record the time remaining when each player first enters the buzzer queue
     useEffect(() => {
-        if (isMyActiveAnswer) {
-            setTimeout(() => inputRef.current?.focus(), 100);
-        }
-    }, [isMyActiveAnswer]);
+        buzzerQueue.forEach((uid) => {
+            if (!buzzTimesRef.current.has(uid)) {
+                buzzTimesRef.current.set(uid, timeLeftMsRef.current);
+            }
+        });
+    }, [buzzerQueue]);
 
     useEffect(() => {
-        if (!question) return;
-        setAnswer('');
-    }, [question?.id]);
+        if (buzzedUserId && buzzedUserId !== selfId) {
+            setAnswer(partialAnswer || '');
+        }
+    }, [partialAnswer, buzzedUserId, selfId]);
+
+    useEffect(() => {
+        if (buzzedUserId) {
+            setAnswer('');
+        }
+    }, [buzzedUserId]);
 
     const getAnswerFontSize = (text: string) => {
         const len = text.length;
-        if (len <= 8) return "text-4xl md:text-6xl";
-        if (len <= 15) return "text-3xl md:text-5xl";
-        if (len <= 25) return "text-2xl md:text-3xl";
-        return "text-xl md:text-2xl";
+        if (len <= 5) return "text-4xl md:text-6xl";
+        if (len <= 8) return "text-3xl md:text-5xl";
+        if (len <= 12) return "text-2xl md:text-4xl";
+        if (len <= 20) return "text-xl md:text-3xl";
+        if (len <= 30) return "text-lg md:text-2xl";
+        return "text-base md:text-xl";
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (answer.trim()) {
-            onSubmit(answer.trim());
-        }
+    const ordinal = (n: number): string => {
+        const s = ['th', 'st', 'nd', 'rd'];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
     };
 
     const buzzedUser = players.find(p => p.user_id.toLowerCase() === buzzedUserId?.toLowerCase());
 
+    const renderVFX = () => {
+        if (!answerResult) return null;
+        const isCorrect = answerResult.is_correct;
+        const isSelf = answerResult.user_id === selfId;
+        if (!isSelf) return null;
+
+        // Keep VFX visible even when lastRoundResult arrives
+        return (
+            <View className="absolute inset-0 z-[2000] flex items-center justify-center pointer-events-none overflow-hidden">
+                <View className={cn(
+                    "flex flex-col items-center animate-in zoom-in duration-300 scale-125 md:scale-[2.5]",
+                    isCorrect ? "text-brand-success/60" : "text-brand-danger/60"
+                )}>
+                    {isCorrect ? (
+                        <View className="text-8xl md:text-9xl font-bold border-[12px] border-brand-success/40 rounded-full w-24 h-24 md:w-40 md:h-40 flex items-center justify-center" />
+                    ) : (
+                        <X size={120} strokeWidth={6} className="md:size-[200px] opacity-40" />
+                    )}
+                </View>
+            </View>
+        );
+    };
+
     if (!question) return null;
 
     return (
-        <Stack gap="xl" className="w-full max-w-4xl mx-auto animate-in fade-in zoom-in-95 duration-500 relative">
+        <Stack gap="md" className="w-full max-w-4xl mx-auto px-6 sm:px-10 animate-in fade-in zoom-in-95 duration-500 relative h-full overflow-y-auto flex-1 pb-12">
             {renderVFX()}
-            {/* Header: Progress & Scores */}
-            <Flex justify="between" align="center" className="px-2">
-                <Stack gap="xs" className="w-[120px]">
-                    <Text variant="xs" color="primary" weight="bold" className="uppercase tracking-widest opacity-60">
-                        {currentQuestionIndex + 1} / {totalQuestions}
-                    </Text>
-                </Stack>
 
-                {/* Timer Section moved center or kept right */}
-                {expiresAtMs && !lastRoundResult && (
-                    <Flex justify="center" align="center" gap="sm" className="hidden md:flex">
-                        <Flex gap="xs" align="center">
-                            <Clock size={16} className={cn(timeLeftMs < 5000 ? "text-brand-danger animate-pulse" : "text-secondary")} />
-                            <Text variant="detail" weight="bold" color={timeLeftMs < 5000 ? "danger" : "secondary"}>
-                                {(timeLeftMs / 1000).toFixed(1)}s
-                            </Text>
-                        </Flex>
-                    </Flex>
-                )}
-
-                <Flex gap="xs" className="flex-1 justify-end overflow-x-auto no-scrollbar scroll-smooth">
+            {/* Header: players + info bar */}
+            <Stack gap="xs" className="shrink-0">
+                {/* Row 1: player mini-cards left-aligned */}
+                <Flex gap="sm" className="justify-start overflow-x-auto no-scrollbar px-4 pt-2">
                     {[...players]
                         .sort((a, b) => {
-                            // Buzzed first (priority by order), then by score
-                            const bA = buzzedUserIds.indexOf(a.user_id);
-                            const bB = buzzedUserIds.indexOf(b.user_id);
+                            const bA = buzzerQueue.indexOf(a.user_id);
+                            const bB = buzzerQueue.indexOf(b.user_id);
                             if (bA !== -1 && bB !== -1) return bA - bB;
                             if (bA !== -1) return -1;
                             if (bB !== -1) return 1;
                             return b.score - a.score;
                         })
-                        .map((p, i) => {
-                            const buzzIdx = buzzedUserIds.indexOf(p.user_id);
+                        .map((p) => {
+                            const buzzIdx = buzzerQueue.indexOf(p.user_id);
                             const isBuzzed = buzzIdx !== -1;
-                            const isUserAnswerResult = answerResult?.user_id === p.user_id;
+                            const isActive = buzzedUserId === p.user_id;
+                            const isUserResult = answerResult?.user_id === p.user_id;
+                            const buzzTime = buzzTimesRef.current.get(p.user_id);
 
                             return (
-                                <Flex key={p.user_id} align="center" gap="sm" className={cn(
-                                    "px-3 py-1.5 rounded-full border transition-all shrink-0",
-                                    p.user_id === selfId ? "border-brand-primary bg-brand-primary/10 shadow-sm" : "border-surface-muted bg-surface-base",
-                                    isBuzzed ? "ring-2 ring-yellow-400" : ""
-                                )}>
-                                    <View className="relative">
+                                <View key={p.user_id} className="flex flex-col items-center gap-0 shrink-0">
+                                    {/* Buzz time — above avatar */}
+                                    <View className="h-[12px] flex items-end justify-center">
+                                        <Text className="text-[8px] font-mono text-brand-primary/80 leading-tight h-2.5 text-center">
+                                            {buzzTime !== undefined ? `${(buzzTime / 1000).toFixed(1)}s` : ''}
+                                        </Text>
+                                    </View>
+
+                                    {/* Avatar + rank badge */}
+                                    <View className="relative mt-0.5">
                                         <View className={cn(
-                                            "w-7 h-7 rounded-full flex items-center justify-center bg-surface-muted text-[10px] font-bold overflow-hidden shrink-0",
-                                            i === 0 && !isBuzzed ? "bg-yellow-400 text-slate-900 shadow-sm" : ""
+                                            "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center bg-surface-muted overflow-hidden font-bold text-xs sm:text-sm",
+                                            p.user_id === selfId ? "ring-2 ring-brand-primary ring-offset-1" : "",
+                                            isActive ? "ring-2 ring-yellow-400 ring-offset-1" : ""
                                         )}>
-                                            {p.icon_url ? (
-                                                <img src={p.icon_url} alt={p.username} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <Text variant="xs" weight="bold">{p.username.charAt(0).toUpperCase()}</Text>
-                                            )}
+                                            {p.icon_url
+                                                ? <View as="img" src={p.icon_url} alt={p.username} className="w-full h-full object-cover" />
+                                                : <Text as="span" className="font-bold">{p.username.charAt(0).toUpperCase()}</Text>}
                                         </View>
-                                        {isBuzzed && (
-                                            <View className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-yellow-400 text-slate-900 flex items-center justify-center text-[8px] font-black border border-white">
-                                                {buzzIdx + 1}
+                                        {/* Result badge - overlaying the entire avatar */}
+                                        {isUserResult && (
+                                            <View className="absolute -inset-1 flex items-center justify-center animate-in zoom-in duration-300 z-20 pointer-events-none">
+                                                {answerResult!.is_correct
+                                                    ? <View className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-[3px] sm:border-[5px] border-brand-success drop-shadow-sm" />
+                                                    : <X size={28} strokeWidth={5} className="text-brand-danger drop-shadow-md sm:size-[34px]" />}
                                             </View>
                                         )}
-                                        {/* Localized feedback for others */}
-                                        {isUserAnswerResult && (
+                                        {/* Buzz order badge – top-left */}
+                                        {isBuzzed && (
                                             <View className={cn(
-                                                "absolute inset-0 flex items-center justify-center rounded-full animate-in zoom-in duration-300 pointer-events-none bg-surface-base/40 backdrop-blur-[1px]",
-                                                answerResult.is_correct ? "text-brand-success" : "text-brand-danger"
+                                                "absolute -bottom-1 -left-1 px-1 min-w-[16px] h-3.5 sm:min-w-[18px] sm:h-4 rounded-full flex items-center justify-center text-[7px] sm:text-[8px] font-black border border-white leading-none z-10",
+                                                isActive ? "bg-yellow-400 text-slate-900" : "bg-slate-500 text-white"
                                             )}>
-                                                {answerResult.is_correct ? <Check size={18} strokeWidth={4} /> : <X size={18} strokeWidth={4} />}
+                                                {ordinal(buzzIdx + 1)}
                                             </View>
                                         )}
                                     </View>
-                                    <Stack gap="none">
-                                        <Text variant="xs" weight="bold" className="max-w-[80px] truncate leading-tight">{p.username}</Text>
-                                        <Text variant="xs" color="secondary" className="font-mono text-[10px] opacity-70 leading-tight">{p.score} pts</Text>
-                                    </Stack>
-                                </Flex>
+
+                                    {/* Name */}
+                                    <Text className="text-[8px] sm:text-[9px] font-bold max-w-[40px] sm:max-w-[48px] px-0.5 sm:px-1 break-words text-center leading-tight mt-0.5" style={{ wordBreak: 'break-word', overflowWrap: 'break-word', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        {p.username}
+                                    </Text>
+
+                                    {/* Score */}
+                                    <Text className="text-[9px] sm:text-[10px] font-black font-mono text-brand-primary leading-tight">
+                                        {p.score}
+                                    </Text>
+                                </View>
                             );
                         })}
                 </Flex>
-            </Flex>
 
-            <Card padding="lg" className="relative border-t-4 border-t-brand-primary shadow-2xl min-h-[280px] flex flex-col justify-center">
-                {/* Buzz Overlay */}
-                {buzzedUserId && !lastRoundResult && (
-                    <View className="absolute -top-6 left-1/2 -translate-x-1/2 px-6 py-2 bg-yellow-400 text-slate-900 font-black rounded-full shadow-xl animate-bounce flex items-center gap-2 border-2 border-white z-20">
-                        <Zap size={18} fill="currentColor" />
-                        {(buzzedUser?.username || 'SOMEONE').toUpperCase()} BUZZED!
+                {/* Row 2: [left spacer] [Q# center] [timer right] */}
+                <Flex align="center" className="w-full">
+                    <View className="flex-1" />
+                    <Text variant="xs" color="primary" weight="bold" className="flex-1 text-center uppercase tracking-widest opacity-60 text-[8px] sm:text-[10px]">
+                        {currentQuestionIndex + 1} / {totalQuestions}
+                    </Text>
+                    <View className="flex-1 flex justify-end">
+                        {expiresAtMs && !lastRoundResult && (
+                            <Flex gap="xs" align="center">
+                                <Clock size={10} className={cn(timeLeftMs < 5000 ? "text-brand-danger animate-pulse" : "text-secondary")} />
+                                <Text className={cn("text-[9px] sm:text-[10px] font-mono font-bold", timeLeftMs < 5000 ? "text-brand-danger" : "text-secondary")}>
+                                    {(timeLeftMs / 1000).toFixed(1)}s
+                                </Text>
+                            </Flex>
+                        )}
+                    </View>
+                </Flex>
+            </Stack>
+
+            {/* Timer Progress Bar */}
+            <View className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden -mt-2">
+                <View
+                    className={cn(
+                        "h-full rounded-full transition-none",
+                        !expiresAtMs || lastRoundResult ? "w-0"
+                            : timeLeftMs < 5000 ? "bg-brand-danger"
+                                : "bg-brand-primary"
+                    )}
+                    style={{
+                        width: expiresAtMs && !lastRoundResult && timerTotalMs > 0
+                            ? `${(timeLeftMs / timerTotalMs) * 100}%`
+                            : '0%',
+                        transition: 'width 50ms linear, background-color 0.3s'
+                    }}
+                />
+            </View>
+
+            <Card padding="xs" className={cn(
+                "relative shadow-xl flex flex-col flex-1 min-h-0 overflow-y-auto",
+                "border-2 transition-colors duration-500",
+                answerResult && answerResult.user_id === selfId
+                    ? answerResult.is_correct
+                        ? "border-brand-success shadow-brand-success/30 shadow-lg"
+                        : "border-brand-danger shadow-brand-danger/30 shadow-lg"
+                    : "border-transparent"
+            )}>
+
+
+                {/* Fallback Notification */}
+                {showFallback && !lastRoundResult && (
+                    <View className="absolute top-12 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-brand-primary text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-2 animate-in slide-in-from-top-4 z-30">
+                        <AlertCircle size={12} />
+                        モード未対応のためテキスト入力に切り替えました
                     </View>
                 )}
 
-                <Stack gap="lg" align="center" className="text-center w-full">
+                <Stack gap="md" align="center" className="text-center w-full my-auto py-2">
                     {!lastRoundResult ? (
-                        <Text variant="h3" weight="bold" className="leading-tight text-xl md:text-3xl px-2 animate-in fade-in duration-500">
+                        <Text variant="h3" weight="bold" className="leading-tight text-base md:text-2xl px-1">
                             {question.question_text}
                         </Text>
                     ) : (
                         <Stack gap="md" align="center" className="w-full animate-in fade-in zoom-in-95 duration-500 px-4">
                             <Stack gap="xs">
-                                <Text variant="xs" color="secondary" weight="bold" className="uppercase tracking-[0.4em] opacity-40">正解は</Text>
                                 <Text
-                                    variant="h1"
+                                    variant="xs"
                                     color="primary"
                                     weight="bold"
-                                    className={cn("leading-tight drop-shadow-sm text-brand-primary break-all transition-all duration-300", getAnswerFontSize(lastRoundResult.correct_answer))}
+                                    className="uppercase tracking-[0.4em] opacity-80"
                                 >
-                                    {lastRoundResult.correct_answer}
+                                    正解は
+                                </Text>
+                                <Text
+                                    variant="h1"
+                                    weight="bold"
+                                    className={cn(
+                                        "leading-tight drop-shadow-sm break-words overflow-hidden transition-all duration-300",
+                                        lastRoundResult ? getAnswerFontSize(lastRoundResult.correct_answer) : ""
+                                    )}
+                                >
+                                    <View as="span" className="text-brand-primary">
+                                        {lastRoundResult?.correct_answer}
+                                    </View>
                                 </Text>
                             </Stack>
 
                             <View className="h-px w-16 bg-brand-primary/20 mx-auto" />
-
                             <Stack gap="sm" className="w-full">
-                                <Text variant="detail" weight="bold" className="leading-snug opacity-90 line-clamp-2 text-base text-secondary">
+                                <Text variant="detail" weight="bold" className="leading-snug opacity-95 text-sm md:text-base break-words">
                                     {question.question_text}
                                 </Text>
                                 {question.description_text && (
-                                    <Text variant="xs" color="secondary" className="italic opacity-60 leading-relaxed line-clamp-2">
-                                        {question.description_text}
-                                    </Text>
+                                    <View className="relative w-full">
+                                        <Text variant="xs" color="secondary" className="italic opacity-80 leading-relaxed break-words pr-8">
+                                            {question.description_text}
+                                        </Text>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setIsEditing(true)}
+                                            className="absolute top-0 right-0 p-1 h-auto text-secondary hover:text-brand-primary"
+                                        >
+                                            <Icon name="edit" size={14} />
+                                        </Button>
+                                    </View>
+                                )}
+                                {!question.description_text && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setIsEditing(true)}
+                                        className="gap-1.5 text-secondary hover:text-brand-primary h-8"
+                                    >
+                                        <Icon name="edit" size={12} />
+                                        <Text variant="xs">修正提案・解説追加</Text>
+                                    </Button>
                                 )}
                             </Stack>
-
-                            <Flex align="center" gap="sm" className="mt-2 animate-pulse bg-brand-primary/5 px-4 py-1.5 rounded-full border border-brand-primary/5">
-                                <Clock size={14} className="text-brand-primary" />
-                                <Text variant="xs" weight="bold" color="primary" className="tracking-widest uppercase text-[10px]">Preparing Next Round</Text>
-                            </Flex>
                         </Stack>
                     )}
                 </Stack>
+                {lastRoundResult && (
+                    <View className="absolute top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                        <Flex align="center" gap="xs" className="animate-pulse bg-brand-primary/10 px-3 py-1 rounded-full border border-brand-primary/20 backdrop-blur-sm shadow-sm">
+                            <Clock size={10} className="text-brand-primary" />
+                            <Text variant="xs" weight="bold" color="primary" className="tracking-[0.2em] uppercase text-[8px] sm:text-[9px]">Preparing Next Round</Text>
+                        </Flex>
+                    </View>
+                )}
             </Card>
 
-            {/* Action Area */}
-            <View className="h-32 flex items-center justify-center pt-8">
-                {lastRoundResult ? null : (
-                    (() => {
-                        const isLimitReached = buzzedUserIds.length >= maxBuzzes;
-                        const canBuzz = !isMyBuzzed && !isLimitReached;
+            {isEditing && (
+                <EditRequestModal
+                    question={{
+                        id: question.id,
+                        collectionId: '',
+                        questionText: question.question_text,
+                        correctAnswers: question.correct_answers,
+                        answerRubis: question.answer_rubis,
+                        distractors: question.distractors,
+                        descriptionText: question.description_text,
+                        preferredMode: 'chips',
+                        recommendedMode: 'chips'
+                    }}
+                    onClose={() => setIsEditing(false)}
+                    onDirectUpdate={(updates) => {
+                        onUpdateLocalQuestion?.(question.id, {
+                            question_text: updates.questionText,
+                            correct_answers: updates.correctAnswers,
+                            answer_rubis: updates.answerRubis,
+                            distractors: updates.distractors,
+                            description_text: updates.descriptionText
+                        });
+                    }}
+                    isOwner={isHost}
+                />
+            )}
 
+            {/* Action Area */}
+            {!lastRoundResult && (
+                <View className="h-40 sm:h-48 flex items-center justify-center pt-4 sm:pt-8 shrink-0">
+                    {(() => {
+                        const isLimitReached = buzzerQueue.length >= maxBuzzes;
+                        const canBuzz = !isMyBuzzed && !isLimitReached && !buzzedUserId;
+
+                        // CASE 1: I am the active buzzer (I need to answer)
                         if (isMyActiveAnswer) {
-                            return (
-                                <form onSubmit={handleSubmit} className="w-full max-w-md animate-in slide-in-from-bottom-4">
-                                    <Stack gap="md">
-                                        <Text align="center" variant="xs" weight="bold" color="primary" className="animate-pulse">
-                                            あなたの回答を入力してください！
-                                        </Text>
-                                        <Flex gap="sm">
-                                            <Input
-                                                ref={inputRef}
-                                                value={answer}
-                                                onChange={(e) => setAnswer(e.target.value)}
-                                                placeholder="答えを入力..."
-                                                className="text-lg py-6 shadow-lg border-2 border-brand-primary"
-                                                autoFocus
+                            const onPartialInput = (newVal: string) => {
+                                const normalized = newVal.replace(/\s/g, "");
+                                setAnswer(normalized);
+                                onPartialSubmit(normalized);
+                            };
+
+                            if (activeMode === 'fourChoice') {
+                                return (
+                                    <View className="w-full max-w-lg animate-in slide-in-from-bottom-4">
+                                        <FourChoiceInput
+                                            correctAnswers={question.correct_answers}
+                                            distractors={question.distractors}
+                                            onInput={(val) => onSubmit(val)}
+                                        />
+                                    </View>
+                                );
+                            } else if (activeMode === 'chips') {
+                                // Source for chips: rubis if present, else correct_answers
+                                const hasValidRubis = question.answer_rubis && question.answer_rubis.some(r => r.trim().length > 0);
+                                const chipsSource = hasValidRubis
+                                    ? question.answer_rubis!
+                                    : (question.correct_answers || []);
+                                const hasChipsSource = chipsSource.some(s => s.trim().length > 0);
+
+                                if (!hasChipsSource) {
+                                    // No source to build chips — show text input as emergency fallback
+                                    return (
+                                        <View className="w-full max-w-md animate-in slide-in-from-bottom-4">
+                                            <View as="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); if (answer.trim()) onSubmit(answer.trim()); }} className="w-full">
+                                                <Stack gap="md">
+                                                    <Text align="center" variant="xs" weight="bold" color="primary" className="animate-pulse">回答を入力してください！</Text>
+                                                    <Input
+                                                        ref={inputRef}
+                                                        value={answer}
+                                                        onChange={e => setAnswer(e.target.value)}
+                                                        placeholder="答えを入力..."
+                                                        className="text-center text-lg py-6 font-bold shadow-inner"
+                                                        autoFocus
+                                                    />
+                                                    <Button type="submit" variant="solid" color="primary" disabled={!answer.trim()} className="w-full py-4">
+                                                        回答する
+                                                    </Button>
+                                                </Stack>
+                                            </View>
+                                        </View>
+                                    );
+                                }
+
+                                return (
+                                    <View className="w-full max-w-md animate-in slide-in-from-bottom-4">
+                                        <Stack gap="md">
+                                            <View className="relative">
+                                                <Input
+                                                    readOnly
+                                                    value={answer}
+                                                    placeholder="回答中..."
+                                                    className="text-2xl py-4 shadow-inner bg-surface-base border-2 border-brand-primary text-center font-bold tracking-widest pointer-events-none"
+                                                />
+                                            </View>
+                                            <CharacterPoolInput
+                                                rubis={question.answer_rubis || []}
+                                                answers={question.correct_answers || []}
+                                                currentInput={answer || ""}
+                                                onInput={(char) => {
+                                                    const newAnswer = answer + char;
+                                                    const hasKanji = (text: string) => /[\u4E00-\u9FAF]/.test(text);
+
+                                                    // Determine representative target (same logic as CharacterPoolInput)
+                                                    let tgt = "";
+                                                    const ansList = question.correct_answers || [];
+                                                    const rbiList = question.answer_rubis || [];
+                                                    for (let i = 0; i < ansList.length; i++) {
+                                                        const r = rbiList[i]?.trim();
+                                                        const a = ansList[i]?.trim();
+                                                        if (r && r.length > 0) {
+                                                            tgt = r.replace(/\s/g, "");
+                                                            break;
+                                                        }
+                                                        if (a && a.length > 0 && !hasKanji(a)) {
+                                                            tgt = a.replace(/\s/g, "");
+                                                            break;
+                                                        }
+                                                    }
+
+                                                    onPartialInput(newAnswer);
+                                                    if (tgt && newAnswer.replace(/\s/g, "").length >= tgt.length) {
+                                                        setTimeout(() => onSubmit(newAnswer.trim()), 50);
+                                                    }
+                                                }}
+                                                decoyCount={dummyCharCount}
+                                                distractors={question.distractors || []}
                                             />
-                                            <Button type="submit" variant="solid" color="primary" className="px-8 shadow-lg">
-                                                送信
-                                            </Button>
-                                        </Flex>
-                                    </Stack>
-                                </form>
+                                        </Stack>
+                                    </View>
+                                );
+                            } else {
+                                return (
+                                    <View className="w-full max-w-md animate-in slide-in-from-bottom-4">
+                                        <View as="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); if (answer.trim()) onSubmit(answer.trim()); }} className="w-full">
+                                            <Stack gap="md">
+                                                <Text align="center" variant="xs" weight="bold" color="primary" className="animate-pulse">回答を入力してください！</Text>
+                                                <Input
+                                                    ref={inputRef}
+                                                    value={answer}
+                                                    onChange={(e) => {
+                                                        setAnswer(e.target.value);
+                                                        onPartialSubmit(e.target.value);
+                                                    }}
+                                                    placeholder="答えを入力..."
+                                                    className="text-lg py-6 shadow-lg border-2 border-brand-primary"
+                                                    autoFocus
+                                                />
+                                                <Flex justify="center" gap="md">
+                                                    <Button type="button" variant="ghost" size="sm" onClick={() => { setAnswer(''); onPartialSubmit(''); }}>リセット</Button>
+                                                    <Button type="submit" variant="solid" color="primary" disabled={!answer.trim()}>回答する</Button>
+                                                </Flex>
+                                            </Stack>
+                                        </View>
+                                    </View>
+                                );
+                            }
+                        }
+
+                        // CASE 2: Someone is buzzing (Show progress)
+                        if (buzzedUserId) {
+                            return (
+                                <View className="w-full max-w-md bg-brand-primary/5 p-8 rounded-3xl border-2 border-dashed border-brand-primary/20 flex flex-col items-center gap-4">
+                                    <Text variant="detail" color="primary" weight="bold" className="animate-bounce">
+                                        {isMyBuzzed ? "あなたの番を待っています..." : "回答を待っています..."}
+                                    </Text>
+                                    <View className="flex flex-wrap justify-center gap-1">
+                                        {(buzzedUserId === selfId ? answer : partialAnswer || '').split('').map((char, i) => (
+                                            <Text key={i} className="text-4xl font-black tracking-normal text-brand-primary">{char}</Text>
+                                        ))}
+                                        {(buzzedUserId === selfId ? answer : partialAnswer || '').length === 0 && (
+                                            <Text className="text-4xl font-black tracking-widest text-brand-primary opacity-20">...</Text>
+                                        )}
+                                    </View>
+                                </View>
                             );
                         }
 
+                        // CASE 3: No one is buzzing (Show BUZZ button)
                         return (
                             <Stack gap="md" align="center" className="w-full relative">
                                 <Button
@@ -298,31 +609,19 @@ export function BattleQuiz({
                                     color={canBuzz ? "primary" : "secondary"}
                                     disabled={!canBuzz}
                                     className={cn(
-                                        "w-48 h-48 rounded-full shadow-2xl font-black text-2xl flex flex-col items-center justify-center gap-2 transition-all border-8 border-white",
+                                        "w-32 h-32 sm:w-48 sm:h-48 rounded-full shadow-2xl font-black text-xl sm:text-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition-all border-4 sm:border-8 border-white",
                                         canBuzz ? "shadow-brand-primary/40 hover:scale-105 active:scale-95 cursor-pointer" : "opacity-50 grayscale cursor-not-allowed"
                                     )}
                                     onClick={onBuzz}
                                 >
-                                    <Zap size={48} fill="white" />
+                                    <Zap size={32} className="sm:size-[48px]" fill="white" />
                                     {isLimitReached ? "満員" : "BUZZ!"}
                                 </Button>
-
-                                {buzzedUserIds.length > 0 && (
-                                    <View className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max">
-                                        <Flex gap="sm" align="center" className="text-yellow-500 animate-pulse bg-yellow-400/10 px-4 py-1.5 rounded-full border border-yellow-400/20">
-                                            <Clock size={14} />
-                                            <Text variant="xs" weight="bold">
-                                                現在{buzzedUserIds.length - submittedUserIds.length}人が解答中...
-                                            </Text>
-                                        </Flex>
-                                    </View>
-                                )}
                             </Stack>
                         );
-                    })()
-                )}
-            </View>
-
+                    })()}
+                </View>
+            )}
         </Stack>
     );
 }

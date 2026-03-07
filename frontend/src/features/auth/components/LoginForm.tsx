@@ -95,9 +95,7 @@ export function LoginForm({ onSuccess, onSwitchToRegister }: LoginFormProps) {
                     </Button>
                 </Flex>
 
-                <View className="mt-4">
-                    <SecurityNotice />
-                </View>
+                <SecurityNotice />
             </Stack>
         </Card>
     );

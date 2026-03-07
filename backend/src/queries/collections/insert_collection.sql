@@ -1,3 +1,3 @@
-INSERT INTO collections (user_id, name, description_text, is_open)
-VALUES ($1, $2, $3, $4)
-RETURNING id, user_id, name, description_text, is_open, created_at, updated_at;
+INSERT INTO collections (user_id, name, description_text, is_open, default_mode)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, user_id, name, description_text, is_open, default_mode, created_at, updated_at;

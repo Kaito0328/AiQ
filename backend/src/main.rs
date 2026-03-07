@@ -1,15 +1,19 @@
+use axum::http::HeaderValue;
 use backend::app;
-use backend::state::AppState;
 use backend::services::seed_service::seed_data;
+use backend::state::AppState;
 use dotenvy::dotenv;
 use sqlx::postgres::PgPoolOptions;
-use axum::http::HeaderValue;
 use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
+
+    // Initialize centralized application configuration
+    backend::config::init();
+
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     let pool = PgPoolOptions::new()
@@ -28,10 +32,13 @@ async fn main() {
     seed_data(&pool).await;
 
     let state = AppState::new(pool);
-    
+
+    // Spawn background task to clean up empty rooms
+    backend::services::match_ws_service::MatchWsService::spawn_cleanup_task(state.match_state.clone());
+
     // Create CORS layer
     let frontend_url = env::var("FRONTEND_URL").unwrap_or_else(|_| "*".to_string());
-    
+
     let cors = if frontend_url == "*" {
         CorsLayer::new()
             .allow_origin(Any)

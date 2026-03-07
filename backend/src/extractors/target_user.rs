@@ -14,9 +14,8 @@ impl FromRequestParts<AppState> for User {
         state: &AppState,
     ) -> Result<Self, Self::Rejection> {
         // Path<HashMap<String, String>> としてすべてのパラメータを受け取る
-        let Path(params): Path<HashMap<String, String>> = Path::from_request_parts(parts, state)
-            .await
-            .map_err(|e| {
+        let Path(params): Path<HashMap<String, String>> =
+            Path::from_request_parts(parts, state).await.map_err(|e| {
                 eprintln!("Failed to parse path params: {:?}", e);
                 StatusCode::BAD_REQUEST
             })?;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { cn } from '@/src/shared/utils/cn';
+import { Range } from './Range';
 
 export interface SliderProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
     value: number;
@@ -43,22 +44,14 @@ export function Slider({
                 )}
             </div>
             <div className="relative group py-2">
-                <input
-                    type="range"
+                <Range
                     min={min}
                     max={max}
                     step={step}
                     value={value}
                     onChange={(e) => onChange(Number(e.target.value))}
                     disabled={disabled}
-                    className={cn(
-                        "w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-brand-primary/20",
-                        "accent-brand-primary",
-                        disabled && "opacity-50 cursor-not-allowed",
-                    )}
-                    style={{
-                        background: `linear-gradient(to right, var(--brand-primary) ${percentage}%, #e5e7eb ${percentage}%)`
-                    }}
+                    className={cn(disabled && "opacity-50 cursor-not-allowed", className)}
                     {...props}
                 />
             </div>

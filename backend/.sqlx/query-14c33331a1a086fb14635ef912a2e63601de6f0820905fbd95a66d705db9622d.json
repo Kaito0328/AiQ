@@ -1,0 +1,69 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE collections\nSET name = $1, description_text = $2, is_open = $3, default_mode = $4, updated_at = NOW()\nWHERE id = $5 AND user_id = $6\nRETURNING id, user_id, name, description_text, is_open, default_mode, created_at, updated_at;",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "is_open",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "default_mode",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Varchar",
+        "Text",
+        "Bool",
+        "Varchar",
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "14c33331a1a086fb14635ef912a2e63601de6f0820905fbd95a66d705db9622d"
+}

@@ -11,23 +11,32 @@ impl CsvService {
         let mut rdr = ReaderBuilder::new()
             .has_headers(true)
             .from_reader(Cursor::new(csv_data));
-        
+
         let mut items = Vec::new();
 
         // ヘッダーを確認してインデックスを特定
         let headers = match rdr.headers() {
             Ok(h) => h,
-            Err(e) => return Err(AppError::BadRequest(format!("CSV headers parsing failed: {}", e))),
+            Err(e) => {
+                return Err(AppError::BadRequest(format!(
+                    "CSV headers parsing failed: {}",
+                    e
+                )));
+            }
         };
 
         let mut question_idx = None;
         let mut answer_idx = None;
+        let mut ruby_idx = None;
+        let mut dist_idx = None;
         let mut desc_idx = None;
 
         for (i, header) in headers.iter().enumerate() {
             match header.to_lowercase().trim() {
                 "question" | "question_text" | "問題文" => question_idx = Some(i),
                 "answer" | "correct_answer" | "正解" => answer_idx = Some(i),
+                "ruby" | "rubi" | "answer_rubi" | "ルビ" => ruby_idx = Some(i),
+                "distractors" | "distractor" | "choices" | "選択肢" => dist_idx = Some(i),
                 "description" | "description_text" | "解説" => desc_idx = Some(i),
                 _ => {}
             }
@@ -41,13 +50,37 @@ impl CsvService {
         for result in rdr.records() {
             let record = match result {
                 Ok(r) => r,
-                Err(e) => return Err(AppError::BadRequest(format!("CSV record parsing failed: {}", e))),
+                Err(e) => {
+                    return Err(AppError::BadRequest(format!(
+                        "CSV record parsing failed: {}",
+                        e
+                    )));
+                }
             };
 
             if record.len() > question_idx && record.len() > answer_idx {
                 let question_text = record.get(question_idx).unwrap_or("").trim().to_string();
                 let correct_answers_str = record.get(answer_idx).unwrap_or("").trim();
-                let correct_answers = correct_answers_str.split(';').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect::<Vec<_>>();
+                let correct_answers = correct_answers_str
+                    .split(';')
+                    .map(|s| s.trim().to_string())
+                    .filter(|s| !s.is_empty())
+                    .collect::<Vec<_>>();
+                
+                let answer_rubis = ruby_idx.and_then(|idx| record.get(idx)).map(|s| {
+                    s.split(';')
+                        .map(|v| v.trim().to_string())
+                        .filter(|v| !v.is_empty())
+                        .collect::<Vec<_>>()
+                });
+
+                let distractors = dist_idx.and_then(|idx| record.get(idx)).map(|s| {
+                    s.split(';')
+                        .map(|v| v.trim().to_string())
+                        .filter(|v| !v.is_empty())
+                        .collect::<Vec<_>>()
+                });
+
                 let description_text = record.get(desc_idx).map(|s| s.trim().to_string());
 
                 if !question_text.is_empty() && !correct_answers.is_empty() {
@@ -55,7 +88,15 @@ impl CsvService {
                         id: None,
                         question_text: Some(question_text),
                         correct_answers: Some(correct_answers),
-                        description_text: if description_text.as_deref() == Some("") { None } else { description_text },
+                        answer_rubis,
+                        distractors,
+                        preferred_mode: None,
+                        recommended_mode: None,
+                        description_text: if description_text.as_deref() == Some("") {
+                            None
+                        } else {
+                            description_text
+                        },
                     });
                 }
             }
@@ -65,12 +106,15 @@ impl CsvService {
     }
 
     /// 問題のリストをCSV文字列として生成します。
-    pub fn generate_csv(questions: &[crate::models::question::Question]) -> Result<String, AppError> {
+    pub fn generate_csv(
+        questions: &[crate::models::question::Question],
+    ) -> Result<String, AppError> {
         let mut wtr = WriterBuilder::new().from_writer(vec![]);
-        
-        wtr.write_record(&["question", "answer", "description"]).map_err(|e| {
-            AppError::InternalServerError(format!("Failed to write CSV headers: {}", e))
-        })?;
+
+        wtr.write_record(&["question", "answer", "description"])
+            .map_err(|e| {
+                AppError::InternalServerError(format!("Failed to write CSV headers: {}", e))
+            })?;
 
         for q in questions {
             let answers_str = q.correct_answers.join(";");
@@ -78,7 +122,8 @@ impl CsvService {
                 &q.question_text,
                 &answers_str,
                 q.description_text.as_deref().unwrap_or(""),
-            ]).map_err(|e| {
+            ])
+            .map_err(|e| {
                 AppError::InternalServerError(format!("Failed to write CSV record: {}", e))
             })?;
         }

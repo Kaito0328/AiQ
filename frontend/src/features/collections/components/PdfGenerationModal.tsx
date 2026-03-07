@@ -7,8 +7,10 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { TextArea } from '@/src/design/baseComponents/TextArea';
+import { FormField } from '@/src/design/baseComponents/FormField';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
+import { Select } from '@/src/design/baseComponents/Select';
 import { FileText, Loader2, CheckCircle, AlertCircle, FileUp } from 'lucide-react';
 import { useAiGeneration } from '../hooks/useAiGeneration';
 import { useToast } from '@/src/shared/contexts/ToastContext';
@@ -24,6 +26,7 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
     const [file, setFile] = useState<File | null>(null);
     const [prompt, setPrompt] = useState('この資料の内容から重要なポイントを抜き出して問題を作成してください。');
     const [count, setCount] = useState(5);
+    const [explanationLanguage, setExplanationLanguage] = useState('');
     const { showToast } = useToast();
     const { generate, reset, status, message, generatedQuestions } = useAiGeneration(collectionId);
 
@@ -47,7 +50,12 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
 
         try {
             const pdfBase64 = await convertToBase64(file);
-            generate({ prompt, count, pdf_data: pdfBase64 });
+            generate({
+                prompt,
+                count,
+                pdfData: pdfBase64,
+                explanationLanguage: explanationLanguage || undefined
+            });
         } catch (err) {
             console.error(err);
             showToast({ message: 'ファイルの読み込みに失敗しました', variant: 'danger' });
@@ -78,6 +86,17 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
             onClose={handleClose}
             title="PDFから問題生成"
             size="md"
+            footer={status === 'idle' ? (
+                <Flex justify="end" gap="sm" className="w-full">
+                    <Button variant="ghost" onClick={onClose}>
+                        キャンセル
+                    </Button>
+                    <Button variant="solid" color="primary" onClick={handleGenerate} disabled={!file} className="gap-2">
+                        <FileText size={18} />
+                        生成を開始
+                    </Button>
+                </Flex>
+            ) : undefined}
         >
             <Stack gap="xl">
                 {status === 'idle' ? (
@@ -86,8 +105,8 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
                             <Text weight="bold" variant="xs">PDFファイルを選択</Text>
                             <View
                                 className={cn(
-                                    "relative border-2 border-dashed rounded-xl p-8 transition-all hover:bg-gray-50 flex flex-col items-center justify-center gap-4 cursor-pointer",
-                                    file ? "border-brand-primary bg-brand-primary/5" : "border-gray-200"
+                                    "relative border-2 border-dashed rounded-xl p-8 transition-all hover:bg-surface-muted/50 flex flex-col items-center justify-center gap-4 cursor-pointer",
+                                    file ? "border-brand-primary bg-brand-primary/5" : "border-surface-muted/50"
                                 )}
                                 onClick={() => document.getElementById('pdf-upload-input')?.click()}
                             >
@@ -106,7 +125,7 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
                                     </>
                                 ) : (
                                     <>
-                                        <FileUp size={48} className="text-gray-300" />
+                                        <FileUp size={48} className="text-secondary opacity-30" />
                                         <Stack gap="xs" align="center">
                                             <Text weight="bold">クリックしてPDFをアップロード</Text>
                                             <Text variant="xs" color="secondary">最大 10MB まで</Text>
@@ -116,18 +135,16 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
                             </View>
                         </Stack>
 
-                        <Stack gap="sm">
-                            <Text weight="bold" variant="xs">AIへの追加指示 (任意)</Text>
+                        <FormField label="AIへの追加指示 (任意)">
                             <TextArea
                                 placeholder="例: 専門用語の解説を含めて / 重要な数値に関する問題を中心に作成して"
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
                                 rows={3}
                             />
-                        </Stack>
+                        </FormField>
 
-                        <Stack gap="sm">
-                            <Text weight="bold" variant="xs">問題数 (1〜10)</Text>
+                        <FormField label="問題数 (1〜10)">
                             <Input
                                 type="number"
                                 min={1}
@@ -135,17 +152,19 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
                                 value={count}
                                 onChange={(e) => setCount(parseInt(e.target.value) || 5)}
                             />
-                        </Stack>
+                        </FormField>
 
-                        <Flex justify="end" gap="sm">
-                            <Button variant="ghost" onClick={onClose}>
-                                キャンセル
-                            </Button>
-                            <Button variant="solid" onClick={handleGenerate} disabled={!file} className="gap-2">
-                                <FileText size={18} />
-                                生成を開始
-                            </Button>
-                        </Flex>
+                        <FormField label="解説の言語">
+                            <Select
+                                value={explanationLanguage}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setExplanationLanguage(e.target.value)}
+                            >
+                                <option value="">自動（推測）</option>
+                                <option value="日本語">日本語</option>
+                                <option value="英語">英語</option>
+                            </Select>
+                        </FormField>
+
                     </>
                 ) : (
                     <View className="py-8">

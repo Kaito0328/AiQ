@@ -58,6 +58,22 @@ export function CsvImportModal({ isOpen, onClose, collectionId, onSuccess }: Csv
             onClose={onClose}
             title="CSVインポート"
             size="md"
+            footer={
+                <Flex justify="end" gap="sm" className="w-full">
+                    <Button variant="ghost" onClick={onClose} disabled={loading}>
+                        キャンセル
+                    </Button>
+                    <Button
+                        variant="solid"
+                        color="primary"
+                        onClick={handleUpload}
+                        disabled={!file || loading}
+                        loading={loading}
+                    >
+                        インポートを開始
+                    </Button>
+                </Flex>
+            }
         >
             <Stack gap="xl">
                 <View className="bg-brand-primary/5 p-4 rounded-lg border border-brand-primary/10">
@@ -100,8 +116,8 @@ export function CsvImportModal({ isOpen, onClose, collectionId, onSuccess }: Csv
                     <Text weight="bold" variant="xs">CSVファイルを選択</Text>
                     <View
                         className={cn(
-                            "relative border-2 border-dashed rounded-xl p-8 transition-all hover:bg-gray-50 flex flex-col items-center justify-center gap-4 cursor-pointer",
-                            file ? "border-brand-primary bg-brand-primary/5" : "border-gray-200"
+                            "relative border-2 border-dashed rounded-xl p-8 transition-all hover:bg-surface-muted/50 flex flex-col items-center justify-center gap-4 cursor-pointer",
+                            file ? "border-brand-primary bg-brand-primary/5" : "border-surface-muted/50"
                         )}
                         onClick={() => document.getElementById('csv-upload-input')?.click()}
                     >
@@ -120,7 +136,7 @@ export function CsvImportModal({ isOpen, onClose, collectionId, onSuccess }: Csv
                             </>
                         ) : (
                             <>
-                                <FileUp size={48} className="text-gray-300" />
+                                <FileUp size={48} className="text-secondary opacity-30" />
                                 <Stack gap="xs" align="center">
                                     <Text weight="bold">クリックしてファイルを選択</Text>
                                     <Text variant="xs" color="secondary">またはファイルをドラッグ＆ドロップ</Text>
@@ -130,19 +146,6 @@ export function CsvImportModal({ isOpen, onClose, collectionId, onSuccess }: Csv
                     </View>
                 </Stack>
 
-                <Flex justify="end" gap="sm">
-                    <Button variant="ghost" onClick={onClose} disabled={loading}>
-                        キャンセル
-                    </Button>
-                    <Button
-                        variant="solid"
-                        onClick={handleUpload}
-                        disabled={!file || loading}
-                        loading={loading}
-                    >
-                        インポートを開始
-                    </Button>
-                </Flex>
             </Stack>
         </Modal>
     );

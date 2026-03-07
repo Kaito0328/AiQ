@@ -54,9 +54,11 @@ export function AddToSetModal({ collectionId, onClose, onSuccess }: AddToSetModa
 
                 <View className="max-h-[400px] overflow-y-auto pr-1">
                     {loading ? (
-                        <Flex justify="center" className="py-10">
-                            <Spinner />
-                        </Flex>
+                        <View padding="xl">
+                            <Flex justify="center">
+                                <Spinner />
+                            </Flex>
+                        </View>
                     ) : collectionSets.length === 0 ? (
                         <Stack gap="md" align="center" className="py-10 text-center">
                             <FolderOpen size={40} className="text-slate-200" />
@@ -70,21 +72,26 @@ export function AddToSetModal({ collectionId, onClose, onSuccess }: AddToSetModa
                             {collectionSets.map(set => (
                                 <View
                                     key={set.id}
+                                    padding="lg"
+                                    rounded="lg"
+                                    border="base"
                                     onClick={() => handleAdd(set.id)}
-                                    className="group p-4 rounded-lg border border-surface-muted hover:border-brand-primary hover:bg-brand-primary/[0.02] cursor-pointer transition-all flex items-center justify-between"
+                                    className="group hover:border-brand-primary hover:bg-brand-primary/[0.02] cursor-pointer transition-all"
                                 >
-                                    <Flex gap="md" align="center">
-                                        <View className="p-2 rounded bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
-                                            <FolderOpen size={18} />
-                                        </View>
-                                        <Stack gap="none">
-                                            <Text weight="bold" variant="detail">{set.name}</Text>
-                                            <Text variant="xs" color="secondary" className="opacity-70">
-                                                作成: {new Date(set.createdAt).toLocaleDateString()}
-                                            </Text>
-                                        </Stack>
+                                    <Flex align="center" justify="between">
+                                        <Flex gap="md" align="center">
+                                            <View padding="sm" rounded="sm" className="bg-brand-primary/10 text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-colors">
+                                                <FolderOpen size={18} />
+                                            </View>
+                                            <Stack gap="none">
+                                                <Text weight="bold" variant="detail">{set.name}</Text>
+                                                <Text variant="xs" color="secondary" className="opacity-70">
+                                                    作成: {new Date(set.createdAt).toLocaleDateString()}
+                                                </Text>
+                                            </Stack>
+                                        </Flex>
+                                        <Plus size={18} className="text-brand-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                     </Flex>
-                                    <Plus size={18} className="text-brand-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </View>
                             ))}
                         </Stack>

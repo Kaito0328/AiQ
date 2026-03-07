@@ -10,16 +10,27 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { Menu } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 import { useAuth } from '@/src/shared/auth/useAuth';
+import { usePathname } from 'next/navigation';
+import { cn } from '@/src/shared/utils/cn';
 import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '@/src/shared/contexts/ThemeContext';
+import { useAudio } from '@/src/shared/contexts/AudioContext';
+import { Volume2, VolumeX } from 'lucide-react';
 
 export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { isAuthenticated } = useAuth();
     const { theme } = useTheme();
+    const { isMuted, toggleMute } = useAudio();
     const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
+
+    const isGameRoute = pathname.startsWith('/battle') ||
+        pathname.startsWith('/quiz') ||
+        pathname.includes('/ranking');
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 
@@ -27,7 +38,10 @@ export function Header() {
         <>
             <View
                 as="header"
-                className="sticky top-0 z-50 border-b-2 border-brand-primary/30 h-16 flex items-center shadow-sm bg-sky-200/90 dark:bg-surface-base/80 backdrop-blur-md transition-colors"
+                className={cn(
+                    "sticky top-0 z-50 border-b-2 border-brand-primary/30 h-16 flex items-center shadow-sm bg-sky-200/90 dark:bg-surface-base backdrop-blur-md transition-colors",
+                    (isGameRoute) ? "hidden" : "flex"
+                )}
             >
                 <Container className="relative h-full px-4">
                     <div className="flex items-center justify-between h-full">
@@ -49,8 +63,9 @@ export function Header() {
                                 href="/home"
                                 className="flex items-center gap-2 group pointer-events-auto"
                             >
-                                <img
-                                    src={mounted && theme === 'dark' ? "/logo_white.png" : "/logo_black.png"}
+                                <View
+                                    as="img"
+                                    src={mounted && theme === 'dark' ? "/logo_black.png" : "/logo_white.png"}
                                     alt="AiQ Logo"
                                     className="h-8 w-8 transition-transform group-hover:scale-110"
                                 />
@@ -58,8 +73,17 @@ export function Header() {
                             </Link>
                         </div>
 
-                        {/* 右側: テーマ切替ボタン */}
-                        <div className="z-10">
+                        {/* 右側: オーディオ切替とテーマ切替 */}
+                        <div className="z-10 flex items-center gap-2">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={toggleMute}
+                                className="p-2 h-auto hover:bg-surface-muted transition-colors rounded-lg flex items-center justify-center text-foreground"
+                                title={isMuted ? "音声を再生" : "音声をミュート"}
+                            >
+                                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                            </Button>
                             <ThemeToggle />
                         </div>
                     </div>

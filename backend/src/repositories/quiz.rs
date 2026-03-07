@@ -1,6 +1,6 @@
 use crate::models::{
-    quiz::{CasualQuiz, CasualQuizAnswer},
     question::UserQuestionStat,
+    quiz::{CasualQuiz, CasualQuizAnswer},
 };
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -10,12 +10,14 @@ pub struct QuizRepository;
 impl QuizRepository {
     pub async fn create_casual_quiz(
         pool: &PgPool,
-        user_id: Uuid,
-        filter_types: Vec<String>,
+        user_id: Option<Uuid>,
+        filter_node: Option<serde_json::Value>,
         sort_keys: Vec<String>,
         collection_names: Vec<String>,
         question_ids: Vec<Uuid>,
         total_questions: i32,
+        preferred_mode: String,
+        dummy_char_count: i32,
     ) -> Result<CasualQuiz, sqlx::Error> {
         let answered_question_ids: Vec<Uuid> = vec![];
         let correct_count = 0;
@@ -26,7 +28,7 @@ impl QuizRepository {
             CasualQuiz,
             "src/queries/quiz/insert_casual_quiz.sql",
             user_id,
-            &filter_types,
+            filter_node as _,
             &sort_keys,
             &collection_names,
             &question_ids,
@@ -34,6 +36,8 @@ impl QuizRepository {
             total_questions,
             correct_count,
             elapsed_time_millis,
+            preferred_mode,
+            dummy_char_count,
             is_active
         )
         .fetch_one(pool)
@@ -57,17 +61,10 @@ impl QuizRepository {
         Ok(quizzes)
     }
 
-    pub async fn find_by_id(
-        pool: &PgPool,
-        quiz_id: Uuid,
-    ) -> Result<CasualQuiz, sqlx::Error> {
-        let quiz = sqlx::query_file_as!(
-            CasualQuiz,
-            "src/queries/quiz/find_by_id.sql",
-            quiz_id
-        )
-        .fetch_one(pool)
-        .await?;
+    pub async fn find_by_id(pool: &PgPool, quiz_id: Uuid) -> Result<CasualQuiz, sqlx::Error> {
+        let quiz = sqlx::query_file_as!(CasualQuiz, "src/queries/quiz/find_by_id.sql", quiz_id)
+            .fetch_one(pool)
+            .await?;
 
         Ok(quiz)
     }

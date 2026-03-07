@@ -28,6 +28,10 @@ impl QuestionService {
             collection_id,
             req.question_text,
             req.correct_answers,
+            req.answer_rubis.unwrap_or_default(),
+            req.distractors.unwrap_or_default(),
+            req.preferred_mode.unwrap_or_else(|| "default".to_string()),
+            req.recommended_mode.unwrap_or_else(|| "recall".to_string()),
             req.description_text,
         )
         .await
@@ -70,6 +74,10 @@ impl QuestionService {
             question_id,
             req.question_text,
             req.correct_answers,
+            req.answer_rubis.unwrap_or_default(),
+            req.distractors.unwrap_or_default(),
+            req.preferred_mode.unwrap_or_else(|| "default".to_string()),
+            req.recommended_mode.unwrap_or_else(|| "recall".to_string()),
             req.description_text,
         )
         .await
@@ -102,7 +110,8 @@ impl QuestionService {
             return Err(sqlx::Error::RowNotFound); // Forbidden
         }
 
-        let upserted = QuestionRepository::batch_upsert(pool, collection_id, req.upsert_items).await?;
+        let upserted =
+            QuestionRepository::batch_upsert(pool, collection_id, req.upsert_items).await?;
         let deleted = QuestionRepository::batch_delete(pool, req.delete_ids).await?;
 
         Ok((upserted, deleted))

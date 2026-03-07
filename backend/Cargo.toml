@@ -6,22 +6,32 @@ edition = "2024"
 [dependencies]
 argon2 = "0.5.3"
 axum = { version = "0.8.8", features = ["macros", "ws", "multipart"] }
-chrono = { version = "0.4", features = ["serde"] }
-csv = "1.3"
+axum-extra = { version = "0.10.0", features = ["typed-header"] }
+chrono = { version = "0.4.38", features = ["serde"] }
 dotenvy = "0.15.7"
-futures = "0.3.32"
-jsonwebtoken = { version = "10.3.0", features = ["rust_crypto"] }
-rand = "0.8"
-reqwest = { version = "0.13.2", features = ["json"] }
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-sqlx = { version = "0.7.3", features = ["runtime-tokio-rustls", "postgres", "chrono", "uuid"] }
-tokio = { version = "1.49.0", features = ["full"] }
-tower-http = { version = "0.6.8", features = ["cors"] }
-uuid = { version = "1.21.0", features = ["serde", "v4"] }
+futures = "0.3.30"
+futures-util = "0.3.30"
+jsonwebtoken = "9.3.0"
+rand = "0.8.5"
+reqwest = { version = "0.12.5", features = ["json"] }
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
+sqlx = { version = "0.7.4", features = ["runtime-tokio-rustls", "postgres", "uuid", "chrono", "macros"] }
+tokio = { version = "1.38.1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.5.2", features = ["cors", "fs"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+uuid = { version = "1.10.0", features = ["v4", "serde"] }
+governor = "0.6.3"
+nonzero_ext = "0.3.0"
+lazy_static = "1.5.0"
+reqwest-eventsource = "0.6.0"
+eventsource-client = "0.13.0"
+base64 = "0.22.1"
+image = "0.25.1"
+pdf-extract = "0.7.1"
+csv = "1.3.0"
 
 [dev-dependencies]
-http-body-util = "0.1.3"
-tower = { version = "0.5.3", features = ["util"] }
-[features]
-ai-tests = []
+http-body-util = "0.1"

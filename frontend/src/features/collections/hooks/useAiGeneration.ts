@@ -4,19 +4,21 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface GeneratedQuestion {
     id?: string;
-    question_text: string;
-    correct_answers: string[];
-    description_text?: string | null;
+    questionText: string;
+    correctAnswers: string[];
+    distractors: string[];
+    descriptionText?: string | null;
 }
 
 export interface GenerateQuestionsRequest {
     prompt: string;
     count?: number;
-    pdf_data?: string; // base64
-    question_format?: string;
-    answer_format?: string;
-    example_question?: string;
-    example_answer?: string;
+    pdfData?: string; // base64
+    questionFormat?: string;
+    answerFormat?: string;
+    exampleQuestion?: string;
+    exampleAnswer?: string;
+    explanationLanguage?: string;
 }
 
 export interface WsMessage {

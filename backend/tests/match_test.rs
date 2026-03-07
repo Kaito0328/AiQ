@@ -13,7 +13,7 @@ async fn test_create_match_room(pool: sqlx::PgPool) {
 
     // 1. Create a Collection with some questions
     let collection_id = common::create_test_collection(&app, &token, true).await;
-    
+
     // Create 3 questions
     for _ in 0..3 {
         common::create_test_question(&app, &token, &collection_id).await;
@@ -42,9 +42,12 @@ async fn test_create_match_room(pool: sqlx::PgPool) {
     assert_eq!(response.status(), http::StatusCode::OK);
 
     // Parse Response
-    let body_bytes = http_body_util::BodyExt::collect(response.into_body()).await.unwrap().to_bytes();
+    let body_bytes = http_body_util::BodyExt::collect(response.into_body())
+        .await
+        .unwrap()
+        .to_bytes();
     let resp_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    
+
     assert!(resp_json.get("roomId").is_some());
     assert!(resp_json.get("joinToken").is_some());
 }

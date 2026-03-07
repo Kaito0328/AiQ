@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import Image from 'next/image';
+import { useTheme } from '@/src/shared/contexts/ThemeContext';
 
 /**
  * ルート画面 (準備画面)
@@ -17,11 +19,13 @@ import Image from 'next/image';
 export default function LandingPage() {
   const router = useRouter();
   const { loading: authLoading } = useAuth();
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     if (!authLoading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setReady(true);
     }
   }, [authLoading]);
@@ -39,10 +43,9 @@ export default function LandingPage() {
         <Stack gap="md" align="center">
           <View
             className="relative w-24 h-24 overflow-hidden rounded-brand-lg"
-            bg="muted"
           >
             <Image
-              src="/logo_black.png"
+              src={mounted && theme === 'dark' ? "/logo_black.png" : "/logo_white.png"}
               alt="AiQ Logo"
               fill
               className="object-contain p-2"
@@ -67,6 +70,18 @@ export default function LandingPage() {
             はじめる
           </Button>
         </View>
+
+        {/* Footer */}
+        <Stack gap="xs" align="center" className="mt-12 opacity-50">
+          <Text variant="xs" color="secondary">
+            © 2024 AiQ. All rights reserved.
+          </Text>
+          <Link href="/credits" className="hover:underline">
+            <Text variant="xs" color="secondary" className="cursor-pointer">
+              Credits & Licenses
+            </Text>
+          </Link>
+        </Stack>
       </Stack>
     </View>
   );

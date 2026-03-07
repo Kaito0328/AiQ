@@ -1,9 +1,9 @@
-use sqlx::PgPool;
-use uuid::Uuid;
 use crate::dtos::collection_dto::CollectionResponse;
-use crate::repositories::favorite_collection::FavoriteCollectionRepository;
 use crate::error::AppError;
+use crate::repositories::favorite_collection::FavoriteCollectionRepository;
+use sqlx::PgPool;
 use std::sync::Arc;
+use uuid::Uuid;
 
 pub struct FavoriteCollectionService {
     pool: Arc<PgPool>,
@@ -18,7 +18,11 @@ impl FavoriteCollectionService {
         FavoriteCollectionRepository::add_favorite(&self.pool, user_id, collection_id).await
     }
 
-    pub async fn remove_favorite(&self, user_id: Uuid, collection_id: Uuid) -> Result<(), AppError> {
+    pub async fn remove_favorite(
+        &self,
+        user_id: Uuid,
+        collection_id: Uuid,
+    ) -> Result<(), AppError> {
         FavoriteCollectionRepository::remove_favorite(&self.pool, user_id, collection_id).await
     }
 

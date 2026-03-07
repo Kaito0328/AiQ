@@ -1,0 +1,89 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO questions (id, collection_id, question_text, correct_answers, answer_rubis, distractors, preferred_mode, recommended_mode, description_text, created_at, updated_at)\n            VALUES (gen_random_uuid(), $1::uuid, $2::text, $3::text[], $4::text[], $5::text[], $6::text, $7::text, $8::text, NOW(), NOW())\n            RETURNING id, collection_id, question_text, correct_answers as \"correct_answers: Vec<String>\", answer_rubis as \"answer_rubis: Vec<String>\", distractors as \"distractors: Vec<String>\", preferred_mode, recommended_mode, description_text, created_at, updated_at\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "collection_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "correct_answers: Vec<String>",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "answer_rubis: Vec<String>",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "distractors: Vec<String>",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "preferred_mode",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 7,
+        "name": "recommended_mode",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 8,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 10,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Text",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "Text",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "3f6ccd135e46b5dbd2b6a3c2c74fc06636dfaea28293898d98f55231681639fa"
+}

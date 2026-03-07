@@ -46,6 +46,9 @@ impl MatchService {
                 question_text: q.question_text,
                 description_text: q.description_text,
                 correct_answers: q.correct_answers,
+                answer_rubis: q.answer_rubis,
+                distractors: q.distractors,
+                recommended_mode: q.recommended_mode,
             })
             .collect();
 
@@ -54,14 +57,19 @@ impl MatchService {
         let visibility = req.visibility.unwrap_or(RoomVisibility::Private);
 
         // Create RoomState
-        let room = RoomState::new(
+        let mut room = RoomState::new(
             room_id,
             host_id,
             host.username,
             selected,
             req.max_buzzes_per_round as usize,
             visibility,
+            req.preferred_mode.unwrap_or_else(|| "chips".to_string()),
+            req.dummy_char_count.unwrap_or(6),
         );
+        if let Some(c) = req.config {
+            room.config = c;
+        }
 
         // Store in memory
         {
@@ -86,7 +94,10 @@ impl MatchService {
         let rooms = match_state.read().await;
         let list: Vec<MatchRoomListItem> = rooms
             .values()
-            .filter(|r| r.visibility == RoomVisibility::Public && r.status != crate::state::match_state::RoomStatus::Finished)
+            .filter(|r| {
+                r.visibility == RoomVisibility::Public
+                    && r.status != crate::state::match_state::RoomStatus::Finished
+            })
             .map(|r| MatchRoomListItem {
                 room_id: r.room_id,
                 host_id: r.host_id,

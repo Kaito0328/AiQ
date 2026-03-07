@@ -19,9 +19,11 @@ export const startCasualQuiz = async (data: QuizRequest): Promise<QuizStartRespo
         body: JSON.stringify({
             collectionIds: data.collectionIds,
             collectionSetId: data.collectionSetId,
-            filterTypes: data.filters.map(f => f.type),
-            sortKeys: data.sorts.map(s => s.key),
+            filterNode: data.filterNode,
+            sorts: data.sorts,
             totalQuestions: data.limit,
+            preferredMode: data.preferredMode,
+            dummyCharCount: data.dummyCharCount,
         }),
         authenticated: true,
     });

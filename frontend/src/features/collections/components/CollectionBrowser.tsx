@@ -8,7 +8,7 @@ import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Text } from '@/src/design/baseComponents/Text';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LayoutGrid, List } from 'lucide-react';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { getOfficialUser } from '@/src/features/auth/api';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
@@ -27,10 +27,11 @@ export function CollectionBrowser({
     selectedIds,
     onToggleCollection,
     onAddToSet,
-    initialTab = 'official'
+    initialTab = 'my-collections'
 }: CollectionBrowserProps) {
     const { user } = useAuth();
     const [source, setSource] = useState<SourceType>(initialTab);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const [browsingUserId, setBrowsingUserId] = useState<string | null>(null);
     const [browsingUsername, setBrowsingUsername] = useState<string | null>(null);
     const [officialUserId, setOfficialUserId] = useState<string | null>(null);
@@ -49,21 +50,26 @@ export function CollectionBrowser({
     }, []);
 
     const renderContent = () => {
+        const commonProps = {
+            isSelectionMode: true,
+            selectedIds: selectedIds,
+            onToggleCollection: onToggleCollection,
+            onAddToSet: onAddToSet,
+            hideExtras: true,
+            displayMode: viewMode,
+        };
+
         switch (source) {
             case 'official':
                 return loadingOfficial ? (
-                    <View className="py-20 flex justify-center"><Spinner size="lg" /></View>
+                    <View className="py-12 flex justify-center"><Spinner size="lg" /></View>
                 ) : officialUserId ? (
                     <UserContentTabs
                         userId={officialUserId}
-                        isSelectionMode={true}
-                        selectedIds={selectedIds}
-                        onToggleCollection={onToggleCollection}
-                        onAddToSet={onAddToSet}
-                        hideExtras={true}
+                        {...commonProps}
                     />
                 ) : (
-                    <View className="py-20 text-center">
+                    <View className="py-12 text-center">
                         <Text color="secondary">公式コンテンツを読み込めませんでした</Text>
                     </View>
                 );
@@ -71,21 +77,17 @@ export function CollectionBrowser({
                 return user ? (
                     <UserContentTabs
                         userId={user.id}
-                        isSelectionMode={true}
-                        selectedIds={selectedIds}
-                        onToggleCollection={onToggleCollection}
-                        onAddToSet={onAddToSet}
-                        hideExtras={true}
+                        {...commonProps}
                     />
                 ) : (
-                    <View className="py-20 text-center">
+                    <View className="py-12 text-center">
                         <Text color="secondary">ログインすると自分の問題集を表示できます</Text>
                     </View>
                 );
             case 'search':
                 return browsingUserId ? (
-                    <Stack gap="lg">
-                        <Flex align="center" gap="sm" className="mb-4">
+                    <Stack gap="md">
+                        <Flex align="center" gap="sm" className="mb-2">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -102,11 +104,7 @@ export function CollectionBrowser({
                         </Flex>
                         <UserContentTabs
                             userId={browsingUserId}
-                            isSelectionMode={true}
-                            selectedIds={selectedIds}
-                            onToggleCollection={onToggleCollection}
-                            onAddToSet={onAddToSet}
-                            hideExtras={true}
+                            {...commonProps}
                         />
                     </Stack>
                 ) : (
@@ -121,30 +119,53 @@ export function CollectionBrowser({
     };
 
     return (
-        <Stack gap="lg" className="w-full">
-            {/* Source Toggles */}
-            <Flex gap="xs" className="bg-surface-muted p-1 rounded-xl w-fit">
-                {(['official', 'my-collections', 'search'] as const).map((type) => (
+        <Stack gap="md" className="w-full">
+            {/* Header with Source Toggles and View Mode Toggle */}
+            <Flex justify="between" align="center" className="flex-wrap gap-y-3">
+                <Flex gap="xs" className="bg-surface-muted p-1 rounded-xl w-fit">
+                    {(['official', 'my-collections', 'search'] as const).map((type) => (
+                        <Button
+                            key={type}
+                            size="sm"
+                            variant={source === type ? 'solid' : 'ghost'}
+                            color={source === type ? 'primary' : 'secondary'}
+                            onClick={() => {
+                                setSource(type);
+                                if (type !== 'search') {
+                                    setBrowsingUserId(null);
+                                    setBrowsingUsername(null);
+                                }
+                            }}
+                            className={cn(
+                                "px-4 sm:px-6 py-1.5 h-auto text-xs sm:text-sm font-bold transition-all",
+                                source === type ? "shadow-sm" : "text-foreground/50 hover:text-foreground/80"
+                            )}
+                        >
+                            {type === 'official' ? '公式' : type === 'my-collections' ? '自分' : '探す'}
+                        </Button>
+                    ))}
+                </Flex>
+
+                <Flex gap="xs" className="bg-surface-muted p-1 rounded-lg">
                     <Button
-                        key={type}
                         size="sm"
-                        variant={source === type ? 'solid' : 'ghost'}
-                        color={source === type ? 'primary' : 'secondary'}
-                        onClick={() => {
-                            setSource(type);
-                            if (type !== 'search') {
-                                setBrowsingUserId(null);
-                                setBrowsingUsername(null);
-                            }
-                        }}
-                        className={cn(
-                            "px-6 py-2 h-auto text-sm font-bold transition-all",
-                            source === type ? "shadow-sm" : "text-foreground/50 hover:text-foreground/80"
-                        )}
+                        variant={viewMode === 'grid' ? 'solid' : 'ghost'}
+                        className="p-1.5 h-auto"
+                        onClick={() => setViewMode('grid')}
+                        title="グリッド表示"
                     >
-                        {type === 'official' ? '公式' : type === 'my-collections' ? '自分' : 'ユーザーから探す'}
+                        <LayoutGrid size={16} className="opacity-60" />
                     </Button>
-                ))}
+                    <Button
+                        size="sm"
+                        variant={viewMode === 'list' ? 'solid' : 'ghost'}
+                        className="p-1.5 h-auto"
+                        onClick={() => setViewMode('list')}
+                        title="リスト表示"
+                    >
+                        <List size={16} className="opacity-60" />
+                    </Button>
+                </Flex>
             </Flex>
 
             <View className="mt-4">

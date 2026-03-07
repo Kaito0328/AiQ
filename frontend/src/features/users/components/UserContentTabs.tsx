@@ -32,6 +32,7 @@ interface UserContentTabsProps {
     setActions?: React.ReactNode;
     initialTab?: 'collections' | 'sets';
     hideExtras?: boolean;
+    displayMode?: 'grid' | 'list';
 }
 
 export function UserContentTabs({
@@ -48,10 +49,9 @@ export function UserContentTabs({
     collectionActions,
     setActions,
     initialTab = 'collections',
-    hideExtras = false
+    hideExtras = false,
+    displayMode = 'list'
 }: UserContentTabsProps) {
-    const { user } = useAuth();
-
     const { collections, loading: collectionsLoading } = useUserCollections(userId);
     const { collectionSets, loading: setsLoading } = useUserCollectionSets(userId);
 
@@ -60,83 +60,128 @@ export function UserContentTabs({
             id: 'collections',
             label: 'コレクション',
             content: (
-                <Stack gap="lg" className="pt-4">
-                    {(collectionActions || collections.length > 0) && (
-                        <Flex justify="between" align="center">
-                            <Text variant="detail" color="secondary" weight="bold">
-                                {collections.length} 個のコレクション
-                            </Text>
-                            {collectionActions}
-                        </Flex>
-                    )}
+                <View padding="md">
+                    <Stack gap="lg">
+                        {(collectionActions || collections.length > 0) && (
+                            <Flex justify="between" align="center">
+                                <Text variant="detail" color="secondary" weight="bold">
+                                    {collections.length} 個のコレクション
+                                </Text>
+                                {collectionActions}
+                            </Flex>
+                        )}
 
-                    {collectionsLoading ? (
-                        <View className="flex justify-center py-12">
-                            <Spinner size="lg" />
-                        </View>
-                    ) : collections.length === 0 ? (
-                        <Text color="secondary" align="center" variant="xs" className="py-12">
-                            コレクションがありません
-                        </Text>
-                    ) : (
-                        <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
-                            {collections.map(c => (
-                                <CollectionCard
-                                    key={c.id}
-                                    collection={c}
-                                    isSelectionMode={isSelectionMode}
-                                    selected={selectedIds.includes(c.id)}
-                                    onSelect={onToggleCollection}
-                                    onDelete={onDeleteCollection}
-                                    onEdit={onEditCollection}
-                                    onStartRanking={onStartRanking}
-                                    onAddToSet={onAddToSet}
-                                    hideExtras={hideExtras}
-                                />
-                            ))}
-                        </Grid>
-                    )}
-                </Stack>
+                        {collectionsLoading ? (
+                            <View padding="xl">
+                                <Flex justify="center">
+                                    <Spinner size="lg" />
+                                </Flex>
+                            </View>
+                        ) : collections.length === 0 ? (
+                            <View padding="xl">
+                                <Text color="secondary" align="center" variant="xs">
+                                    コレクションがありません
+                                </Text>
+                            </View>
+                        ) : displayMode === 'list' ? (
+                            <Stack gap="sm">
+                                {collections.map(c => (
+                                    <CollectionCard
+                                        key={c.id}
+                                        collection={c}
+                                        isSelectionMode={isSelectionMode}
+                                        selected={selectedIds.includes(c.id)}
+                                        onSelect={onToggleCollection}
+                                        onDelete={onDeleteCollection}
+                                        onEdit={onEditCollection}
+                                        onStartRanking={onStartRanking}
+                                        onAddToSet={onAddToSet}
+                                        hideExtras={hideExtras}
+                                        displayMode="list"
+                                    />
+                                ))}
+                            </Stack>
+                        ) : (
+                            <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
+                                {collections.map(c => (
+                                    <CollectionCard
+                                        key={c.id}
+                                        collection={c}
+                                        isSelectionMode={isSelectionMode}
+                                        selected={selectedIds.includes(c.id)}
+                                        onSelect={onToggleCollection}
+                                        onDelete={onDeleteCollection}
+                                        onEdit={onEditCollection}
+                                        onStartRanking={onStartRanking}
+                                        onAddToSet={onAddToSet}
+                                        hideExtras={hideExtras}
+                                        displayMode="grid"
+                                    />
+                                ))}
+                            </Grid>
+                        )}
+                    </Stack>
+                </View>
             )
         },
         {
             id: 'sets',
             label: 'セット',
             content: (
-                <Stack gap="lg" className="pt-4">
-                    {(setActions || collectionSets.length > 0) && (
-                        <Flex justify="between" align="center">
-                            <Text variant="detail" color="secondary" weight="bold">
-                                {collectionSets.length} 個のセット
-                            </Text>
-                            {setActions}
-                        </Flex>
-                    )}
+                <View padding="md">
+                    <Stack gap="lg">
+                        {(setActions || collectionSets.length > 0) && (
+                            <Flex justify="between" align="center">
+                                <Text variant="detail" color="secondary" weight="bold">
+                                    {collectionSets.length} 個のセット
+                                </Text>
+                                {setActions}
+                            </Flex>
+                        )}
 
-                    {setsLoading ? (
-                        <View className="flex justify-center py-12">
-                            <Spinner size="lg" />
-                        </View>
-                    ) : collectionSets.length === 0 ? (
-                        <Text color="secondary" align="center" variant="xs" className="py-12">
-                            セットがありません
-                        </Text>
-                    ) : (
-                        <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
-                            {collectionSets.map(s => (
-                                <CollectionSetCard
-                                    key={s.id}
-                                    set={s}
-                                    isSelectionMode={isSelectionMode}
-                                    selectedCollectionIds={selectedIds}
-                                    onToggleCollection={onToggleCollection}
-                                    onDelete={onDeleteSet}
-                                    onEdit={onEditSet}
-                                />
-                            ))}
-                        </Grid>
-                    )}
-                </Stack>
+                        {setsLoading ? (
+                            <View padding="xl">
+                                <Flex justify="center">
+                                    <Spinner size="lg" />
+                                </Flex>
+                            </View>
+                        ) : collectionSets.length === 0 ? (
+                            <View padding="xl">
+                                <Text color="secondary" align="center" variant="xs">
+                                    セットがありません
+                                </Text>
+                            </View>
+                        ) : displayMode === 'list' ? (
+                            <Stack gap="sm">
+                                {collectionSets.map(s => (
+                                    <CollectionSetCard
+                                        key={s.id}
+                                        set={s}
+                                        isSelectionMode={isSelectionMode}
+                                        selectedCollectionIds={selectedIds}
+                                        onToggleCollection={onToggleCollection}
+                                        onDelete={onDeleteSet}
+                                        onEdit={onEditSet}
+                                    />
+                                ))}
+                            </Stack>
+                        ) : (
+                            <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
+                                {collectionSets.map(s => (
+                                    <CollectionSetCard
+                                        key={s.id}
+                                        set={s}
+                                        isSelectionMode={isSelectionMode}
+                                        selectedCollectionIds={selectedIds}
+                                        onToggleCollection={onToggleCollection}
+                                        onDelete={onDeleteSet}
+                                        onEdit={onEditSet}
+                                    />
+                                ))}
+                            </Grid>
+                        )}
+                    </Stack>
+                </View>
             )
         }
     ];

@@ -1,0 +1,69 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "UPDATE collections SET\n    name = COALESCE($2, name),\n    description_text = COALESCE($3, description_text),\n    is_open = COALESCE($4, is_open),\n    default_mode = COALESCE($5, default_mode),\n    updated_at = NOW()\nWHERE id = $1 AND user_id = $6\nRETURNING *\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "is_open",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "default_mode",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Varchar",
+        "Text",
+        "Bool",
+        "Varchar",
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "44268065e52ef1c6430bcaf918dad2eb1b2f6066d78fdb9baae3af73e9842037"
+}

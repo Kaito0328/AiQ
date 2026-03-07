@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
@@ -8,9 +8,13 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { Stack } from '@/src/design/primitives/Stack';
 import { QuizForm } from '@/src/features/quiz/components/QuizForm';
 import { Result } from '@/src/features/quiz/components/Result';
+import { QuestionForm } from '@/src/features/questions/components/QuestionForm';
 import { submitAnswer, submitRankingAllAnswers } from '@/src/features/quiz/api';
+import { getCollection } from '@/src/features/collections/api';
 import { Question } from '@/src/entities/question';
 import { CasualQuiz, AnswerHistory } from '@/src/entities/quiz';
+import { useAuth } from '@/src/shared/auth/useAuth';
+import { useAiqScorer } from '@/src/features/quiz/hooks/useAiqScorer';
 
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 
@@ -25,6 +29,11 @@ export default function QuizPage() {
     const [userAnswers, setUserAnswers] = useState<AnswerHistory[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRetry, setIsRetry] = useState(false);
+    const [ownedCollectionIds, setOwnedCollectionIds] = useState<Set<string>>(new Set());
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [fuzzyScore, setFuzzyScore] = useState<number | null>(null);
+    const { user } = useAuth();
+    const scorer = useAiqScorer();
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -33,7 +42,6 @@ export default function QuizPage() {
             const data = JSON.parse(stored);
             if (data.quizId && data.questions) {
                 // Ranking Quiz (Bulk Mode)
-                // eslint-disable-next-line react-hooks/set-state-in-effect
                 setRankingQuizId(data.quizId);
 
                 const qs = data.questions.map((q: { id: string; questionText: string }) => ({
@@ -52,13 +60,36 @@ export default function QuizPage() {
         }
     }, []);
 
-    const judgeAnswer = useCallback((userAnswer: string, correctAnswers: string[]): boolean => {
-        const normalized = userAnswer.trim().toLowerCase();
-        return correctAnswers.some(ans => ans.trim().toLowerCase() === normalized);
+    const judgeAnswer = useCallback((userAnswer: string, acceptableAnswers: string[]): boolean => {
+        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '');
+        const normalizedUser = normalize(userAnswer);
+        return acceptableAnswers.some(ans => normalize(ans) === normalizedUser);
     }, []);
+
+    const currentQuestion = questions[currentIndex];
+
+    // Check for ownership when question changes
+    useEffect(() => {
+        if (!user || !currentQuestion) return;
+        const cid = currentQuestion.collectionId;
+        if (!cid || ownedCollectionIds.has(cid)) return;
+
+        const checkOwnership = async () => {
+            try {
+                const collection = await getCollection(cid);
+                if (collection.userId === user.id) {
+                    setOwnedCollectionIds(prev => new Set([...prev, cid]));
+                }
+            } catch (err) {
+                console.error("Failed to check collection ownership", err);
+            }
+        };
+        checkOwnership();
+    }, [currentQuestion, user, ownedCollectionIds]);
 
     const handleAnswer = useCallback(async (userAnswerText: string) => {
         const q = questions[currentIndex];
+        if (!q) return;
 
         if (rankingQuizId) {
             // Ranking Mode: Just store answer and move to next (no feedback)
@@ -71,25 +102,14 @@ export default function QuizPage() {
             setUserAnswers(updatedAnswers);
 
             if (currentIndex + 1 >= questions.length) {
-                // Finish and submit all
                 setIsSubmitting(true);
                 try {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const submission = updatedAnswers.map(a => ({
-                        question_id: a.question.id,
-                        answer: a.userAnswer,
-                        time_taken_millis: 0, // Could add timer here
-                    }));
-
-                    // Note: We need to use camelCase for the API client if it handles conversion, 
-                    // or snake_case if it doesn't. Based on api/index.ts, we use camelCase in TS.
                     const resp = await submitRankingAllAnswers(rankingQuizId, updatedAnswers.map(a => ({
                         questionId: a.question.id,
                         answer: a.userAnswer,
                         timeTakenMillis: 0,
                     })));
 
-                    // Enrich answers with actual results from backend
                     const enrichedAnswers = updatedAnswers.map(a => {
                         const results = resp.detailedResults || [];
                         const result = results.find(r =>
@@ -123,7 +143,31 @@ export default function QuizPage() {
             }
         } else if (quiz || isRetry) {
             // Casual mode or Retry: Show feedback
-            const correct = judgeAnswer(userAnswerText, q.correctAnswers);
+            const acceptableAnswers = [...q.correctAnswers];
+            if (q.answerRubis && q.answerRubis.length > 0) {
+                acceptableAnswers.push(...q.answerRubis);
+            }
+
+            const exactCorrect = judgeAnswer(userAnswerText, acceptableAnswers);
+            let correct = exactCorrect;
+
+            if (!exactCorrect && quiz?.preferredMode === 'fuzzy') {
+                const result = await scorer.evaluate(
+                    q.questionText,
+                    q.correctAnswers,
+                    userAnswerText,
+                    q.answerRubis
+                );
+                correct = result.correct;
+                setFuzzyScore(result.topScore);
+            } else if (quiz?.preferredMode === 'fuzzy') {
+                // exact match in fuzzy mode — show 100%
+                setFuzzyScore(1);
+            } else {
+                // non-fuzzy mode — never show similarity meter
+                setFuzzyScore(null);
+            }
+
             setIsCorrect(correct);
 
             const answer: AnswerHistory = {
@@ -134,7 +178,6 @@ export default function QuizPage() {
             setUserAnswers(prev => [...prev, answer]);
 
             try {
-                // Only submit to backend if it's a real new casual session (not retry)
                 if (!isRetry && quiz) {
                     await submitAnswer(quiz.id, {
                         questionId: q.id,
@@ -146,7 +189,7 @@ export default function QuizPage() {
                 console.error('Failed to submit casual answer', err);
             }
         }
-    }, [questions, currentIndex, quiz, rankingQuizId, judgeAnswer, userAnswers, router]);
+    }, [questions, currentIndex, quiz, rankingQuizId, judgeAnswer, userAnswers, router, isRetry]);
 
     const handleNext = useCallback(() => {
         if (currentIndex + 1 >= questions.length) {
@@ -157,6 +200,7 @@ export default function QuizPage() {
         } else {
             setCurrentIndex(i => i + 1);
             setIsCorrect(null);
+            setFuzzyScore(null);
         }
     }, [currentIndex, questions, userAnswers, router]);
 
@@ -186,12 +230,12 @@ export default function QuizPage() {
         );
     }
 
-    const currentQuestion = questions[currentIndex];
-
     return (
-        <div className="min-h-screen flex flex-col bg-surface-muted pt-20">
-            <BackButton />
-            <View className="flex-1 flex items-center justify-center px-4">
+        <div className="h-[100dvh] flex flex-col bg-surface-muted overflow-y-auto overflow-x-hidden">
+            <div className="absolute top-4 left-4 z-50">
+                <BackButton />
+            </div>
+            <View className="flex-1 flex items-center justify-center px-4 py-2 mt-12">
                 {isCorrect !== null ? (
                     <Result
                         isCorrect={isCorrect}
@@ -199,17 +243,35 @@ export default function QuizPage() {
                         description={currentQuestion.descriptionText}
                         onNext={handleNext}
                         question={currentQuestion}
+                        userAnswer={userAnswers[userAnswers.length - 1]?.userAnswer}
+                        isOwner={ownedCollectionIds.has(currentQuestion.collectionId)}
+                        onEdit={() => setIsEditModalOpen(true)}
+                        fuzzyScore={fuzzyScore ?? undefined}
                     />
                 ) : (
                     <QuizForm
                         key={currentIndex} // Reset form for each question
-                        questionText={currentQuestion.questionText}
+                        question={currentQuestion}
                         questionNumber={currentIndex + 1}
                         totalQuestions={questions.length}
+                        preferredMode={quiz?.preferredMode === 'fuzzy' ? 'text' : quiz?.preferredMode}
+                        dummyCharCount={quiz?.dummyCharCount}
                         onSubmitAnswer={handleAnswer}
                     />
                 )}
             </View>
+
+            {isEditModalOpen && currentQuestion && (
+                <QuestionForm
+                    collectionId={currentQuestion.collectionId}
+                    question={currentQuestion}
+                    onSaved={() => {
+                        setIsEditModalOpen(false);
+                        window.location.reload();
+                    }}
+                    onCancel={() => setIsEditModalOpen(false)}
+                />
+            )}
         </div>
     );
 }

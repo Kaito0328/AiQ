@@ -3,7 +3,7 @@ use axum::{
     body::Body,
     http::{self, Request},
 };
-use backend::{app, state::AppState};
+use backend::{app, config, state::AppState};
 use http_body_util::BodyExt;
 use sqlx::PgPool;
 use tower::ServiceExt;
@@ -12,6 +12,8 @@ pub const TEST_PASSWORD: &str = "password123";
 
 // 引数で sqlx::test から自動生成された空のデータベース(pool)を受け取ります
 pub async fn setup_app(pool: PgPool) -> Router {
+    // AppConfig の初期化 (OnceLockなので複数回呼んでも安全)
+    config::init();
     let state = AppState::new(pool);
     app(state)
 }

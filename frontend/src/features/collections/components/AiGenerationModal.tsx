@@ -9,7 +9,9 @@ import { TextArea } from '@/src/design/baseComponents/TextArea';
 import { Input } from '@/src/design/baseComponents/Input';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
-import { Sparkles, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Select } from '@/src/design/baseComponents/Select';
+import { Spinner } from '@/src/design/baseComponents/Spinner';
+import { Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
 import { useAiGeneration } from '../hooks/useAiGeneration';
 import { useToast } from '@/src/shared/contexts/ToastContext';
 
@@ -23,6 +25,7 @@ interface AiGenerationModalProps {
 export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess }: AiGenerationModalProps) {
     const [prompt, setPrompt] = useState('');
     const [count, setCount] = useState(5);
+    const [explanationLanguage, setExplanationLanguage] = useState('');
     const { showToast } = useToast();
     const { generate, reset, status, message, generatedQuestions } = useAiGeneration(collectionId);
 
@@ -31,7 +34,11 @@ export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess }: 
             showToast({ message: 'トピックまたは指示を入力してください', variant: 'warning' });
             return;
         }
-        generate({ prompt, count });
+        generate({
+            prompt,
+            count,
+            explanationLanguage: explanationLanguage || undefined
+        });
     };
 
     const handleClose = () => {
@@ -76,22 +83,36 @@ export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess }: 
                             />
                         </Stack>
 
+                        <Stack gap="sm">
+                            <Text weight="bold" variant="xs">解説の言語</Text>
+                            <Select
+                                value={explanationLanguage}
+                                onChange={(e) => setExplanationLanguage(e.target.value)}
+                            >
+                                <option value="">自動（推測）</option>
+                                <option value="日本語">日本語</option>
+                                <option value="英語">英語</option>
+                            </Select>
+                        </Stack>
+
                         <Flex justify="end" gap="sm">
                             <Button variant="ghost" onClick={onClose}>
                                 キャンセル
                             </Button>
-                            <Button variant="solid" onClick={handleGenerate} className="gap-2">
-                                <Sparkles size={18} />
-                                生成を開始
+                            <Button variant="solid" onClick={handleGenerate}>
+                                <Flex as="span" gap="xs" align="center">
+                                    <Sparkles size={18} />
+                                    生成を開始
+                                </Flex>
                             </Button>
                         </Flex>
                     </>
                 ) : (
-                    <View className="py-8">
-                        <Stack gap="lg" align="center">
+                    <View padding="xl">
+                        <Stack gap="lg" align="center" className="w-full">
                             {status === 'processing' || status === 'saving' ? (
                                 <>
-                                    <Loader2 size={48} className="text-brand-primary animate-spin" />
+                                    <Spinner size="xl" variant="primary" />
                                     <Stack gap="xs" align="center">
                                         <Text weight="bold" variant="body">{message}</Text>
                                         <Text variant="xs" color="secondary">これには数十秒かかる場合があります...</Text>
@@ -99,25 +120,29 @@ export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess }: 
                                 </>
                             ) : status === 'completed' ? (
                                 <>
-                                    <CheckCircle size={48} className="text-green-500" />
-                                    <Stack gap="xs" align="center">
-                                        <Text weight="bold" variant="body">生成が完了しました！</Text>
-                                        <Text variant="xs" color="secondary">{generatedQuestions.length}問の問題を追加しました。</Text>
+                                    <Text color="success" span><CheckCircle size={48} /></Text>
+                                    <Stack gap="md" className="w-full">
+                                        <Stack gap="xs" align="center">
+                                            <Text weight="bold" variant="body">生成が完了しました！</Text>
+                                            <Text variant="xs" color="secondary">{generatedQuestions.length}問の問題を追加しました。</Text>
+                                        </Stack>
+                                        <Button variant="solid" onClick={handleClose} fullWidth>
+                                            閉じる
+                                        </Button>
                                     </Stack>
-                                    <Button variant="solid" onClick={handleClose} className="w-full mt-4">
-                                        閉じる
-                                    </Button>
                                 </>
                             ) : (
                                 <>
-                                    <AlertCircle size={48} className="text-red-500" />
-                                    <Stack gap="xs" align="center">
-                                        <Text weight="bold" variant="body">エラーが発生しました</Text>
-                                        <Text variant="xs" color="secondary">{message}</Text>
+                                    <Text color="danger" span><AlertCircle size={48} /></Text>
+                                    <Stack gap="md" className="w-full">
+                                        <Stack gap="xs" align="center">
+                                            <Text weight="bold" variant="body">エラーが発生しました</Text>
+                                            <Text variant="xs" color="secondary">{message}</Text>
+                                        </Stack>
+                                        <Button variant="outline" onClick={reset} fullWidth>
+                                            やり直す
+                                        </Button>
                                     </Stack>
-                                    <Button variant="outline" onClick={reset} className="w-full mt-4">
-                                        やり直す
-                                    </Button>
                                 </>
                             )}
                         </Stack>

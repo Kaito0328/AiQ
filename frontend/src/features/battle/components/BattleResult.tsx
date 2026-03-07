@@ -25,15 +25,16 @@ interface BattleResultProps {
         correctAnswer: string;
         correctCount: number;
     }[];
+    onUpdateLocalQuestion?: (id: string, updates: any) => void;
 }
 
-export function BattleResult({ scores, isHost, onReplay, onBackToLobby, roundSummaries = [] }: BattleResultProps) {
+export function BattleResult({ scores, isHost, onReplay, onBackToLobby, roundSummaries = [], onUpdateLocalQuestion }: BattleResultProps) {
     const router = useRouter();
     const sortedScores = [...scores].sort((a, b) => b.score - a.score);
     const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
 
     return (
-        <Stack gap="xl" className="w-full max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <Stack gap="xl" className="w-full max-w-2xl mx-auto pt-20 pb-12 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <Card padding="xl" border="primary" className="border-4 shadow-2xl relative overflow-visible">
                 <View className="absolute -top-10 left-1/2 -translate-x-1/2 p-6 bg-brand-primary text-white rounded-full shadow-2xl border-4 border-white">
                     <Trophy size={48} />
@@ -155,7 +156,7 @@ export function BattleResult({ scores, isHost, onReplay, onBackToLobby, roundSum
                                                 </Text>
                                             </Flex>
                                             <Text variant="xs" color="secondary">
-                                                正解: <span className="text-brand-primary font-medium">{summary.correctAnswer}</span>
+                                                正解: <Text as="span" className="text-brand-primary font-medium">{summary.correctAnswer}</Text>
                                             </Text>
                                         </Stack>
 
@@ -170,9 +171,12 @@ export function BattleResult({ scores, isHost, onReplay, onBackToLobby, roundSum
                                                 className="h-7 px-2 text-[10px] gap-1 text-secondary hover:text-brand-primary"
                                                 onClick={() => setSelectedQuestion({
                                                     id: summary.questionId,
+                                                    collectionId: '',
                                                     questionText: summary.questionText,
                                                     correctAnswers: [summary.correctAnswer],
-                                                    descriptionText: ''
+                                                    descriptionText: '',
+                                                    preferredMode: 'chips',
+                                                    recommendedMode: 'chips'
                                                 })}
                                             >
                                                 <MessageSquare size={12} />
@@ -191,6 +195,16 @@ export function BattleResult({ scores, isHost, onReplay, onBackToLobby, roundSum
                 <EditRequestModal
                     question={selectedQuestion}
                     onClose={() => setSelectedQuestion(null)}
+                    onDirectUpdate={(updates) => {
+                        onUpdateLocalQuestion?.(selectedQuestion.id, {
+                            question_text: updates.questionText,
+                            correct_answers: updates.correctAnswers,
+                            answer_rubis: updates.answerRubis,
+                            distractors: updates.distractors,
+                            description_text: updates.descriptionText
+                        });
+                    }}
+                    isOwner={isHost}
                 />
             )}
         </Stack>

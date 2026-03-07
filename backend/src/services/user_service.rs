@@ -54,7 +54,7 @@ pub async fn authenticate(pool: &PgPool, username: &str, password: &str) -> Resu
 pub async fn get_user_profile(
     pool: &PgPool,
     current_user_id: Option<Uuid>, // ログイン中の自分の名前 (未ログインの場合はNone)
-    target_user_id: Uuid, 
+    target_user_id: Uuid,
 ) -> Result<UserProfileResponse> {
     // 2. リポジトリを呼び出してプロフィールを取得します
     let profile = user::get_profile(pool, current_user_id, target_user_id)

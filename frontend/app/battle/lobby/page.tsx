@@ -8,7 +8,7 @@ import { Card } from '@/src/design/baseComponents/Card';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
-import { Swords, Users, Play, RefreshCw, User } from 'lucide-react';
+import { Swords, Users, Play, RefreshCw, User, Plus, XCircle } from 'lucide-react';
 import { getPublicRooms, MatchRoomListItem } from '@/src/features/battle/api';
 import { Button } from '@/src/design/baseComponents/Button';
 import { useRouter } from 'next/navigation';
@@ -73,28 +73,46 @@ export default function BattleLobbyPage() {
                     </Flex>
 
                     {loading ? (
-                        <View className="py-20 flex justify-center">
-                            <Spinner size="lg" />
+                        <View className="py-24 flex flex-col items-center justify-center animate-in fade-in duration-700">
+                            <Spinner size="lg" variant="primary" />
+                            <Text variant="detail" color="secondary" className="mt-4 animate-pulse">最新のルームを探しています...</Text>
                         </View>
                     ) : error ? (
-                        <Card className="py-10 text-center border-brand-danger/20 bg-brand-danger/5">
-                            <Stack gap="md" align="center">
-                                <Text color="danger" weight="medium">{error}</Text>
-                                <Button variant="outline" size="sm" onClick={fetchRooms}>
-                                    再試行
+                        <Card className="py-12 text-center border-brand-danger/20 bg-brand-danger/5 shadow-brand-sm backdrop-blur-sm">
+                            <Stack gap="lg" align="center">
+                                <View className="bg-brand-danger/10 p-4 rounded-full text-brand-danger">
+                                    <XCircle size={32} />
+                                </View>
+                                <Stack gap="xs">
+                                    <Text color="danger" weight="bold" variant="h4">通信エラー</Text>
+                                    <Text color="secondary" variant="xs">{error}</Text>
+                                </Stack>
+                                <Button variant="solid" color="danger" size="md" onClick={fetchRooms} className="px-8 shadow-md">
+                                    再試行する
                                 </Button>
                             </Stack>
                         </Card>
                     ) : rooms.length === 0 ? (
-                        <Card className="py-20 text-center border-2 border-dashed border-surface-muted">
-                            <Stack gap="md" align="center">
-                                <Users size={48} className="text-secondary opacity-20" />
-                                <Text color="secondary" weight="medium">現在、公開されているルームはありません</Text>
+                        <Card className="py-24 text-center border-2 border-dashed border-surface-muted bg-surface-muted/10 overflow-hidden relative group">
+                            <View className="absolute inset-0 bg-gradient-to-b from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                            <Stack gap="xl" align="center" className="relative z-10">
+                                <View className="bg-surface-base p-6 rounded-full shadow-brand-sm border border-surface-muted/50 group-hover:scale-110 transition-transform duration-500">
+                                    <Users size={56} className="text-brand-primary/40 group-hover:text-brand-primary/60 transition-colors" />
+                                </View>
+                                <Stack gap="xs">
+                                    <Text variant="h3" weight="bold">現在、公開ルームはありません</Text>
+                                    <Text color="secondary" className="max-w-md mx-auto">
+                                        まだ誰もルームを公開していないようです。自分でルームを作って、友達や他のプレイヤーを待ってみませんか？
+                                    </Text>
+                                </Stack>
                                 <Button
                                     variant="solid"
                                     color="primary"
-                                    onClick={() => router.push('/home#battle')}
+                                    size="lg"
+                                    className="px-8 shadow-xl shadow-brand-primary/20 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all"
+                                    onClick={() => router.push('/home?tab=battle')}
                                 >
+                                    <Plus className="mr-2" size={20} />
                                     自分でルームを作成する
                                 </Button>
                             </Stack>

@@ -8,7 +8,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Badge } from '@/src/design/baseComponents/Badge';
 import { View } from '@/src/design/primitives/View';
 import { Collection } from '@/src/entities/collection';
-import { Book, Heart, Trophy, Trash2, Edit, FolderPlus } from 'lucide-react';
+import { Book, Heart, Trophy, Trash2, Edit, FolderPlus, Lock, Unlock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { Button } from '@/src/design/baseComponents/Button';
@@ -29,6 +29,7 @@ interface CollectionCardProps {
     onAddToSet?: (id: string) => void;
     onClick?: () => void;
     hideExtras?: boolean; // New prop to hide Fav/Ranking/Set buttons
+    displayMode?: 'grid' | 'list';
 }
 
 export function CollectionCard({
@@ -42,7 +43,8 @@ export function CollectionCard({
     onEdit,
     onAddToSet,
     onClick,
-    hideExtras = false
+    hideExtras = false,
+    displayMode = 'list'
 }: CollectionCardProps) {
     const router = useRouter();
     const { isAuthenticated, user } = useAuth();
@@ -56,11 +58,7 @@ export function CollectionCard({
         setFavCount(collection.favoriteCount || 0);
     }, [collection.isFavorited, collection.favoriteCount]);
 
-    const handleRankStart = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onStartRanking?.(collection.id);
-    };
+
 
     const handleDelete = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -128,108 +126,156 @@ export function CollectionCard({
                 >
                     {/* Checkbox moved into the title flex for better layout */}
                     {/* 操作ボタン */}
-                    <View zIndex="docked" className="absolute top-3 right-3 flex gap-2">
-                        {onEdit && isOwner && (
-                            <Button
-                                size="sm"
-                                variant="soft"
-                                color="primary"
-                                rounded="full"
-                                className="p-2 h-auto shadow-sm"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    onEdit(collection.id);
-                                }}
-                                title="コレクションを編集"
-                            >
-                                <Edit size={16} strokeWidth={2.5} />
-                            </Button>
-                        )}
-                        {onDelete && (
-                            <Button
-                                size="sm"
-                                variant="soft"
-                                color="danger"
-                                rounded="full"
-                                className="p-2 h-auto shadow-sm"
-                                onClick={handleDelete}
-                                title="コレクションを削除"
-                            >
-                                <Trash2 size={16} strokeWidth={2.5} />
-                            </Button>
-                        )}
-                        {onAddToSet && !hideExtras && (
-                            <Button
-                                size="sm"
-                                variant="soft"
-                                color="primary"
-                                rounded="full"
-                                className="p-2 h-auto shadow-sm"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    onAddToSet(collection.id);
-                                }}
-                                title="セットに追加"
-                            >
-                                <FolderPlus size={16} strokeWidth={2.5} />
-                            </Button>
-                        )}
-                    </View>
-                    <Stack gap="lg" className="h-full p-1">
-                        <Flex gap="md" align="center" className="w-full">
-                            {(isSelectionMode || selectable) && (
-                                <Checkbox
-                                    checked={selected}
-                                    onChange={(e) => {
-                                        e.stopPropagation();
-                                        onSelect?.(collection.id, collection.name, collection.questionCount);
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                    }}
-                                    className={cn(
-                                        "transition-all duration-300",
-                                        selected ? "scale-110" : "opacity-90 group-hover:opacity-100"
+                    {displayMode !== 'list' && (
+                        <View zIndex="docked" className="absolute top-3 right-3 flex gap-2 items-center">
+                            {isOwner && (
+                                <View className={cn(
+                                    "p-2 rounded-full shadow-sm flex items-center justify-center border transition-colors",
+                                    collection.isOpen
+                                        ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                                        : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                                )} title={collection.isOpen ? "公開中" : "非公開"}>
+                                    {collection.isOpen ? (
+                                        <Unlock size={14} strokeWidth={2.5} />
+                                    ) : (
+                                        <Lock size={14} strokeWidth={2.5} />
                                     )}
-                                />
+                                </View>
                             )}
-                            <Stack gap="xs" className={cn(
-                                "flex-1",
-                                (onEdit || onDelete || (onAddToSet && !hideExtras)) && "pr-24"
-                            )}>
+                            {onEdit && isOwner && (
+                                <Button
+                                    size="sm"
+                                    variant="soft"
+                                    color="primary"
+                                    rounded="full"
+                                    className="p-2 h-auto shadow-sm"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onEdit(collection.id);
+                                    }}
+                                    title="コレクションを編集"
+                                >
+                                    <Edit size={16} strokeWidth={2.5} />
+                                </Button>
+                            )}
+                            {onDelete && (
+                                <Button
+                                    size="sm"
+                                    variant="soft"
+                                    color="danger"
+                                    rounded="full"
+                                    className="p-2 h-auto shadow-sm"
+                                    onClick={handleDelete}
+                                    title="コレクションを削除"
+                                >
+                                    <Trash2 size={16} strokeWidth={2.5} />
+                                </Button>
+                            )}
+                            {onAddToSet && !hideExtras && (
+                                <Button
+                                    size="sm"
+                                    variant="soft"
+                                    color="primary"
+                                    rounded="full"
+                                    className="p-2 h-auto shadow-sm"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        onAddToSet(collection.id);
+                                    }}
+                                    title="セットに追加"
+                                >
+                                    <FolderPlus size={16} strokeWidth={2.5} />
+                                </Button>
+                            )}
+                        </View>
+                    )}
+
+                    {displayMode === 'list' ? (
+                        <Flex gap="md" align="center" justify="between" className="h-full px-4 py-3 w-full">
+                            <Flex gap="md" align="center" className="flex-1 min-w-0">
+                                {(isSelectionMode || selectable) && (
+                                    <Checkbox
+                                        checked={selected}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onSelect?.(collection.id, collection.name, collection.questionCount);
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                        }}
+                                        className={cn(
+                                            "transition-all duration-300",
+                                            selected ? "scale-110" : "opacity-90 group-hover:opacity-100"
+                                        )}
+                                    />
+                                )}
                                 <Text weight="bold" variant="detail" color="primary" className="line-clamp-1 group-hover:opacity-100 transition-opacity opacity-90">
                                     {collection.name}
                                 </Text>
-                                <Flex gap="xs" align="center">
-                                    <Text variant="xs" color="secondary" className="font-medium opacity-80">
-                                        by {collection.authorName || '匿名'}
-                                    </Text>
-                                    {collection.isOfficial && (
-                                        <Badge variant="primary" className="px-2 py-0">Official</Badge>
-                                    )}
+                            </Flex>
+
+                            <Flex gap="md" align="center" className="shrink-0">
+                                <Flex gap="xs" align="center" title="問題数">
+                                    <Book size={14} strokeWidth={2.5} className="text-brand-primary" />
+                                    <Text variant="xs" weight="bold" color="primary">{collection.questionCount || 0}問</Text>
                                 </Flex>
-                            </Stack>
+                            </Flex>
                         </Flex>
+                    ) : (
+                        <Stack gap="md" className="h-full p-0.5">
+                            <Flex gap="md" align="center" className="w-full">
+                                {(isSelectionMode || selectable) && (
+                                    <Checkbox
+                                        checked={selected}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            onSelect?.(collection.id, collection.name, collection.questionCount);
+                                        }}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                        }}
+                                        className={cn(
+                                            "transition-all duration-300",
+                                            selected ? "scale-110" : "opacity-90 group-hover:opacity-100"
+                                        )}
+                                    />
+                                )}
+                                <Stack gap="xs" className={cn(
+                                    "flex-1 min-w-0",
+                                    (onEdit || onDelete || (onAddToSet && !hideExtras)) && "pr-24"
+                                )}>
+                                    <Text weight="bold" variant="detail" color="primary" className="line-clamp-1 group-hover:opacity-100 transition-opacity opacity-90">
+                                        {collection.name}
+                                    </Text>
+                                    <Flex gap="xs" align="center">
+                                        <Text variant="xs" color="secondary" className="font-medium opacity-80 truncate">
+                                            by {collection.authorName || '匿名'}
+                                        </Text>
+                                        {collection.isOfficial && (
+                                            <Badge variant="primary" className="px-2 py-0">Official</Badge>
+                                        )}
+                                    </Flex>
+                                </Stack>
+                            </Flex>
 
-                        {collection.descriptionText && (
-                            <Text variant="xs" color="secondary" className="line-clamp-3 leading-relaxed opacity-90 min-h-[3rem]">
-                                {collection.descriptionText}
-                            </Text>
-                        )}
+                            {collection.descriptionText && (
+                                <Text variant="xs" color="secondary" className="line-clamp-3 leading-relaxed opacity-90 min-h-[3rem]">
+                                    {collection.descriptionText}
+                                </Text>
+                            )}
 
-                        <Flex justify="between" align="center" className="mt-auto pt-5 border-t border-surface-muted/50">
-                            <Flex gap="xl">
-                                <Flex
-                                    gap="xs"
-                                    align="center"
-                                    title="問題数"
-                                >
-                                    <Book size={16} strokeWidth={2.5} className="text-brand-primary" />
-                                    <Text variant="xs" weight="bold" color="primary">{collection.questionCount || 0}</Text>
-                                </Flex>
-                                {!hideExtras && (
+                            <Flex justify="between" align="center" className="mt-auto pt-3 border-t border-surface-muted/50">
+                                <Flex gap="lg">
+                                    <Flex
+                                        gap="xs"
+                                        align="center"
+                                        title="問題数"
+                                    >
+                                        <Book size={16} strokeWidth={2.5} className="text-brand-primary" />
+                                        <Text variant="xs" weight="bold" color="primary">{collection.questionCount || 0}</Text>
+                                    </Flex>
                                     <Flex
                                         gap="xs"
                                         align="center"
@@ -247,16 +293,14 @@ export function CollectionCard({
                                         />
                                         <Text variant="xs" weight="bold" color={isFavorited ? "danger" : "secondary"}>{favCount}</Text>
                                     </Flex>
-                                )}
-                                {collection.userRank && (
-                                    <View bg="primary" padding="xs" rounded="full" className="px-2 py-0.5 flex flex-row gap-1 items-center bg-opacity-10">
-                                        <Trophy size={14} className="text-brand-primary" />
-                                        <Text variant="xs" weight="bold" color="primary">{collection.userRank}位</Text>
-                                    </View>
-                                )}
-                            </Flex>
+                                    {collection.userRank && (
+                                        <Flex gap="xs" align="center" className="px-2 py-0.5 rounded-full bg-brand-primary/10">
+                                            <Trophy size={14} className="text-brand-primary" />
+                                            <Text variant="xs" weight="bold" color="primary">{collection.userRank}位</Text>
+                                        </Flex>
+                                    )}
+                                </Flex>
 
-                            {!hideExtras && (
                                 <Flex gap="xs">
                                     <Button
                                         size="sm"
@@ -274,9 +318,9 @@ export function CollectionCard({
                                         <Trophy size={18} strokeWidth={2.5} />
                                     </Button>
                                 </Flex>
-                            )}
-                        </Flex>
-                    </Stack>
+                            </Flex>
+                        </Stack>
+                    )}
                 </Card>
             </View>
         </View >

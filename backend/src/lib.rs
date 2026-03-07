@@ -1,4 +1,5 @@
 // モジュールを pub にして外部(テスト)からアクセスできるようにする
+pub mod config;
 pub mod dtos;
 pub mod error;
 pub mod extractors;
@@ -7,11 +8,11 @@ pub mod models;
 pub mod repositories;
 pub mod services;
 pub mod state;
-pub mod utils; // 追加: extractors モジュールを公開
+pub mod utils;
 
 use axum::{
     Router,
-    routing::{delete, get, post, put, patch},
+    routing::{delete, get, patch, post, put},
 };
 use state::AppState;
 
@@ -219,10 +220,7 @@ pub fn app(state: AppState) -> Router {
             "/api/match/room",
             post(handlers::match_handler::create_room),
         )
-        .route(
-            "/api/match/room",
-            get(handlers::match_handler::list_rooms),
-        )
+        .route("/api/match/room", get(handlers::match_handler::list_rooms))
         .route(
             "/api/ws/match/{room_id}",
             get(handlers::match_ws_handler::ws_handler),

@@ -1,6 +1,6 @@
+use crate::state::match_state::{MatchQuestion, RoomVisibility};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::state::match_state::{MatchQuestion, RoomVisibility};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -11,6 +11,9 @@ pub struct CreateMatchRoomRequest {
     pub total_questions: i64,
     pub max_buzzes_per_round: usize,
     pub visibility: Option<RoomVisibility>,
+    pub preferred_mode: Option<String>,
+    pub dummy_char_count: Option<i32>,
+    pub config: Option<crate::state::match_state::MatchConfig>,
 }
 
 #[derive(Debug, Serialize)]
@@ -36,7 +39,10 @@ pub struct MatchQuestionDto {
     pub id: Uuid,
     pub question_text: String,
     pub description_text: Option<String>,
-    // Notice: `correct_answer` is intentionally omitted
+    pub correct_answers: Vec<String>,
+    pub answer_rubis: Vec<String>,
+    pub distractors: Vec<String>,
+    pub recommended_mode: String,
 }
 
 impl From<MatchQuestion> for MatchQuestionDto {
@@ -45,6 +51,10 @@ impl From<MatchQuestion> for MatchQuestionDto {
             id: q.id,
             question_text: q.question_text,
             description_text: q.description_text,
+            correct_answers: q.correct_answers,
+            answer_rubis: q.answer_rubis,
+            distractors: q.distractors,
+            recommended_mode: q.recommended_mode,
         }
     }
 }

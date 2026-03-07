@@ -1,0 +1,106 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n    id, user_id, filter_node, sort_keys, collection_names, \n    question_ids, answered_question_ids, total_questions, correct_count, \n    elapsed_time_millis, preferred_mode, dummy_char_count, is_active, \n    created_at, updated_at\nFROM casual_quizzes\nWHERE id = $1;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "filter_node",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "sort_keys",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 4,
+        "name": "collection_names",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 5,
+        "name": "question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 6,
+        "name": "answered_question_ids",
+        "type_info": "UuidArray"
+      },
+      {
+        "ordinal": 7,
+        "name": "total_questions",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 8,
+        "name": "correct_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "elapsed_time_millis",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 10,
+        "name": "preferred_mode",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 11,
+        "name": "dummy_char_count",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 12,
+        "name": "is_active",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 13,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "89d711c35541eb373e5c52663d2d975d2ee3de4d659e63738d56e6f5036fa6ea"
+}

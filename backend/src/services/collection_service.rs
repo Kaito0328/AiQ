@@ -16,8 +16,15 @@ impl CollectionService {
     ) -> Result<Collection, sqlx::Error> {
         // ※ 必要であればここに「名前が空文字でないか」「長すぎないか」等のバリデーションを追加します
 
-        CollectionRepository::create(pool, user_id, req.name, req.description_text, req.is_open)
-            .await
+        CollectionRepository::create(
+            pool,
+            user_id,
+            req.name,
+            req.description_text,
+            req.is_open,
+            req.default_mode.unwrap_or_else(|| "omakase".to_string()),
+        )
+        .await
     }
 
     pub async fn get_collection(
@@ -25,7 +32,8 @@ impl CollectionService {
         collection_id: Uuid,
         requester_id: Option<Uuid>,
     ) -> Result<crate::dtos::collection_dto::CollectionResponse, sqlx::Error> {
-        let collection = CollectionRepository::find_by_id_as_response(pool, collection_id, requester_id).await?;
+        let collection =
+            CollectionRepository::find_by_id_as_response(pool, collection_id, requester_id).await?;
 
         // 🌟 非公開 かつ 自分のコレクションでない場合はエラー
         if !collection.is_open && requester_id != Some(collection.user_id) {
@@ -39,7 +47,9 @@ impl CollectionService {
         target_user_id: Uuid,
         requester_id: Option<Uuid>,
     ) -> Result<Vec<crate::dtos::collection_dto::CollectionResponse>, sqlx::Error> {
-        let collections = CollectionRepository::find_by_user_id_as_response(pool, target_user_id, requester_id).await?;
+        let collections =
+            CollectionRepository::find_by_user_id_as_response(pool, target_user_id, requester_id)
+                .await?;
         let is_owner = requester_id == Some(target_user_id);
 
         let filtered = collections
@@ -66,6 +76,7 @@ impl CollectionService {
             req.name,
             req.description_text,
             req.is_open,
+            req.default_mode.unwrap_or_else(|| "omakase".to_string()),
         )
         .await
     }

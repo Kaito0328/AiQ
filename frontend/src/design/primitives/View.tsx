@@ -48,9 +48,9 @@ const paddingMap: Record<SpacingKey, string> = {
     none: 'p-0',
     xs: 'p-1',
     sm: 'p-2',
-    md: 'p-4',
-    lg: 'p-6',
-    xl: 'p-8',
+    md: 'p-3 sm:p-4',
+    lg: 'p-4 sm:p-6',
+    xl: 'p-6 sm:p-8',
 };
 
 const zIndexMap: Record<ZIndexKey, string> = {

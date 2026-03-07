@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT \n    c.id, c.user_id, c.name, c.description_text, c.is_open, c.default_mode, c.created_at, c.updated_at\nFROM collections c\nJOIN collection_set_collections csc ON c.id = csc.collection_id\nWHERE csc.collection_set_id = $1\nORDER BY csc.display_order ASC;\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 3,
+        "name": "description_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "is_open",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 5,
+        "name": "default_mode",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 6,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 7,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5097f30a69672c8c041925c0839ff6877497ff9c6a0d7463edc3c3d46d79af27"
+}

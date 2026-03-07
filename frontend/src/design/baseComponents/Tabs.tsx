@@ -16,8 +16,10 @@ export interface TabsProps {
     items: TabItem[];
     defaultTab?: string;
     className?: string;
+    headerClassName?: string;
     variant?: 'line' | 'pill';
     fitted?: boolean;
+    onChange?: (tabId: string) => void;
 }
 
 /**
@@ -27,10 +29,26 @@ export function Tabs({
     items,
     defaultTab,
     className,
+    headerClassName,
     variant = 'line',
-    fitted = false
+    fitted = false,
+    onChange
 }: TabsProps) {
-    const [activeTab, setActiveTab] = useState(defaultTab || items[0]?.id);
+    // If defaultTab changes (e.g. from URL query param), update it but handle user clicks too
+    const [activeTab, setActiveTab] = React.useState(defaultTab || items[0]?.id);
+
+    React.useEffect(() => {
+        if (defaultTab) {
+            setActiveTab(defaultTab);
+        }
+    }, [defaultTab]);
+
+    const handleTabChange = (id: string) => {
+        setActiveTab(id);
+        if (onChange) {
+            onChange(id);
+        }
+    };
 
     return (
         <View className={cn('w-full', className)}>
@@ -39,7 +57,8 @@ export function Tabs({
                 className={cn(
                     'mb-4 overflow-x-auto no-scrollbar',
                     variant === 'line' && 'border-b border-slate-200 dark:border-slate-800',
-                    fitted && 'w-full'
+                    fitted && 'w-full',
+                    headerClassName
                 )}
             >
                 {items.map((item) => {
@@ -47,7 +66,7 @@ export function Tabs({
                     return (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => handleTabChange(item.id)}
                             className={cn(
                                 'flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all whitespace-nowrap cursor-pointer',
                                 fitted && 'flex-1',

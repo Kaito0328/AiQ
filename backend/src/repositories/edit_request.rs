@@ -11,29 +11,20 @@ impl EditRequestRepository {
         requester_id: Uuid,
         question_text: String,
         correct_answers: Vec<String>,
+        answer_rubis: Vec<String>,
+        distractors: Vec<String>,
         description_text: Option<String>,
         reason_id: i32,
     ) -> Result<EditRequest, sqlx::Error> {
-        let request = sqlx::query_as!(
+        let request = sqlx::query_file_as!(
             EditRequest,
-            r#"
-            WITH inserted AS (
-                INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, description_text, reason_id)
-                VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING *
-            )
-            SELECT i.id, i.question_id, i.requester_id, u.username as requester_name, i.question_text, i.correct_answers, i.description_text, i.reason_id, i.status, i.created_at,
-                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
-                   c.name as collection_name
-            FROM inserted i
-            JOIN users u ON i.requester_id = u.id
-            JOIN questions q ON i.question_id = q.id
-            JOIN collections c ON q.collection_id = c.id
-            "#,
+            "src/queries/edit_requests/insert_edit_request.sql",
             question_id,
             requester_id,
             question_text,
             &correct_answers,
+            &answer_rubis,
+            &distractors,
             description_text,
             reason_id
         )
@@ -47,19 +38,9 @@ impl EditRequestRepository {
         pool: &PgPool,
         collection_id: Uuid,
     ) -> Result<Vec<EditRequest>, sqlx::Error> {
-        let requests = sqlx::query_as!(
+        let requests = sqlx::query_file_as!(
             EditRequest,
-            r#"
-            SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,
-                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
-                   c.name as collection_name
-            FROM edit_requests er
-            JOIN questions q ON er.question_id = q.id
-            JOIN collections c ON q.collection_id = c.id
-            JOIN users u ON er.requester_id = u.id
-            WHERE q.collection_id = $1
-            ORDER BY er.created_at DESC
-            "#,
+            "src/queries/edit_requests/find_by_collection_id.sql",
             collection_id
         )
         .fetch_all(pool)
@@ -72,19 +53,9 @@ impl EditRequestRepository {
         pool: &PgPool,
         owner_id: Uuid,
     ) -> Result<Vec<EditRequest>, sqlx::Error> {
-        let requests = sqlx::query_as!(
+        let requests = sqlx::query_file_as!(
             EditRequest,
-            r#"
-            SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,
-                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
-                   c.name as collection_name
-            FROM edit_requests er
-            JOIN questions q ON er.question_id = q.id
-            JOIN collections c ON q.collection_id = c.id
-            JOIN users u ON er.requester_id = u.id
-            WHERE c.user_id = $1 AND er.status = 'pending'
-            ORDER BY er.created_at DESC
-            "#,
+            "src/queries/edit_requests/find_by_owner_id.sql",
             owner_id
         )
         .fetch_all(pool)
@@ -94,22 +65,10 @@ impl EditRequestRepository {
     }
 
     pub async fn find_by_id(pool: &PgPool, id: Uuid) -> Result<EditRequest, sqlx::Error> {
-        let request = sqlx::query_as!(
-            EditRequest,
-            r#"
-            SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.description_text, er.reason_id, er.status, er.created_at,
-                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
-                   c.name as collection_name
-            FROM edit_requests er
-            JOIN questions q ON er.question_id = q.id
-            JOIN collections c ON q.collection_id = c.id
-            JOIN users u ON er.requester_id = u.id
-            WHERE er.id = $1
-            "#,
-            id
-        )
-        .fetch_one(pool)
-        .await?;
+        let request =
+            sqlx::query_file_as!(EditRequest, "src/queries/edit_requests/find_by_id.sql", id)
+                .fetch_one(pool)
+                .await?;
 
         Ok(request)
     }
@@ -119,20 +78,9 @@ impl EditRequestRepository {
         id: Uuid,
         status: String,
     ) -> Result<EditRequest, sqlx::Error> {
-        let request = sqlx::query_as!(
+        let request = sqlx::query_file_as!(
             EditRequest,
-            r#"
-            WITH updated AS (
-                UPDATE edit_requests SET status = $1 WHERE id = $2 RETURNING *
-            )
-            SELECT i.id, i.question_id, i.requester_id, u.username as requester_name, i.question_text, i.correct_answers, i.description_text, i.reason_id, i.status, i.created_at,
-                   q.question_text as original_question_text, q.correct_answers as original_correct_answers, q.description_text as original_description_text,
-                   c.name as collection_name
-            FROM updated i
-            JOIN users u ON i.requester_id = u.id
-            JOIN questions q ON i.question_id = q.id
-            JOIN collections c ON q.collection_id = c.id
-            "#,
+            "src/queries/edit_requests/update_status.sql",
             status,
             id
         )

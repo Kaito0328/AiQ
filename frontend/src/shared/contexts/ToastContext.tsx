@@ -19,13 +19,21 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const [toasts, setToasts] = useState<ToastItem[]>([]);
 
     const showToast = useCallback((props: Omit<ToastProps, 'onClose'>) => {
-        const id = Date.now();
-        setToasts(prev => [...prev, { ...props, id }]);
+        // Prevent duplicate toasts with the same message from flooding the UI
+        setToasts(prev => {
+            const isDuplicate = prev.some(t => t.message === props.message);
+            if (isDuplicate) return prev;
 
-        // 自動で消去（3秒後）
-        setTimeout(() => {
-            setToasts(prev => prev.filter(t => t.id !== id));
-        }, 3000);
+            const id = Date.now();
+            const newToast = { ...props, id };
+
+            // Auto-remove after 3 seconds
+            setTimeout(() => {
+                setToasts(current => current.filter(t => t.id !== id));
+            }, 3000);
+
+            return [...prev, newToast];
+        });
     }, []);
 
     const removeToast = useCallback((id: number) => {

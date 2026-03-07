@@ -22,6 +22,8 @@ interface QuestionDraft {
     id: string; // Existing ID or temp ID
     questionText: string;
     correctAnswers: string[];
+    answerRubis?: string[];
+    distractors?: string[];
     descriptionText?: string;
     isNew?: boolean;
     isModified?: boolean;
@@ -65,6 +67,7 @@ export function QuestionList({
     const [deletedIds, setDeletedIds] = useState<string[]>([]);
     const [questionFormat, setQuestionFormat] = useState('');
     const [answerFormat, setAnswerFormat] = useState('');
+    const [explanationLanguage, setExplanationLanguage] = useState('');
     const [isAiSettingsModalOpen, setIsAiSettingsModalOpen] = useState(false);
     const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
     // Initialize drafts when entering edit mode
@@ -75,6 +78,8 @@ export function QuestionList({
                 id: q.id,
                 questionText: q.questionText,
                 correctAnswers: q.correctAnswers,
+                answerRubis: q.answerRubis,
+                distractors: q.distractors,
                 descriptionText: q.descriptionText,
                 isNew: false,
                 isModified: false,
@@ -92,6 +97,8 @@ export function QuestionList({
                 id: d.isNew ? undefined : d.id,
                 questionText: d.questionText,
                 correctAnswers: d.correctAnswers,
+                answerRubis: d.answerRubis,
+                distractors: d.distractors,
                 descriptionText: d.descriptionText || null,
             }));
 
@@ -110,6 +117,7 @@ export function QuestionList({
     const handleAutoFill = async (settings?: {
         questionFormat: string;
         answerFormat: string;
+        explanationLanguage: string;
         shouldCompleteDescription: boolean;
     }) => {
         if (drafts.length === 0) return;
@@ -117,12 +125,14 @@ export function QuestionList({
 
         const qFmt = settings ? settings.questionFormat : questionFormat;
         const aFmt = settings ? settings.answerFormat : answerFormat;
+        const eLang = settings ? settings.explanationLanguage : explanationLanguage;
         const cDesc = settings ? settings.shouldCompleteDescription : shouldCompleteDescription;
 
         // Update states if settings provided from modal
         if (settings) {
             setQuestionFormat(settings.questionFormat);
             setAnswerFormat(settings.answerFormat);
+            setExplanationLanguage(settings.explanationLanguage);
             setShouldCompleteDescription(settings.shouldCompleteDescription);
         }
 
@@ -132,11 +142,13 @@ export function QuestionList({
                     id: d.id,
                     questionText: (d.questionText && d.questionText.trim() !== '') ? d.questionText : null,
                     correctAnswers: (d.correctAnswers && d.correctAnswers.length > 0 && d.correctAnswers[0].trim() !== '') ? d.correctAnswers : null,
+                    distractors: (d.distractors && d.distractors.length > 0) ? d.distractors : null,
                     descriptionText: (d.descriptionText && d.descriptionText.trim() !== '') ? d.descriptionText : null,
                 })),
-                complete_description: cDesc,
+                completeDescription: cDesc,
                 questionFormat: qFmt,
-                answerFormat: aFmt
+                answerFormat: aFmt,
+                explanationLanguage: eLang || undefined
             };
 
             const completed = await completeQuestions(payload) as any[];
@@ -148,14 +160,17 @@ export function QuestionList({
 
                 const isQuestionEmpty = !d.questionText || d.questionText.trim() === '';
                 const areAnswersEmpty = !d.correctAnswers || d.correctAnswers.length === 0 || (d.correctAnswers.length === 1 && d.correctAnswers[0].trim() === '');
+                const areDistractorsEmpty = !d.distractors || d.distractors.length === 0 || (d.distractors.length === 1 && d.distractors[0].trim() === '');
                 const isDescriptionEmpty = !d.descriptionText || d.descriptionText.trim() === '';
 
                 const newQuestion = comp.questionText;
                 const newAnswers = comp.correctAnswers;
+                const newDistractors = comp.distractors;
                 const newDescription = comp.descriptionText;
 
                 const hasChanges = (isQuestionEmpty && newQuestion) ||
                     (areAnswersEmpty && newAnswers) ||
+                    (areDistractorsEmpty && newDistractors) ||
                     (isDescriptionEmpty && newDescription);
 
                 if (!hasChanges) return d;
@@ -163,6 +178,7 @@ export function QuestionList({
                 const newAiFields = new Set(d.aiFields || []);
                 if (isQuestionEmpty && newQuestion) newAiFields.add('questionText');
                 if (areAnswersEmpty && newAnswers) newAiFields.add('correctAnswers');
+                if (areDistractorsEmpty && newDistractors) newAiFields.add('distractors');
                 if (isDescriptionEmpty && newDescription) newAiFields.add('descriptionText');
 
                 const newModifiedFields = new Set(d.modifiedFields || []);
@@ -171,6 +187,7 @@ export function QuestionList({
                     ...d,
                     questionText: isQuestionEmpty ? (newQuestion || d.questionText) : d.questionText,
                     correctAnswers: areAnswersEmpty ? (newAnswers || d.correctAnswers) : d.correctAnswers,
+                    distractors: areDistractorsEmpty ? (newDistractors || d.distractors) : d.distractors,
                     descriptionText: isDescriptionEmpty ? (newDescription || d.descriptionText) : d.descriptionText,
                     isModified: true,
                     aiFields: newAiFields,
@@ -193,11 +210,13 @@ export function QuestionList({
             id: newId,
             questionText: '',
             correctAnswers: [''],
+            answerRubis: [''],
+            distractors: ['', '', ''],
             descriptionText: '',
             isNew: true,
             isModified: true,
             aiFields: new Set(),
-            modifiedFields: new Set(['questionText', 'correctAnswers', 'descriptionText']),
+            modifiedFields: new Set(['questionText', 'correctAnswers', 'answerRubis', 'distractors', 'descriptionText']),
         }]);
     };
 
@@ -205,8 +224,8 @@ export function QuestionList({
         setDrafts(prev => prev.map(d => {
             if (d.id === id) {
                 let finalValue = value;
-                // 解答欄の場合、セミコロンで分割
-                if (field === 'correctAnswers' && typeof value === 'string') {
+                // 解答欄・ルビ欄・誤答欄の場合、セミコロンで分割
+                if ((field === 'correctAnswers' || field === 'answerRubis' || field === 'distractors') && typeof value === 'string') {
                     finalValue = value.split(';').map(s => s.trim());
                 }
 
@@ -322,7 +341,9 @@ export function QuestionList({
                                 <tr className="bg-brand-primary/5 border-b border-brand-primary/10">
                                     <th className="p-3 text-xs font-bold text-secondary w-12 text-center">#</th>
                                     <th className="p-3 text-xs font-bold text-secondary min-w-[300px]">問題文</th>
-                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">解答 (セミコロン区切りで複数可)</th>
+                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">解答 (セミコロン区切り)</th>
+                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">読み (セミコロン区切り)</th>
+                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">誤答 (セミコロン区切り)</th>
                                     <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">解説 (任意)</th>
                                     <th className="p-3 text-xs font-bold text-secondary w-12"></th>
                                 </tr>
@@ -360,9 +381,9 @@ export function QuestionList({
                                                 className="min-h-[60px] text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
                                             />
                                             {draft.aiFields?.has('questionText') && (
-                                                <div className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
                                                     <Sparkles size={12} className="text-brand-primary" />
-                                                </div>
+                                                </View>
                                             )}
                                         </td>
                                         <td className={cn(
@@ -376,9 +397,41 @@ export function QuestionList({
                                                 className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
                                             />
                                             {draft.aiFields?.has('correctAnswers') && (
-                                                <div className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
                                                     <Sparkles size={12} className="text-brand-primary" />
-                                                </div>
+                                                </View>
+                                            )}
+                                        </td>
+                                        <td className={cn(
+                                            "p-2 relative group",
+                                            draft.aiFields?.has('answerRubis') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('answerRubis') ? "bg-gray-200" : "")
+                                        )}>
+                                            <Input
+                                                value={(draft.answerRubis || []).join(';')}
+                                                onChange={(e) => updateDraft(draft.id, 'answerRubis', e.target.value)}
+                                                placeholder="読みを入力..."
+                                                className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                                            />
+                                            {draft.aiFields?.has('answerRubis') && (
+                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                                                    <Sparkles size={12} className="text-brand-primary" />
+                                                </View>
+                                            )}
+                                        </td>
+                                        <td className={cn(
+                                            "p-2 relative group",
+                                            draft.aiFields?.has('distractors') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('distractors') ? "bg-gray-200" : "")
+                                        )}>
+                                            <Input
+                                                value={(draft.distractors || []).join(';')}
+                                                onChange={(e) => updateDraft(draft.id, 'distractors', e.target.value)}
+                                                placeholder="誤解答を3つ入力..."
+                                                className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                                            />
+                                            {draft.aiFields?.has('distractors') && (
+                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                                                    <Sparkles size={12} className="text-brand-primary" />
+                                                </View>
                                             )}
                                         </td>
                                         <td className={cn(
@@ -392,9 +445,9 @@ export function QuestionList({
                                                 className="min-h-[60px] text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
                                             />
                                             {draft.aiFields?.has('descriptionText') && (
-                                                <div className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
                                                     <Sparkles size={12} className="text-brand-primary" />
-                                                </div>
+                                                </View>
                                             )}
                                         </td>
                                         <td className="p-2">
@@ -412,7 +465,7 @@ export function QuestionList({
                             </tbody>
                         </table>
                     </View>
-                    <View className="p-4 bg-gray-50/50 border-t border-gray-100">
+                    <View padding="md" className="bg-gray-50/50 border-t border-gray-100">
                         <Button
                             variant="ghost"
                             size="md"
@@ -430,6 +483,7 @@ export function QuestionList({
                     initialSettings={{
                         questionFormat,
                         answerFormat,
+                        explanationLanguage,
                         shouldCompleteDescription
                     }}
                     onConfirm={handleAutoFill}
@@ -486,9 +540,9 @@ export function QuestionList({
 
             {questions.length === 0 ? (
                 <Card border="base" bg="muted" className="border-dashed">
-                    <View className="py-16 px-6 text-center">
+                    <View padding="xl" className="py-10 text-center">
                         <Stack gap="lg" align="center">
-                            <View className="bg-brand-primary/10 p-4 rounded-2xl">
+                            <View padding="md" rounded="lg" className="bg-brand-primary/10">
                                 <Sparkles size={48} className="text-brand-primary animate-pulse" />
                             </View>
 
@@ -622,6 +676,26 @@ export function QuestionList({
                                                         {(question.correctAnswers || []).join(' / ')}
                                                     </Text>
                                                 </Flex>
+                                                {question.answerRubis && question.answerRubis.length > 0 && question.answerRubis.some(r => r && r.trim() !== "") && (
+                                                    <Flex gap="sm" align="start">
+                                                        <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
+                                                            読み:
+                                                        </Text>
+                                                        <Text variant="xs" color="secondary">
+                                                            {question.answerRubis.join(" / ")}
+                                                        </Text>
+                                                    </Flex>
+                                                )}
+                                                {question.distractors && question.distractors.length > 0 && (
+                                                    <Flex gap="sm" align="start">
+                                                        <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
+                                                            選択肢:
+                                                        </Text>
+                                                        <Text variant="xs" color="secondary">
+                                                            {[question.correctAnswers[0], ...question.distractors].join(' / ')}
+                                                        </Text>
+                                                    </Flex>
+                                                )}
                                                 {question.descriptionText && (
                                                     <Flex gap="sm" align="start">
                                                         <Text variant="xs" color="secondary" className="shrink-0">

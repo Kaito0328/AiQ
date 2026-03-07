@@ -4,6 +4,7 @@ SELECT
     c.name, 
     c.description_text, 
     c.is_open, 
+    c.default_mode,
     c.created_at, 
     c.updated_at,
     u.username as author_name,

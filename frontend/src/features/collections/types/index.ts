@@ -1,7 +1,10 @@
+import { DefaultCollectionMode } from "@/src/entities/quiz";
+
 export interface CreateCollectionRequest {
     name: string;
     descriptionText?: string;
     isOpen: boolean;
+    defaultMode?: DefaultCollectionMode;
 }
 
 export interface UpdateCollectionRequest extends CreateCollectionRequest { }
@@ -11,6 +14,7 @@ export interface UpsertCollectionItem {
     name?: string;
     descriptionText?: string;
     isOpen?: boolean;
+    defaultMode?: DefaultCollectionMode;
 }
 
 export interface BatchCollectionsRequest {

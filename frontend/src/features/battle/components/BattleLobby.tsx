@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
-import { User, Shield, Users, Play, Copy, Check, Library, Settings2, Globe, Lock } from 'lucide-react';
-import { MatchRoom, RoomVisibility } from '@/src/entities/battle';
+import { Icon } from '@/src/design/baseComponents/Icon';
+import { MatchRoom, RoomVisibility, MatchConfig } from '@/src/entities/battle';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
 import { View } from '@/src/design/primitives/View';
 import { cn } from '@/src/shared/utils/cn';
-import { FilterCondition, SortCondition } from '@/src/entities/quiz';
+import { FilterCondition, SortCondition, QuizMode, SortKey, FilterNode } from '@/src/entities/quiz';
 import { QuizOptionsModal } from '@/src/features/quiz/components/QuizOptionsModal';
 import { CollectionBrowser } from '@/src/features/collections/components/CollectionBrowser';
 import { FixedSelectionTray } from '@/src/features/collections/components/FixedSelectionTray';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
-import { Slider } from '@/src/design/baseComponents/Slider';
-import { useEffect } from 'react';
+import { BattleRulesModal } from './BattleRulesModal';
+import AppConfig from '@/src/app_config';
 
 interface BattleLobbyProps {
     room: MatchRoom;
@@ -26,21 +26,27 @@ interface BattleLobbyProps {
     onUpdateConfig: (maxBuzzes: number) => void;
     maxBuzzes: number;
     onUpdateVisibility: (visibility: RoomVisibility) => void;
-    onResetMatch: (collectionIds: string[], filters: FilterCondition[], sorts: SortCondition[], totalQuestions: number) => void;
+    onResetMatch: (collectionIds: string[], filterNode: FilterNode | undefined, sorts: SortCondition[], totalQuestions: number, preferredMode?: QuizMode, dummyCharCount?: number) => void;
     selfId: string | null;
+    config: MatchConfig;
+    onUpdateMatchConfig: (config: MatchConfig) => void;
+    onLeave: () => void;
 }
 
-export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, onUpdateVisibility, onResetMatch, selfId }: BattleLobbyProps) {
+export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, onUpdateVisibility, onResetMatch, selfId, config, onUpdateMatchConfig, onLeave }: BattleLobbyProps) {
     const [copied, setCopied] = useState(false);
     const [selectedCollections, setSelectedCollections] = useState<{ id: string, name: string, questionCount: number }[]>([]);
     const [appliedCollectionCount, setAppliedCollectionCount] = useState(0);
 
     // Quiz options state
-    const [filters, setFilters] = useState<FilterCondition[]>([]);
-    const [sorts, setSorts] = useState<SortCondition[]>([]);
-    const [limit, setLimit] = useState(0);
+    const [filterNode, setFilterNode] = useState<FilterNode | undefined>(undefined);
+    const [sorts, setSorts] = useState<SortCondition[]>([{ key: SortKey.RANDOM }]);
+    const [limit, setLimit] = useState(30);
     const [isManualLimit, setIsManualLimit] = useState(false);
+    const [preferredMode, setPreferredMode] = useState<QuizMode>(room.preferred_mode as QuizMode || 'chips');
+    const [dummyCharCount, setDummyCharCount] = useState(room.dummy_char_count || AppConfig.quiz.default_dummy_char_count);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isRulesOpen, setIsRulesOpen] = useState(false);
 
     // Add to set/UI state
     const [targetCollectionId, setTargetCollectionId] = useState<string | null>(null);
@@ -78,10 +84,10 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                 ? prev.filter(c => c.id !== id)
                 : [...prev, { id, name, questionCount: count || 0 }];
 
-            // Smart Limit: If not manually adjusted, sync with total
+            // Smart Limit: If not manually adjusted, sync with total (capped at 30)
             if (!isManualLimit) {
                 const newTotal = next.reduce((sum, c) => sum + (c.questionCount || 0), 0);
-                setLimit(newTotal);
+                setLimit(newTotal > 30 ? 30 : newTotal);
             }
 
             return next;
@@ -98,9 +104,15 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
         setIsAddToSetModalOpen(true);
     };
 
+    const handleClearAll = () => {
+        setSelectedCollections([]);
+        setLimit(0);
+        setIsManualLimit(false);
+    };
+
     const handleReset = () => {
         if (selectedCollections.length > 0) {
-            onResetMatch(selectedCollections.map(c => c.id), filters, sorts, limit);
+            onResetMatch(selectedCollections.map(c => c.id), filterNode, sorts, limit, preferredMode, dummyCharCount);
             setAppliedCollectionCount(selectedCollections.length);
             setSelectedCollections([]);
             // Reset manual state after applying if desired, or keep it.
@@ -109,8 +121,21 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
     };
 
     return (
-        <Stack gap="xl" className="w-full max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-40">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Stack gap="lg" className="w-full max-w-5xl mx-auto pb-80 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
+            {/* Simple Floating Exit Button */}
+            <View className="fixed top-4 left-4 z-[150]">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onLeave}
+                    className="text-secondary hover:text-brand-danger gap-1.5 bg-surface-base/60 backdrop-blur-md rounded-full px-3 py-1 shadow-sm border border-surface-muted"
+                >
+                    <Icon name="back" size={14} />
+                    <Text variant="xs" weight="bold">退室</Text>
+                </Button>
+            </View>
+
+            <View className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
                 {/* 参加情報のカード */}
                 <Card padding="lg" border="primary" className="lg:col-span-2 shadow-xl overflow-visible relative h-fit">
                     <View className="absolute -top-4 left-6 px-4 py-1 bg-brand-primary text-white text-xs font-bold rounded-full shadow-lg">
@@ -118,92 +143,113 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                     </View>
 
                     <Stack gap="lg">
-                        <Flex justify="between" align="center">
-                            <Stack gap="none">
-                                <Text variant="h3" weight="bold">対戦ロビー</Text>
-                                <Text variant="xs" color="secondary">プレイヤーが集まるまでお待ちください</Text>
+                        <Flex justify="between" align="start">
+                            <Stack gap="none" className="w-full">
+                                <Flex align="center" justify="between" className="w-full">
+                                    <Text variant="h3" weight="bold">対戦ロビー</Text>
+                                    <Flex gap="sm" align="center" className="bg-surface-muted px-2 py-1 rounded-lg border border-surface-muted ml-auto">
+                                        <Text variant="xs" color="secondary" weight="bold">ID:</Text>
+                                        <Text variant="xs" weight="bold" className="font-mono">{room.room_id.slice(0, 8)}</Text>
+                                        <Button size="sm" variant="ghost" className="p-1 h-auto" onClick={handleCopy} title="参加リンクをコピー">
+                                            {copied ? <Icon name="check" size={14} className="text-green-500" /> : <Icon name="copy" size={14} />}
+                                        </Button>
+                                    </Flex>
+                                </Flex>
+                                <Text variant="xs" color="secondary" className="mt-1">プレイヤーが集まるまでお待ちください</Text>
                             </Stack>
-                            <Flex gap="sm" align="center" className="bg-surface-muted px-3 py-1.5 rounded-lg border border-surface-muted">
-                                <Text variant="xs" color="secondary" weight="bold">ROOM ID:</Text>
-                                <Text variant="xs" weight="bold" className="font-mono">{room.room_id.slice(0, 8)}</Text>
-                                <Button size="sm" variant="ghost" className="p-1 h-auto" onClick={handleCopy} title="参加リンクをコピー">
-                                    {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-                                </Button>
-                            </Flex>
                         </Flex>
 
-                        <Stack gap="md">
+                        <Stack gap="xs">
                             <Flex gap="sm" align="center" className="text-brand-primary">
-                                <Users size={18} />
+                                <Icon name="users" size={18} />
                                 <Text variant="detail" weight="bold">参加者 ({room.players.length})</Text>
                             </Flex>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <Flex className="gap-3 sm:gap-4 overflow-x-auto no-scrollbar pb-1 -mx-1 px-1 whitespace-nowrap">
                                 {room.players.map((player) => {
                                     const isMe = player.user_id === selfId;
+                                    const isHost = player.user_id === room.host_id;
                                     return (
-                                        <View
+                                        <Stack
                                             key={player.user_id}
-                                            border={isMe ? "primary" : "base"}
-                                            className={cn(
-                                                "p-4 rounded-xl transition-all flex items-center justify-between group",
-                                                isMe ? "bg-brand-primary/5 shadow-sm" : "bg-surface-base hover:border-brand-primary/30"
-                                            )}
+                                            gap="xs"
+                                            className="items-center justify-start shrink-0 w-14 sm:w-16"
                                         >
-                                            <Flex gap="md" align="center">
+                                            <View className="relative">
                                                 <View className={cn(
-                                                    "p-2 rounded-full",
-                                                    isMe ? "bg-brand-primary text-white" : "bg-brand-primary/10 text-brand-primary"
+                                                    "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center overflow-hidden border-[3px]",
+                                                    isMe ? "border-brand-primary bg-brand-primary text-white shadow-md shadow-brand-primary/20" : "border-surface-muted bg-surface-muted text-secondary"
                                                 )}>
-                                                    {player.user_id === room.host_id ? <Shield size={18} /> : <User size={18} />}
-                                                </View>
-                                                <Stack gap="none">
-                                                    <Text weight="bold" variant="detail">
-                                                        {player.username}
-                                                        {isMe && " (YOU)"}
-                                                    </Text>
-                                                    {player.user_id === room.host_id && (
-                                                        <Text variant="xs" color="primary" weight="bold">HOST</Text>
+                                                    {(player as any).icon_url ? (
+                                                        <View as="img" src={(player as any).icon_url} alt={player.username} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Icon name="user" size={18} className={isMe ? "text-white" : "text-secondary"} />
                                                     )}
-                                                </Stack>
-                                            </Flex>
-                                            <View className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                        </View>
+                                                </View>
+                                            </View>
+                                            <Stack gap="none" className="items-center">
+                                                <Text weight="bold" variant="xs" className="text-[10px] sm:text-[11px] max-w-full truncate text-center px-0.5">
+                                                    {player.username}
+                                                </Text>
+                                                {isHost && (
+                                                    <Text variant="xs" weight="bold" className="text-[8px] bg-amber-400 text-white px-1.5 rounded-full mt-0.5 uppercase tracking-tighter">
+                                                        HOST
+                                                    </Text>
+                                                )}
+                                            </Stack>
+                                        </Stack>
                                     );
                                 })}
-                            </div>
+                            </Flex>
                         </Stack>
 
-                        {isHost && (
-                            <Stack gap="sm" className="mt-4 pt-6 border-t border-surface-muted/50">
+                        <Stack gap="md" className="mt-2 pt-4 border-t border-surface-muted/50">
+                            {/* ルームの公開設定 */}
+                            <Stack gap="sm">
                                 <Text variant="detail" weight="bold">ルームの公開設定</Text>
-                                <div className="flex flex-wrap gap-2">
+                                <Flex wrap gap="xs">
                                     <VisibilityButton
-                                        icon={<Globe size={16} />}
-                                        title="公開"
-                                        selected={room.visibility === 'public'}
-                                        onClick={() => onUpdateVisibility('public')}
-                                    />
-                                    <VisibilityButton
-                                        icon={<Lock size={16} />}
+                                        icon={<Icon name="lock" size={16} />}
                                         title="非公開"
                                         selected={room.visibility === 'private'}
-                                        onClick={() => onUpdateVisibility('private')}
+                                        onClick={isHost ? () => onUpdateVisibility('private') : undefined}
                                     />
                                     <VisibilityButton
-                                        icon={<Users size={16} />}
+                                        icon={<Icon name="users" size={16} />}
                                         title="フォロワー限定"
                                         selected={room.visibility === 'followers'}
-                                        onClick={() => onUpdateVisibility('followers')}
+                                        onClick={isHost ? () => onUpdateVisibility('followers') : undefined}
                                     />
-                                </div>
+                                    <VisibilityButton
+                                        icon={<Icon name="globe" size={16} />}
+                                        title="公開"
+                                        selected={room.visibility === 'public'}
+                                        onClick={isHost ? () => onUpdateVisibility('public') : undefined}
+                                    />
+                                </Flex>
                                 <Text variant="xs" color="secondary" className="px-1 leading-tight">
-                                    {room.visibility === 'public' && "全ユーザーがロビーから参加可能です"}
-                                    {room.visibility === 'private' && "リンクを知っている人のみ参加可能です"}
+                                    {!isHost && <span className="text-brand-primary/60 mr-1">[ホストのみ変更可能]</span>}
+                                    {room.visibility === 'private' && "リンクを知っている人のみ参加可能です（デフォルト）"}
                                     {room.visibility === 'followers' && "フォロワーのみ参加可能です"}
+                                    {room.visibility === 'public' && "全ユーザーがロビーから参加可能です"}
                                 </Text>
                             </Stack>
-                        )}
+
+                            {/* ルール設定 */}
+                            <Stack gap="sm">
+                                <Text variant="detail" weight="bold">ルール設定</Text>
+                                <Flex gap="sm" className="flex-wrap">
+                                    <Button size="sm" variant="outline" onClick={() => setIsSettingsOpen(true)}>
+                                        <Icon name="settings" size={14} className="mr-1" />
+                                        出題設定 {!isHost && "(表示のみ)"}
+                                    </Button>
+                                    <Button size="sm" variant="outline" onClick={() => setIsRulesOpen(true)}>
+                                        <Icon name="settings" size={14} className="mr-1" />
+                                        対戦形式 {!isHost && "(表示のみ)"}
+                                    </Button>
+                                </Flex>
+                            </Stack>
+                        </Stack>
 
                         {!isHost && (
                             <View border="primary" className="mt-4 p-4 rounded-xl bg-brand-primary/5 flex items-center justify-center gap-3">
@@ -212,112 +258,131 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                             </View>
                         )}
                     </Stack>
-                </Card>
+                </Card >
 
-                <Stack gap="lg" className="h-fit">
+                <Stack gap="md" className="h-fit">
                     {/* QRコードカード */}
-                    <Card padding="lg" border="base" className="shadow-lg bg-surface-base">
-                        <Stack gap="md" align="center">
-                            <Text variant="detail" weight="bold">スマホでスキャンして参加</Text>
+                    <Card padding="md" border="base" className="shadow-lg bg-surface-base">
+                        <Stack gap="sm" align="center">
+                            <Text variant="xs" weight="bold" color="secondary" className="uppercase tracking-widest opacity-60">スマホでスキャンして参加</Text>
                             {qrCodeUrl && (
-                                <View className="p-3 bg-white rounded-xl border border-surface-muted shadow-inner">
-                                    <img src={qrCodeUrl} alt="QR Code" className="w-40 h-40 md:w-48 md:h-48" />
+                                <View className="p-2 bg-white rounded-xl border border-surface-muted shadow-inner">
+                                    <View as="img" src={qrCodeUrl} alt="QR Code" className="w-24 h-24 sm:w-32 sm:h-32" />
                                 </View>
                             )}
                         </Stack>
                     </Card>
-
-                    {/* 部屋設定 (ホストのみ) - カードで囲む */}
-                    {isHost && (
-                        <Card padding="lg" border="base" className="shadow-lg bg-surface-base">
-                            <Slider
-                                label="1問当たりの回答数"
-                                min={1}
-                                max={Math.max(1, room.players.length)}
-                                value={maxBuzzes}
-                                onChange={(val) => {
-                                    setHasManuallyChangedBuzz(true);
-                                    onUpdateConfig(val);
-                                }}
-                            />
-                        </Card>
-                    )}
                 </Stack>
-            </div>
+            </View >
 
             {/* 問題セレクター（ホスト専用、統合表示） */}
-            {isHost && (
-                <Card padding="none" border="base" className="shadow-xl overflow-hidden bg-surface-base">
-                    <View className="p-6 border-b border-surface-muted bg-surface-muted/10">
-                        <Flex gap="md" align="center">
-                            <Library className="text-brand-primary" size={24} />
-                            <Stack gap="none">
-                                <Text variant="h4" weight="bold">クイズ問題集を選択</Text>
-                                <Text variant="xs" color="secondary">
-                                    {appliedCollectionCount > 0
-                                        ? `現在 ${appliedCollectionCount} 件のコレクションが適用されています`
-                                        : "対戦で使用するコレクションを選んでください"}
-                                </Text>
-                            </Stack>
-                        </Flex>
-                    </View>
+            {
+                isHost && (
+                    <Card padding="none" border="base" className="shadow-xl overflow-hidden bg-surface-base mt-[-12px] sm:mt-0">
+                        <View className="p-4 border-b border-surface-muted bg-surface-muted/10">
+                            <Flex gap="md" align="center">
+                                <Icon name="collection" className="text-brand-primary" size={20} />
+                                <Stack gap="none">
+                                    <Text variant="detail" weight="bold">クイズ問題集を選択</Text>
+                                    <Text variant="xs" color="secondary">
+                                        {appliedCollectionCount > 0
+                                            ? `現在 ${appliedCollectionCount} 件のコレクションが適用されています`
+                                            : "対戦で使用するコレクションを選んでください"}
+                                    </Text>
+                                </Stack>
+                            </Flex>
+                        </View>
 
-                    <View className="p-6 min-h-[500px]">
-                        <CollectionBrowser
-                            selectedIds={selectedCollections.map(c => c.id)}
-                            onToggleCollection={handleToggleCollection}
-                            onAddToSet={handleOpenAddToSet}
-                        />
-                    </View>
-                </Card>
-            )}
+                        <View className="p-6 min-h-[500px]">
+                            <CollectionBrowser
+                                selectedIds={selectedCollections.map(c => c.id)}
+                                onToggleCollection={handleToggleCollection}
+                                onAddToSet={handleOpenAddToSet}
+                            />
+                        </View>
+                    </Card>
+                )
+            }
 
             {/* ボトム固定トレイ (ホスト専用) */}
-            {isHost && (
-                <>
-                    <FixedSelectionTray
-                        selectedCollections={selectedCollections}
-                        onRemoveCollection={(id) => handleToggleCollection(id, "", 0)}
-                        onClearAll={() => {
-                            setSelectedCollections([]);
-                            if (!isManualLimit) setLimit(0);
-                        }}
-                        onStart={() => setIsSettingsOpen(true)}
-                        startLabel="クイズを開始"
-                        limit={limit}
-                    />
+            {
+                isHost && (
+                    <>
+                        <FixedSelectionTray
+                            selectedCollections={selectedCollections}
+                            onRemoveCollection={(id) => handleToggleCollection(id, "", 0)}
+                            onClearAll={handleClearAll}
+                            onStart={() => {
+                                // First send reset with selection, then start
+                                onResetMatch(selectedCollections.map(c => c.id), filterNode, sorts, limit, preferredMode, dummyCharCount);
+                                // We don't clear selectedCollections immediately to allow the backend to process
+                                // and to keep UI consistent until transition
+                                setAppliedCollectionCount(selectedCollections.length);
+                                onStart();
+                            }}
+                            startLabel="クイズを開始"
+                            limit={limit}
+                            maxLimit={totalQuestions > 0 ? totalQuestions : 0}
+                            onLimitChange={handleLimitChange}
+                        />
 
-                    {/* 設定モーダル */}
-                    <QuizOptionsModal
-                        isOpen={isSettingsOpen}
-                        onClose={() => setIsSettingsOpen(false)}
-                        filters={filters}
-                        sorts={sorts}
-                        limit={limit}
-                        maxLimit={totalQuestions > 0 ? totalQuestions : 0}
-                        onFilterChange={setFilters}
-                        onSortChange={setSorts}
-                        onLimitChange={handleLimitChange}
-                        onStart={() => {
-                            onResetMatch(selectedCollections.map(c => c.id), filters, sorts, limit);
-                            onStart(); // Send StartMatch message
-                            setIsSettingsOpen(false);
-                        }}
-                    />
-
-                    {/* セットに追加モーダル */}
-                    {isAddToSetModalOpen && targetCollectionId && (
-                        <AddToSetModal
-                            collectionId={targetCollectionId}
-                            onClose={() => setIsAddToSetModalOpen(false)}
-                            onSuccess={() => {
-                                setTargetCollectionId(null);
-                                setIsAddToSetModalOpen(false);
+                        {/* 設定モーダル */}
+                        <QuizOptionsModal
+                            isOpen={isSettingsOpen}
+                            onClose={() => setIsSettingsOpen(false)}
+                            filterNode={filterNode}
+                            sorts={sorts}
+                            limit={limit}
+                            maxLimit={totalQuestions > 0 ? totalQuestions : 0}
+                            onFilterNodeChange={setFilterNode}
+                            onSortChange={setSorts}
+                            onLimitChange={handleLimitChange}
+                            preferredMode={preferredMode}
+                            onModeChange={setPreferredMode}
+                            dummyCharCount={dummyCharCount}
+                            onDummyCountChange={setDummyCharCount}
+                            matchConfig={config}
+                            onMatchConfigChange={onUpdateMatchConfig}
+                            hideFuzzy
+                            hideMatchConfig
+                            hideLimit
+                            readOnly={!isHost}
+                            onStart={() => {
+                                onResetMatch(selectedCollections.map(c => c.id), filterNode, sorts, limit, preferredMode, dummyCharCount);
+                                onStart(); // Send StartMatch message
+                                setIsSettingsOpen(false);
                             }}
                         />
-                    )}
-                </>
-            )}
+
+                        {/* ルール設定モーダル */}
+                        <BattleRulesModal
+                            isOpen={isRulesOpen}
+                            onClose={() => setIsRulesOpen(false)}
+                            config={config}
+                            onApply={onUpdateMatchConfig}
+                            maxPlayers={room.players.length}
+                            maxBuzzes={maxBuzzes}
+                            onMaxBuzzesChange={(val) => {
+                                setHasManuallyChangedBuzz(true);
+                                onUpdateConfig(val);
+                            }}
+                            readOnly={!isHost}
+                        />
+
+                        {/* セットに追加モーダル */}
+                        {isAddToSetModalOpen && targetCollectionId && (
+                            <AddToSetModal
+                                collectionId={targetCollectionId}
+                                onClose={() => setIsAddToSetModalOpen(false)}
+                                onSuccess={() => {
+                                    setTargetCollectionId(null);
+                                    setIsAddToSetModalOpen(false);
+                                }}
+                            />
+                        )}
+                    </>
+                )
+            }
         </Stack >
     );
 }
@@ -327,10 +392,11 @@ function VisibilityButton({ icon, title, selected, onClick }: any) {
         <View
             onClick={onClick}
             className={cn(
-                "p-2.5 rounded-xl border-2 cursor-pointer transition-all flex items-center gap-2",
+                "p-2.5 rounded-xl border-2 transition-all flex items-center gap-2",
                 selected
                     ? "border-brand-primary bg-brand-primary/5 text-brand-primary"
-                    : "border-surface-muted hover:border-surface-primary bg-surface-base text-secondary"
+                    : "border-surface-muted hover:border-surface-primary bg-surface-base text-secondary",
+                !onClick ? "cursor-default opacity-80" : "cursor-pointer"
             )}
         >
             {icon}

@@ -1,6 +1,29 @@
 {
     "users": [
         {
+            "username": "official_user",
+            "displayName": "AiQ Official",
+            "bio": "AiQ公式クイズアカウントです。高品質な問題を提供します。",
+            "isOfficial": true,
+            "collections": [
+                {
+                    "name": "一般常識・雑学",
+                    "description": "生活に役立つ常識から面白い雑学まで、幅広く出題します。",
+                    "csvFile": "jp_general.csv"
+                },
+                {
+                    "name": "エンタメ・カルチャー",
+                    "description": "アニメ、ゲーム、映画など、日本のポップカルチャーに関するクイズです。",
+                    "csvFile": "jp_pop_culture.csv"
+                },
+                {
+                    "name": "日本史・地理",
+                    "description": "日本の歴史的な出来事や、各地の地理・名所について学べます。",
+                    "csvFile": "jp_history_geo.csv"
+                }
+            ]
+        },
+        {
             "username": "kenji",
             "displayName": "Kenji",
             "bio": "History enthusiast. Living in the stories of the past.",

@@ -20,6 +20,8 @@ async fn test_create_edit_request(pool: sqlx::PgPool) {
         "questionId": question_id,
         "questionText": "Modified Question Text",
         "correctAnswers": ["New Answer"],
+        "answerRubis": [],
+        "distractors": [],
         "descriptionText": "New Description",
         "reasonId": 1
     });
@@ -37,15 +39,18 @@ async fn test_create_edit_request(pool: sqlx::PgPool) {
 
     let body_bytes = response.into_body().collect().await.unwrap().to_bytes();
     let resp_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    
+
     assert!(resp_json.get("id").is_some());
-    assert_eq!(resp_json.get("status").unwrap().as_str().unwrap(), "pending");
+    assert_eq!(
+        resp_json.get("status").unwrap().as_str().unwrap(),
+        "pending"
+    );
 }
 
 #[sqlx::test]
 async fn test_list_and_approve_edit_request(pool: sqlx::PgPool) {
     let app = common::setup_app(pool).await;
-    
+
     // Owner of collection
     let (_owner_name, owner_token) = common::create_test_user(&app).await;
     // Requester
@@ -59,6 +64,8 @@ async fn test_list_and_approve_edit_request(pool: sqlx::PgPool) {
         "questionId": question_id,
         "questionText": "Improved Text",
         "correctAnswers": ["Answer"],
+        "answerRubis": [],
+        "distractors": [],
         "descriptionText": "New Desc",
         "reasonId": 2
     });
@@ -72,7 +79,7 @@ async fn test_list_and_approve_edit_request(pool: sqlx::PgPool) {
         .unwrap();
     let res_post = app.clone().oneshot(req_post).await.unwrap();
     assert_eq!(res_post.status(), StatusCode::OK);
-    
+
     let body_bytes = res_post.into_body().collect().await.unwrap().to_bytes();
     let post_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
     let request_id = post_json.get("id").unwrap().as_str().unwrap().to_string();
@@ -81,12 +88,15 @@ async fn test_list_and_approve_edit_request(pool: sqlx::PgPool) {
     let req_list = Request::builder()
         .method(http::Method::GET)
         .uri(format!("/api/collections/{}/edit-requests", collection_id))
-        .header(http::header::AUTHORIZATION, format!("Bearer {}", owner_token))
+        .header(
+            http::header::AUTHORIZATION,
+            format!("Bearer {}", owner_token),
+        )
         .body(Body::empty())
         .unwrap();
     let res_list = app.clone().oneshot(req_list).await.unwrap();
     assert_eq!(res_list.status(), StatusCode::OK);
-    
+
     let body_bytes = res_list.into_body().collect().await.unwrap().to_bytes();
     let list_json: Vec<serde_json::Value> = serde_json::from_slice(&body_bytes).unwrap();
     assert_eq!(list_json.len(), 1);
@@ -98,7 +108,10 @@ async fn test_list_and_approve_edit_request(pool: sqlx::PgPool) {
     let req_approve = Request::builder()
         .method(http::Method::PATCH)
         .uri(format!("/api/edit-requests/{}", request_id))
-        .header(http::header::AUTHORIZATION, format!("Bearer {}", owner_token))
+        .header(
+            http::header::AUTHORIZATION,
+            format!("Bearer {}", owner_token),
+        )
         .header(http::header::CONTENT_TYPE, "application/json")
         .body(Body::from(serde_json::to_vec(&status_body).unwrap()))
         .unwrap();
@@ -108,5 +121,8 @@ async fn test_list_and_approve_edit_request(pool: sqlx::PgPool) {
     // 4. Verify original question is updated (Indirectly check by status in response)
     let body_bytes = res_approve.into_body().collect().await.unwrap().to_bytes();
     let approve_json: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(approve_json.get("status").unwrap().as_str().unwrap(), "approved");
+    assert_eq!(
+        approve_json.get("status").unwrap().as_str().unwrap(),
+        "approved"
+    );
 }

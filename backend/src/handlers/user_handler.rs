@@ -82,10 +82,13 @@ pub async fn get_profile(
 
 pub async fn get_users(
     State(state): State<AppState>,
-    claims: Claims,
+    OptionalClaims(claims): OptionalClaims,
     Query(params): Query<UserSearchQuery>,
 ) -> Result<Json<Vec<UserProfileResponse>>> {
-    let users = user_service::search_users(&state.db, claims.user_id(), params).await?;
+    let current_user_id = claims
+        .map(|c| c.user_id())
+        .unwrap_or_else(|| uuid::Uuid::nil());
+    let users = user_service::search_users(&state.db, current_user_id, params).await?;
 
     Ok(Json(users))
 }
@@ -123,12 +126,8 @@ pub async fn get_official_user(
         .ok_or(AppError::UserNotFound)?;
 
     let current_user_id = claims.map(|c| c.user_id());
-    let response = user_service::get_user_profile(
-        &state.db,
-        current_user_id,
-        official_user.id,
-    )
-    .await?;
+    let response =
+        user_service::get_user_profile(&state.db, current_user_id, official_user.id).await?;
 
     Ok(Json(response))
 }

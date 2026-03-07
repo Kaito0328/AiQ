@@ -1,9 +1,12 @@
+import { DefaultCollectionMode } from './quiz';
+
 export interface Collection {
     id: string; // Uuid
     userId: string; // Uuid
     name: string;
     descriptionText?: string;
     isOpen: boolean;
+    defaultMode: DefaultCollectionMode;
     createdAt: string; // ISO String
     updatedAt: string; // ISO String
     authorName?: string;

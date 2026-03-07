@@ -111,9 +111,7 @@ export function RegisterForm({ onSuccess, onSwitchToLogin }: RegisterFormProps) 
                     </Button>
                 </Flex>
 
-                <View className="mt-4">
-                    <SecurityNotice />
-                </View>
+                <SecurityNotice />
             </Stack>
         </Card>
     );

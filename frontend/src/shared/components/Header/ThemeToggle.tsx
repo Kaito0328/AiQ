@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/src/design/baseComponents/Button';
 import { useTheme } from '@/src/shared/contexts/ThemeContext';
 import { Flex } from '@/src/design/primitives/Flex';
@@ -9,6 +9,7 @@ export function ThemeToggle() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMounted(true);
     }, []);
 

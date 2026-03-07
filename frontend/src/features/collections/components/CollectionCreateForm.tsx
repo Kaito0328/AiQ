@@ -8,11 +8,15 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { X, FolderPlus } from 'lucide-react';
+import { Select } from '@/src/design/baseComponents/Select';
 import { createCollection } from '@/src/features/collections/api';
 import { Collection } from '@/src/entities/collection';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { TextArea } from '@/src/design/baseComponents/TextArea';
+import { FormField } from '@/src/design/baseComponents/FormField';
+import { View } from '@/src/design/primitives/View';
 import { Modal } from '@/src/design/baseComponents/Modal';
+import AppConfig from '@/src/app_config';
 
 interface CollectionCreateFormProps {
     onCreated: (collection: Collection) => void;
@@ -23,6 +27,7 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
     const [name, setName] = useState('');
     const [descriptionText, setDescriptionText] = useState('');
     const [isOpen, setIsOpen] = useState(true);
+    const [defaultMode, setDefaultMode] = useState<any>('omakase');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +43,8 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
             const created = await createCollection({
                 name: name.trim(),
                 descriptionText: descriptionText.trim() || undefined,
-                isOpen
+                isOpen,
+                defaultMode
             });
             onCreated(created);
         } catch (err) {
@@ -55,8 +61,9 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
             onClose={onCancel}
             title="新しいコレクション"
             size="md"
+            centerTitle={true}
             footer={
-                <Flex gap="sm" justify="end">
+                <Flex gap="sm" justify="center">
                     <Button variant="outline" type="button" onClick={onCancel}>
                         キャンセル
                     </Button>
@@ -66,35 +73,50 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
                 </Flex>
             }
         >
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="py-4">
                 <Stack gap="lg">
                     <Stack gap="md">
-                        <Stack gap="xs">
-                            <Text variant="xs" weight="bold">コレクション名 *</Text>
+                        <FormField label="コレクション名 *" required>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="例: 英語の基本単語"
+                                maxLength={AppConfig.collection.name_max_length}
                                 autoFocus
                             />
-                        </Stack>
+                        </FormField>
 
-                        <Stack gap="xs">
-                            <Text variant="xs" weight="bold">説明（任意）</Text>
+                        <FormField label="説明（任意）">
                             <TextArea
                                 value={descriptionText}
                                 onChange={(e) => setDescriptionText(e.target.value)}
                                 placeholder="コレクションの内容について説明を入力してください"
+                                maxLength={AppConfig.collection.description_max_length}
                             />
-                        </Stack>
+                        </FormField>
 
-                        <Flex gap="sm" align="center">
+                        <View as="label" className="flex items-center gap-3 cursor-pointer group">
                             <Checkbox
                                 checked={isOpen}
                                 onChange={() => setIsOpen(!isOpen)}
                             />
-                            <Text variant="xs">公開する</Text>
-                        </Flex>
+                            <Text variant="xs" weight="medium">公開する</Text>
+                        </View>
+
+                        <FormField
+                            label="推奨回答方式 (デフォルト)"
+                            description="※ コレクション全体で優先して使用する回答方式を選択してください。"
+                        >
+                            <Select
+                                value={defaultMode}
+                                onChange={(e) => setDefaultMode(e.target.value as any)}
+                            >
+                                <option value="omakase">おまかせ (AI搭載自動判定)</option>
+                                <option value="text">テキスト入力</option>
+                                <option value="fourChoice">4択</option>
+                                <option value="chips">文字チップ</option>
+                            </Select>
+                        </FormField>
                     </Stack>
 
                     {error && (

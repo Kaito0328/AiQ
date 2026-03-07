@@ -4,13 +4,15 @@ import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Container } from '@/src/design/primitives/Container';
 import { Stack } from '@/src/design/primitives/Stack';
+import { Flex } from '@/src/design/primitives/Flex';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
 import { Text } from '@/src/design/baseComponents/Text';
 import { UserHeader } from '@/src/features/users/components/UserHeader';
 import { UserContentTabs } from '@/src/features/users/components/UserContentTabs';
 import { useProfile } from '@/src/features/users/hooks/useProfile';
-import { Plus } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
+import { cn } from '@/src/shared/utils/cn';
 
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
@@ -44,6 +46,7 @@ export default function UserPage() {
 
     const [targetCollectionId, setTargetCollectionId] = useState<string | null>(null);
     const [isAddToSetModalOpen, setIsAddToSetModalOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     const isOwnProfile = !!(user && user.id === userId);
 
@@ -131,17 +134,41 @@ export default function UserPage() {
                         onAddToSet={handleOpenAddToSet} // Available for all collections
                         onDeleteSet={isOwnProfile ? handleDeleteSet : undefined}
                         onEditSet={isOwnProfile ? handleEditSet : undefined}
-                        collectionActions={isOwnProfile && (
-                            <Button
-                                size="md"
-                                variant="outline"
-                                className="gap-1.5"
-                                onClick={() => setShowCreateForm(true)}
-                            >
-                                <Plus size={18} />
-                                新規作成
-                            </Button>
-                        )}
+                        collectionActions={
+                            <Flex gap="xs" align="center">
+                                {isOwnProfile && (
+                                    <Button
+                                        size="md"
+                                        variant="outline"
+                                        className="gap-1.5"
+                                        onClick={() => setShowCreateForm(true)}
+                                    >
+                                        <Plus size={18} />
+                                        新規作成
+                                    </Button>
+                                )}
+                                <Flex gap="xs" className="bg-surface-muted p-1 rounded-lg ml-2">
+                                    <Button
+                                        size="sm"
+                                        variant={viewMode === 'grid' ? 'solid' : 'ghost'}
+                                        className="p-1.5 h-auto"
+                                        onClick={() => setViewMode('grid')}
+                                        title="グリッド表示"
+                                    >
+                                        <LayoutGrid size={16} className="opacity-60" />
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant={viewMode === 'list' ? 'solid' : 'ghost'}
+                                        className="p-1.5 h-auto"
+                                        onClick={() => setViewMode('list')}
+                                        title="リスト表示"
+                                    >
+                                        <List size={16} className="opacity-60" />
+                                    </Button>
+                                </Flex>
+                            </Flex>
+                        }
                         setActions={isOwnProfile && (
                             <Button
                                 size="md"
@@ -154,6 +181,7 @@ export default function UserPage() {
                             </Button>
                         )}
                         hideExtras={false} // Show extras on user profile
+                        displayMode={viewMode}
                     />
                 </Stack>
             </Container>

@@ -1,4 +1,5 @@
 use crate::models::question::Question;
+use crate::dtos::quiz_dto::{FilterNode, FilterCondition};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -10,14 +11,26 @@ impl QuestionRepository {
         collection_id: Uuid,
         question_text: String,
         correct_answers: Vec<String>,
+        answer_rubis: Vec<String>,
+        distractors: Vec<String>,
+        preferred_mode: String,
+        recommended_mode: String,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
-        let question = sqlx::query_file_as!(
+        let question = sqlx::query_as!(
             Question,
-            "src/queries/questions/insert_question.sql",
+            r#"
+            INSERT INTO questions (id, collection_id, question_text, correct_answers, answer_rubis, distractors, preferred_mode, recommended_mode, description_text, created_at, updated_at)
+            VALUES (gen_random_uuid(), $1::uuid, $2::text, $3::text[], $4::text[], $5::text[], $6::text, $7::text, $8::text, NOW(), NOW())
+            RETURNING id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            "#,
             collection_id,
             question_text,
             &correct_answers,
+            &answer_rubis,
+            &distractors,
+            preferred_mode,
+            recommended_mode,
             description_text
         )
         .fetch_one(pool)
@@ -27,9 +40,13 @@ impl QuestionRepository {
     }
 
     pub async fn find_by_id(pool: &PgPool, question_id: Uuid) -> Result<Question, sqlx::Error> {
-        let question = sqlx::query_file_as!(
+        let question = sqlx::query_as!(
             Question,
-            "src/queries/questions/find_by_id.sql",
+            r#"
+            SELECT id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            FROM questions
+            WHERE id = $1::uuid
+            "#,
             question_id
         )
         .fetch_one(pool)
@@ -42,9 +59,14 @@ impl QuestionRepository {
         pool: &PgPool,
         collection_id: Uuid,
     ) -> Result<Vec<Question>, sqlx::Error> {
-        let questions = sqlx::query_file_as!(
+        let questions = sqlx::query_as!(
             Question,
-            "src/queries/questions/find_by_collection_id.sql",
+            r#"
+            SELECT id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            FROM questions
+            WHERE collection_id = $1::uuid
+            ORDER BY created_at ASC, id ASC
+            "#,
             collection_id
         )
         .fetch_all(pool)
@@ -58,13 +80,33 @@ impl QuestionRepository {
         question_id: Uuid,
         question_text: String,
         correct_answers: Vec<String>,
+        answer_rubis: Vec<String>,
+        distractors: Vec<String>,
+        preferred_mode: String,
+        recommended_mode: String,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
-        let question = sqlx::query_file_as!(
+        let question = sqlx::query_as!(
             Question,
-            "src/queries/questions/update_question.sql",
+            r#"
+            UPDATE questions SET
+                question_text = $1::text,
+                correct_answers = $2::text[],
+                answer_rubis = $3::text[],
+                distractors = $4::text[],
+                preferred_mode = $5::text,
+                recommended_mode = $6::text,
+                description_text = $7::text,
+                updated_at = NOW()
+            WHERE id = $8::uuid
+            RETURNING id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            "#,
             question_text,
             &correct_answers,
+            &answer_rubis,
+            &distractors,
+            preferred_mode,
+            recommended_mode,
             description_text,
             question_id
         )
@@ -75,7 +117,7 @@ impl QuestionRepository {
     }
 
     pub async fn delete(pool: &PgPool, question_id: Uuid) -> Result<bool, sqlx::Error> {
-        let result = sqlx::query_file!("src/queries/questions/delete_question.sql", question_id)
+        let result = sqlx::query!("DELETE FROM questions WHERE id = $1::uuid", question_id)
             .execute(pool)
             .await?;
 
@@ -87,81 +129,191 @@ impl QuestionRepository {
         collection_id: Uuid,
         items: Vec<crate::dtos::question_dto::UpsertQuestionItem>,
     ) -> Result<Vec<Question>, sqlx::Error> {
-        if items.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        let mut ids = Vec::new();
-        let mut coll_ids = Vec::new();
-        let mut texts: Vec<Option<String>> = Vec::new();
-        let mut answers: Vec<Option<String>> = Vec::new();
-        let mut descriptions: Vec<Option<String>> = Vec::new();
+        let mut results = Vec::new();
 
         for item in items {
-            let is_new = item.id.is_none();
-            ids.push(item.id.unwrap_or_else(Uuid::new_v4));
-            coll_ids.push(collection_id);
+            let id = item.id.unwrap_or_else(Uuid::new_v4);
+            let question_text = item
+                .question_text
+                .unwrap_or_else(|| "新しい問題".to_string());
+            let correct_answers: Vec<String> = item.correct_answers.unwrap_or_default();
+            let answer_rubis: Vec<String> = item.answer_rubis.unwrap_or_default();
+            let distractors: Vec<String> = item.distractors.unwrap_or_default();
 
-            texts.push(item.question_text.or_else(|| {
-                if is_new {
-                    Some("新しい問題".to_string())
-                } else {
-                    None
-                }
-            }));
-            answers.push(item.correct_answers.map(|v| v.join(";")).or_else(|| {
-                if is_new {
-                    Some("".to_string())
-                } else {
-                    None
-                }
-            }));
-            descriptions.push(item.description_text);
+            let row = sqlx::query_file_as!(
+                Question,
+                "src/queries/questions/upsert_question.sql",
+                id,
+                collection_id,
+                question_text,
+                &correct_answers as &[String],
+                &answer_rubis as &[String],
+                &distractors as &[String],
+                item.preferred_mode.unwrap_or_else(|| "default".to_string()),
+                item.recommended_mode
+                    .unwrap_or_else(|| "recall".to_string()),
+                item.description_text
+            )
+            .fetch_one(pool)
+            .await?;
+
+            results.push(row);
         }
-
-        let results = sqlx::query_as!(
-            Question,
-            r#"
-            INSERT INTO questions (id, collection_id, question_text, correct_answers, description_text)
-            SELECT u.id, u.collection_id, u.question_text, 
-                   CASE WHEN u.correct_answers_raw IS NULL THEN NULL ELSE string_to_array(u.correct_answers_raw, ';') END as correct_answers, 
-                   u.description_text
-            FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::text[]) 
-            AS u(id, collection_id, question_text, correct_answers_raw, description_text)
-            ON CONFLICT (id) DO UPDATE SET
-                question_text = COALESCE(EXCLUDED.question_text, questions.question_text),
-                correct_answers = COALESCE(EXCLUDED.correct_answers, questions.correct_answers),
-                description_text = COALESCE(EXCLUDED.description_text, questions.description_text),
-                updated_at = NOW()
-            RETURNING id, collection_id, question_text, correct_answers, description_text, created_at, updated_at
-            "#,
-            &ids,
-            &coll_ids,
-            &texts as &[Option<String>],
-            &answers as &[Option<String>],
-            &descriptions as &[Option<String>]
-        )
-        .fetch_all(pool)
-        .await?;
 
         Ok(results)
     }
 
-    pub async fn batch_delete(
-        pool: &PgPool,
-        question_ids: Vec<Uuid>,
-    ) -> Result<u64, sqlx::Error> {
+    pub async fn batch_delete(pool: &PgPool, question_ids: Vec<Uuid>) -> Result<u64, sqlx::Error> {
         if question_ids.is_empty() {
             return Ok(0);
         }
 
-        let result = sqlx::query!(
-            "DELETE FROM questions WHERE id = ANY($1)",
+        let result = sqlx::query_file!(
+            "src/queries/questions/delete_questions_by_ids.sql",
             &question_ids
         )
         .execute(pool)
         .await?;
 
         Ok(result.rows_affected())
+    }
+
+    pub async fn find_filtered_questions(
+        pool: &PgPool,
+        collection_ids: &[Uuid],
+        user_id_opt: Option<Uuid>,
+        filter_node: Option<&FilterNode>,
+        sorts: &[crate::dtos::quiz_dto::SortCondition],
+    ) -> Result<Vec<Question>, sqlx::Error> {
+        eprintln!("[DEBUG] find_filtered_questions: collections={:?}, user={:?}, sorts={:?}", collection_ids, user_id_opt, sorts);
+        if collection_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut builder = sqlx::QueryBuilder::new(
+            r#"
+            SELECT q.id, q.collection_id, q.question_text, 
+                   q.correct_answers, 
+                   q.answer_rubis, 
+                   q.distractors, 
+                   q.preferred_mode, q.recommended_mode, q.description_text, 
+                   q.created_at, q.updated_at
+            FROM questions q
+            "#,
+        );
+
+        // We always need user_question_stats if there's a filter OR if there's a sort that requires stats
+        let needs_stats = filter_node.is_some() || sorts.iter().any(|s| s.key == "WRONG" || s.key == "ACCURACY");
+        
+        if user_id_opt.is_some() && needs_stats {
+            builder.push(" LEFT JOIN user_question_stats uqs ON q.id = uqs.question_id AND uqs.user_id = ");
+            builder.push_bind(user_id_opt.unwrap());
+        }
+
+        builder.push(" WHERE q.collection_id = ANY(");
+        builder.push_bind(collection_ids);
+        builder.push(") ");
+
+        if let (Some(_), Some(node)) = (user_id_opt, filter_node) {
+            builder.push(" AND (");
+            Self::build_filter_sql(&mut builder, node);
+            builder.push(") ");
+        }
+
+        // --- SORTS ---
+        if !sorts.is_empty() {
+            let mut order_clauses = Vec::new();
+
+            for sort in sorts {
+                let dir = if sort.direction.as_deref() == Some("DESC") { "DESC" } else { "ASC" };
+                match sort.key.as_str() {
+                    "WRONG" => {
+                        // Sort by wrong_count. COALESCE to treat null (no record) as 0.
+                        let clause = format!("COALESCE(uqs.wrong_count, 0) {}", dir);
+                        order_clauses.push(clause);
+                    }
+                    "ACCURACY" => {
+                        // Accuracy = correct_count / (correct_count + wrong_count).
+                        // If no attempts (division by 0), treat as 0 accuracy.
+                        let clause = format!(
+                            "CASE 
+                                WHEN COALESCE(uqs.correct_count, 0) + COALESCE(uqs.wrong_count, 0) = 0 THEN 0.0 
+                                ELSE CAST(COALESCE(uqs.correct_count, 0) AS FLOAT) / (COALESCE(uqs.correct_count, 0) + COALESCE(uqs.wrong_count, 0)) 
+                            END {}", dir
+                        );
+                        order_clauses.push(clause);
+                    }
+                    "ID" => {
+                        let clause = format!("q.id {}", dir);
+                        order_clauses.push(clause);
+                    }
+                    "RANDOM" => {
+                        order_clauses.push("RANDOM()".to_string());
+                    }
+                    _ => {}
+                }
+            }
+
+            if !order_clauses.is_empty() {
+                builder.push(" ORDER BY ");
+                builder.push(order_clauses.join(", "));
+            }
+        }
+
+        let sql = builder.sql();
+        eprintln!("[DEBUG] Executing SQL: {}", sql);
+        eprintln!("[DEBUG] BINDING collection_ids: {:?}", collection_ids);
+        
+        let query = builder.build_query_as::<Question>();
+        query.fetch_all(pool).await
+    }
+
+    fn build_filter_sql(builder: &mut sqlx::QueryBuilder<'_, sqlx::Postgres>, node: &FilterNode) {
+        match node {
+            FilterNode::And { conditions } => {
+                if conditions.is_empty() {
+                    builder.push(" true ");
+                    return;
+                }
+                builder.push("(");
+                for (i, cond) in conditions.iter().enumerate() {
+                    if i > 0 {
+                        builder.push(" AND ");
+                    }
+                    Self::build_filter_sql(builder, cond);
+                }
+                builder.push(")");
+            }
+            FilterNode::Or { conditions } => {
+                if conditions.is_empty() {
+                    builder.push(" false ");
+                    return;
+                }
+                builder.push("(");
+                for (i, cond) in conditions.iter().enumerate() {
+                    if i > 0 {
+                        builder.push(" OR ");
+                    }
+                    Self::build_filter_sql(builder, cond);
+                }
+                builder.push(")");
+            }
+            FilterNode::Condition { condition } => match condition.filter_type.as_str() {
+                "NOT_SOLVED" => {
+                    builder.push(" (uqs.correct_count IS NULL OR uqs.correct_count = 0) ");
+                }
+                "NOT_LEARNED" => {
+                    builder.push(" (uqs.correct_count IS NULL AND uqs.wrong_count IS NULL) ");
+                }
+                "WRONG_COUNT" => {
+                    let val = condition.value.unwrap_or(0);
+                    builder.push(" COALESCE(uqs.wrong_count, 0) >= ");
+                    builder.push_bind(val);
+                }
+                _ => {
+                    builder.push(" true ");
+                }
+            },
+        }
     }
 }

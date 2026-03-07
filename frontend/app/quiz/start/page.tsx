@@ -10,12 +10,13 @@ import { CollectionBrowser } from '@/src/features/collections/components/Collect
 import { FixedSelectionTray } from '@/src/features/collections/components/FixedSelectionTray';
 import { startCasualQuiz } from '@/src/features/quiz/api';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
-import { FilterCondition, SortCondition } from '@/src/entities/quiz';
+import { FilterCondition, SortCondition, QuizMode, FilterType, SortKey, FilterNode } from '@/src/entities/quiz';
 import { QuizOptionsModal } from '@/src/features/quiz/components/QuizOptionsModal';
-import { Card } from '@/src/design/baseComponents/Card';
 import { Flex } from '@/src/design/primitives/Flex';
-import { Library } from 'lucide-react';
+import { Library, ChevronLeft } from 'lucide-react';
+import { Button } from '@/src/design/baseComponents/Button';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
+import { useAiqScorer } from '@/src/features/quiz/hooks/useAiqScorer';
 
 export default function QuizStartPage() {
     const router = useRouter();
@@ -23,15 +24,19 @@ export default function QuizStartPage() {
     const [isLoading, setIsLoading] = useState(false);
 
     // Quiz options state
-    const [filters, setFilters] = useState<FilterCondition[]>([]);
-    const [sorts, setSortCondition] = useState<SortCondition[]>([]);
-    const [limit, setLimit] = useState(0);
+    const [filterNode, setFilterNode] = useState<FilterNode | undefined>(undefined);
+    const [sorts, setSorts] = useState<SortCondition[]>([{ key: SortKey.RANDOM }]);
+    const [limit, setLimit] = useState(30);
     const [isManualLimit, setIsManualLimit] = useState(false);
+    const [preferredMode, setPreferredMode] = useState<QuizMode>('text');
+    const [dummyCharCount, setDummyCharCount] = useState(6);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     // Add to set state
     const [targetCollectionId, setTargetCollectionId] = useState<string | null>(null);
     const [isAddToSetModalOpen, setIsAddToSetModalOpen] = useState(false);
+
+    const scorer = useAiqScorer();
 
     const totalQuestions = selectedCollections.reduce((sum, c) => sum + (c.questionCount || 0), 0);
 
@@ -67,12 +72,22 @@ export default function QuizStartPage() {
 
         setIsLoading(true);
         try {
-            const resp = await startCasualQuiz({
-                collectionIds: selectedCollections.map(c => c.id),
-                filters,
-                sorts,
-                limit
-            });
+            // If fuzzy mode: start model download concurrently with the API call
+            const maybeLoadModel = preferredMode === 'fuzzy' && !scorer.isReady
+                ? scorer.load()
+                : Promise.resolve();
+
+            const [resp] = await Promise.all([
+                startCasualQuiz({
+                    collectionIds: selectedCollections.map(c => c.id),
+                    filterNode,
+                    sorts,
+                    limit,
+                    preferredMode,
+                    dummyCharCount
+                }),
+                maybeLoadModel,
+            ]);
             if (typeof window !== 'undefined') {
                 sessionStorage.setItem('quizData', JSON.stringify(resp));
             }
@@ -86,39 +101,53 @@ export default function QuizStartPage() {
     };
 
     return (
-        <View className="min-h-screen bg-surface-muted pb-40">
-            <BackButton />
-            <Container className="pt-20">
+        <View className="min-h-screen bg-surface-muted pb-72">
+            <Container className="pt-6 sm:pt-8 w-full max-w-4xl">
+                <Flex align="center" justify="between" className="mb-6">
+                    <Button
+                        variant="ghost"
+                        onClick={() => router.back()}
+                        className="gap-1 px-2 text-secondary hover:text-primary active:scale-95 transition-all"
+                    >
+                        <ChevronLeft size={20} strokeWidth={3} />
+                        <Text variant="body" weight="bold">戻る</Text>
+                    </Button>
+                </Flex>
+
                 <Stack gap="xl">
-                    <Stack gap="xs">
-                        <Text variant="h2" weight="bold">クイズをカスタマイズ</Text>
-                        <Text color="secondary">好きな問題集をいくつか選んで、自分だけのクイズセットを作成しましょう</Text>
-                    </Stack>
+                    <Stack gap="lg" className="px-1">
+                        <Flex gap="md" align="center" className="mb-2">
+                            <Library className="text-brand-primary" size={28} />
+                            <Text variant="h3" weight="bold">問題集を選択</Text>
+                        </Flex>
 
-                    <Stack gap="lg">
-                        {/* セレクター */}
-                        <Card padding="none" className="border border-surface-muted shadow-xl overflow-hidden bg-surface-base">
-                            <View className="p-6 border-b border-surface-muted bg-surface-muted/10">
-                                <Flex gap="md" align="center">
-                                    <Library className="text-brand-primary" size={24} />
-                                    <Stack gap="none">
-                                        <Text variant="h4" weight="bold">問題集を選択</Text>
-                                        <Text variant="xs" color="secondary">公式、自分、または他のユーザーの問題集を検索できます</Text>
-                                    </Stack>
-                                </Flex>
-                            </View>
-
-                            <View className="p-6 min-h-[500px]">
-                                <CollectionBrowser
-                                    selectedIds={selectedCollections.map(c => c.id)}
-                                    onToggleCollection={handleToggleCollection}
-                                    onAddToSet={handleOpenAddToSet}
-                                />
-                            </View>
-                        </Card>
+                        <CollectionBrowser
+                            selectedIds={selectedCollections.map(c => c.id)}
+                            onToggleCollection={handleToggleCollection}
+                            onAddToSet={handleOpenAddToSet}
+                        />
                     </Stack>
                 </Stack>
             </Container>
+
+            {/* Fuzzy mode: AI model loading banner */}
+            {preferredMode === 'fuzzy' && scorer.isLoading && (
+                <View className="fixed bottom-28 left-0 right-0 z-40 flex justify-center px-4">
+                    <View className="flex items-center gap-3 bg-surface-base border border-brand-primary/30 rounded-xl px-5 py-3 shadow-lg max-w-sm w-full">
+                        <View className="w-5 h-5 border-2 border-brand-primary border-t-transparent rounded-full animate-spin shrink-0" />
+                        <Stack gap="none" className="flex-1">
+                            <Text variant="xs" weight="bold">AIモデルをロード中...</Text>
+                            <View className="mt-1 h-1.5 w-full bg-surface-muted rounded-full overflow-hidden">
+                                <View
+                                    className="h-full bg-brand-primary rounded-full transition-all duration-300"
+                                    style={{ width: `${scorer.progress}%` }}
+                                />
+                            </View>
+                        </Stack>
+                        <Text variant="xs" color="secondary" className="font-mono shrink-0">{scorer.progress}%</Text>
+                    </View>
+                </View>
+            )}
 
             {/* 下部固定トレイ */}
             <FixedSelectionTray
@@ -132,21 +161,28 @@ export default function QuizStartPage() {
                 startLabel="クイズを開始"
                 isLoading={isLoading}
                 limit={limit}
+                maxLimit={totalQuestions > 0 ? totalQuestions : 0}
+                onLimitChange={handleLimitChange}
             />
 
             {/* 設定モーダル */}
             <QuizOptionsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
-                filters={filters}
+                filterNode={filterNode}
                 sorts={sorts}
                 limit={limit}
                 maxLimit={totalQuestions > 0 ? totalQuestions : 0}
                 isLoading={isLoading}
-                onFilterChange={setFilters}
-                onSortChange={setSortCondition}
+                onFilterNodeChange={setFilterNode}
+                onSortChange={setSorts}
                 onLimitChange={handleLimitChange}
+                preferredMode={preferredMode}
+                onModeChange={setPreferredMode}
+                dummyCharCount={dummyCharCount}
+                onDummyCountChange={setDummyCharCount}
                 onStart={handleStartQuiz}
+                hideLimit={true}
             />
 
             {/* セットに追加モーダル */}
