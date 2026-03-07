@@ -598,7 +598,7 @@ export function BattleQuiz({
                         if (hasExhaustedRights) {
                             return (
                                 <View className="w-full max-w-xl flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2">
-                                    <Flex wrap="wrap" justify="center" gap="md" className="px-4">
+                                    <Flex wrap justify="center" gap="md" className="px-4">
                                         {buzzerQueue
                                             .filter(uid => uid.toLowerCase() !== selfId?.toLowerCase())
                                             .map((uid) => {

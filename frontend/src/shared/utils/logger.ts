@@ -1,4 +1,3 @@
-import { logger } from '@/src/shared/utils/logger';
 /**
  * ログ出力を本番環境で制御するためのユーティリティ
  */
@@ -11,7 +10,7 @@ export const logger = {
      */
     log: (...args: any[]) => {
         if (!isProduction) {
-            logger.log(...args);
+            console.log(...args);
         }
     },
 
@@ -20,7 +19,7 @@ export const logger = {
      */
     info: (...args: any[]) => {
         if (!isProduction) {
-            logger.info(...args);
+            console.info(...args);
         }
     },
 
@@ -29,7 +28,7 @@ export const logger = {
      */
     warn: (...args: any[]) => {
         if (!isProduction) {
-            logger.warn(...args);
+            console.warn(...args);
         }
     },
 
@@ -37,7 +36,7 @@ export const logger = {
      * エラーログ（本番環境でも出力に含めるが、将来的に外部サービス送信などに拡張可能）
      */
     error: (...args: any[]) => {
-        logger.error(...args);
+        console.error(...args);
     },
 
     /**
@@ -45,7 +44,7 @@ export const logger = {
      */
     debug: (...args: any[]) => {
         if (!isProduction) {
-            logger.debug(...args);
+            console.debug(...args);
         }
     }
 };
