@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import { useRef, useState, useCallback } from 'react';
 
@@ -111,7 +112,7 @@ export function useAiqScorer() {
                 setProgress(100);
             }
         } catch (err) {
-            console.error('[AiqScorer] Failed to load model:', err);
+            logger.error('[AiqScorer] Failed to load model:', err);
             _loadPromise = null;
         } finally {
             if (!abortRef.current) setIsLoading(false);

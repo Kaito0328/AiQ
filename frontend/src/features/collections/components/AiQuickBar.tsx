@@ -30,9 +30,10 @@ import { cn } from '@/src/shared/utils/cn';
 interface AiQuickBarProps {
     collectionId: string;
     onSuccess: () => void;
+    onOpenAdvanced?: (prompt: string, count: number) => void;
 }
 
-export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
+export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickBarProps) {
     const [prompt, setPrompt] = useState('');
     const [count, setCount] = useState(5);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -179,7 +180,13 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => setIsAdvancedOpen(!isAdvancedOpen)}
+                                onClick={() => {
+                                    if (window.innerWidth < 640 && onOpenAdvanced) {
+                                        onOpenAdvanced(prompt, count);
+                                    } else {
+                                        setIsAdvancedOpen(!isAdvancedOpen);
+                                    }
+                                }}
                                 className={cn(
                                     "gap-1.5 h-8 px-2 rounded-lg transition-colors",
                                     isAdvancedOpen ? "bg-brand-primary/10 text-brand-primary" : "text-foreground/60 hover:text-brand-primary"
@@ -187,16 +194,19 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                             >
                                 <Settings size={14} />
                                 <Text variant="xs" weight="bold">詳細設定・PDF</Text>
-                                {isAdvancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                {/* Only show chevron on desktop where it toggles inline content */}
+                                <View className="hidden sm:block">
+                                    {isAdvancedOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                </View>
                             </Button>
 
-                            {/* Question Count (Desktop only) */}
-                            <Flex gap="sm" align="center" className="hidden sm:flex ml-2 pl-4 border-l border-brand-primary/10">
-                                <Text variant="xs" color="secondary" weight="medium" className="shrink-0">問題数:</Text>
-                                <View className="w-32 md:w-40">
+                            {/* Question Count (Always visible, responsive layout) */}
+                            <Flex gap="sm" align="center" className="ml-2 pl-4 border-l border-brand-primary/10 min-w-0 flex-1 sm:flex-initial">
+                                <Text variant="xs" color="secondary" weight="medium" className="shrink-0 hidden xs:inline">問題数:</Text>
+                                <View className="flex-1 min-w-[60px] max-w-[120px] sm:w-32 md:w-40">
                                     <Range
                                         min={1}
-                                        max={100}
+                                        max={50}
                                         value={count}
                                         onChange={(e) => setCount(parseInt(e.target.value))}
                                         disabled={isProcessing}
@@ -206,11 +216,11 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                                 <Input
                                     type="number"
                                     min={1}
-                                    max={100}
+                                    max={50}
                                     value={count}
-                                    onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                                    onChange={(e) => setCount(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
                                     disabled={isProcessing}
-                                    className="w-14 h-7 text-center text-xs px-1 border-brand-primary/10"
+                                    className="w-12 sm:w-14 h-7 text-center text-xs px-1 border-brand-primary/10 bg-surface-card"
                                 />
                             </Flex>
 
@@ -268,28 +278,7 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                                         </Button>
                                     </Stack>
 
-                                    <Stack gap="xs" className="flex-1">
-                                        <Text variant="xs" weight="bold" color="secondary">生成する問題数</Text>
-                                        <Flex gap="md" align="center" className="h-10">
-                                            <Range
-                                                min={1}
-                                                max={100}
-                                                value={count}
-                                                onChange={(e) => setCount(parseInt(e.target.value))}
-                                                disabled={isProcessing}
-                                                className="flex-1"
-                                            />
-                                            <Input
-                                                type="number"
-                                                min={1}
-                                                max={100}
-                                                value={count}
-                                                onChange={(e) => setCount(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                                                disabled={isProcessing}
-                                                className="w-16 h-9 text-center text-sm border-brand-primary/10"
-                                            />
-                                        </Flex>
-                                    </Stack>
+                                    <View className="flex-1 hidden sm:block" /> {/* Spacer */}
                                 </Flex>
 
                                 <Flex gap="lg" className="flex-col sm:flex-row">

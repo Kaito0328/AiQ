@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { Container } from '@/src/design/primitives/Container';
@@ -28,7 +29,7 @@ export default function BattleLobbyPage() {
             setRooms(data);
             setError(null);
         } catch (err: unknown) {
-            console.error('Failed to fetch rooms', err);
+            logger.error('Failed to fetch rooms', err);
             setError('ルーム一覧の取得に失敗しました。時間を置いて再度お試しください。');
         } finally {
             setLoading(false);

@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { View } from '@/src/design/primitives/View';
@@ -45,7 +46,7 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
                 });
                 setAllUsers(users);
             } catch (err) {
-                console.error('ユーザー一覧の取得に失敗しました', err);
+                logger.error('ユーザー一覧の取得に失敗しました', err);
             } finally {
                 setLoadingAll(false);
             }
@@ -72,7 +73,7 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
                 setFollowers(f1);
                 setFollowees(f2);
             } catch (err) {
-                console.error('フォローデータの取得に失敗しました', err);
+                logger.error('フォローデータの取得に失敗しました', err);
             } finally {
                 setLoadingFollowers(false);
                 setLoadingFollowees(false);

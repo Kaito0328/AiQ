@@ -11,6 +11,14 @@ use tower_http::cors::{Any, CorsLayer};
 async fn main() {
     dotenv().ok();
 
+    // Initialize tracing
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "backend=info,tower_http=info".into()),
+        )
+        .init();
+
     // Initialize centralized application configuration
     backend::config::init();
 
@@ -56,6 +64,6 @@ async fn main() {
     let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
     let addr = format!("0.0.0.0:{}", port);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
-    println!("Server started on {}", addr);
+    tracing::info!("Server started on {}", addr);
     axum::serve(listener, router).await.unwrap();
 }

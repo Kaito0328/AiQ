@@ -123,6 +123,7 @@ async fn handle_socket(
                     questions: None,
                     current_question_index: None,
                     round_sequence: None,
+                    active_buzzers: None,
                 };
                 let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
             }
@@ -140,14 +141,15 @@ async fn handle_socket(
                 .collect();
 
             // Support late-join synchronization
-            let (questions, current_question_index, round_sequence) = if room.status == crate::state::match_state::RoomStatus::Playing {
+            let (questions, current_question_index, round_sequence, active_buzzers) = if room.status == crate::state::match_state::RoomStatus::Playing {
                 (
                     Some(room.questions.iter().map(|q| crate::dtos::match_dto::MatchQuestionDto::from(q.clone())).collect()),
                     Some(room.current_question_index),
-                    Some(room.round_sequence)
+                    Some(room.round_sequence),
+                    Some(room.active_buzzers.clone())
                 )
             } else {
-                (None, None, None)
+                (None, None, None, None)
             };
 
             let msg = WsServerMessage::RoomStateUpdate {
@@ -162,6 +164,7 @@ async fn handle_socket(
                 questions,
                 current_question_index,
                 round_sequence,
+                active_buzzers,
             };
             let _ = sender
                 .send(Message::Text(serde_json::to_string(&msg).unwrap().into()))
@@ -194,18 +197,18 @@ async fn handle_socket(
     let app_state = state.clone();
     let mut tx_task = tokio::spawn(async move {
         while let Some(Ok(Message::Text(text))) = receiver.next().await {
-            eprintln!("[DEBUG] Received WS message: {}", text);
+            tracing::debug!("Received WS message: {}", text);
             match serde_json::from_str::<WsClientMessage>(&text) {
                 Ok(client_msg) => {
-                    eprintln!("[DEBUG] Parsed client message: {:?}", client_msg);
+                    tracing::debug!("Parsed client message: {:?}", client_msg);
                     crate::services::match_ws_service::MatchWsService::handle_ws_message(
                         &app_state, room_id, user_id, client_msg,
                     )
                     .await;
                 }
                 Err(e) => {
-                    eprintln!(
-                        "[DEBUG] Failed to parse client message: {} | error: {}",
+                    tracing::error!(
+                        "Failed to parse client message: {} | error: {}",
                         text, e
                     );
                 }
@@ -223,7 +226,7 @@ async fn handle_socket(
         let mut rooms = state.match_state.write().await;
         if let Some(room) = rooms.get_mut(&room_id) {
             room.players.remove(&user_id);
-            eprintln!("[DEBUG] Player {} left room {}. Remaining: {}", user_id, room_id, room.players.len());
+            tracing::debug!("Player {} left room {}. Remaining: {}", user_id, room_id, room.players.len());
 
             if room.players.is_empty() {
                 let now = std::time::SystemTime::now()
@@ -231,7 +234,7 @@ async fn handle_socket(
                     .unwrap()
                     .as_millis() as u64;
                 room.empty_since = Some(now);
-                eprintln!("[DEBUG] Room {} is now empty. Marked for deletion.", room_id);
+                tracing::debug!("Room {} is now empty. Marked for deletion.", room_id);
             } else {
                 // Notify other players
                 let players: Vec<PlayerScoreDto> = room
@@ -257,6 +260,7 @@ async fn handle_socket(
                     questions: None,
                     current_question_index: None,
                     round_sequence: None,
+                    active_buzzers: None,
                 };
                 let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
             }

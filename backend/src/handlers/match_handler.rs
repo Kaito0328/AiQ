@@ -28,7 +28,7 @@ pub async fn create_room(
     claims: Claims,
     Json(req): Json<CreateMatchRoomRequest>,
 ) -> Result<Json<crate::dtos::match_dto::CreateMatchRoomResponse>, AppError> {
-    eprintln!("[DEBUG] create_room: req.visibility = {:?}", req.visibility);
+    tracing::debug!("create_room: req.visibility = {:?}", req.visibility);
     let result = MatchService::create_room(&state.db, &state.match_state, claims.sub, req).await?;
     Ok(Json(result))
 }

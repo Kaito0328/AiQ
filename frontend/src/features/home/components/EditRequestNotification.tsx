@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { getMyPendingRequests } from '@/src/features/questions/api';
@@ -28,7 +29,7 @@ export function EditRequestNotification() {
                 const data = await getMyPendingRequests();
                 setRequests(data);
             } catch (err) {
-                console.error('Failed to fetch pending requests', err);
+                logger.error('Failed to fetch pending requests', err);
             } finally {
                 setLoading(false);
             }

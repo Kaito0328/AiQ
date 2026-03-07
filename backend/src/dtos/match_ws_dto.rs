@@ -69,6 +69,8 @@ pub enum WsServerMessage {
         current_question_index: Option<usize>,
         #[serde(skip_serializing_if = "Option::is_none")]
         round_sequence: Option<i32>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        active_buzzers: Option<std::collections::HashMap<Uuid, u64>>,
     },
     MatchStarted {
         questions: Vec<MatchQuestionDto>,
@@ -83,16 +85,16 @@ pub enum WsServerMessage {
         expires_at_ms: u64,
     },
     PlayerBuzzed {
-        user_id: Uuid,
-        expires_at_ms: u64,
+        user_id: Uuid, // The user who just buzzed
         buzzed_user_ids: Vec<Uuid>,
         submitted_user_ids: Vec<Uuid>,
         buzzer_queue: Vec<Uuid>,
+        active_buzzers: std::collections::HashMap<Uuid, u64>, // user_id -> expires_at_ms
     },
     PartialAnswerUpdate {
         user_id: Uuid,
         answer: String,
-        expires_at_ms: u64,
+        active_buzzers: std::collections::HashMap<Uuid, u64>, // Included to sync individual timers
     },
     AnswerResult {
         user_id: Uuid,

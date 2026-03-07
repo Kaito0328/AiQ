@@ -39,7 +39,8 @@ function BattlePageContent() {
         maxBuzzes,
         config,
         selfId,
-        partialAnswer,
+        partialAnswers,
+        activeBuzzers,
         roundSummaries,
         error,
         isConnected,
@@ -87,7 +88,10 @@ function BattlePageContent() {
         );
     }
 
-    const isHost = user?.id === room.host_id;
+    const isHost = React.useMemo(() => {
+        if (!user || !room) return false;
+        return user.id.toLowerCase() === room.host_id.toLowerCase();
+    }, [user, room]);
 
     return (
         <div className="h-[100dvh] overflow-hidden bg-surface-muted/30 flex flex-col">
@@ -141,7 +145,8 @@ function BattlePageContent() {
                         onBuzz={buzz}
                         onSubmit={submitAnswer}
                         onPartialSubmit={submitPartialAnswer}
-                        partialAnswer={partialAnswer}
+                        partialAnswers={partialAnswers}
+                        activeBuzzers={activeBuzzers}
                         expiresAtMs={expiresAtMs}
                         answerResult={answerResult}
                         currentQuestionIndex={currentQuestionIndex}

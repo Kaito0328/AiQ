@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -84,7 +85,7 @@ export function CollectionCard({
                 setFavCount(prev => prev + 1);
             }
         } catch (err) {
-            console.error('お気に入り操作に失敗しました', err);
+            logger.error('お気に入り操作に失敗しました', err);
         }
     };
 

@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -10,10 +11,10 @@ import { Badge } from '@/src/design/baseComponents/Badge';
 import { View } from '@/src/design/primitives/View';
 import { Collection } from '@/src/entities/collection';
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { Heart, Edit, Globe, Lock, BookOpen } from 'lucide-react';
+import { Heart, Edit, Globe, Lock, Unlock, BookOpen, Trophy } from 'lucide-react';
 import { addFavorite, removeFavorite } from '@/src/features/favorites/api';
 import { cn } from '@/src/shared/utils/cn';
-import { MoreVertical, Sparkles, FileText, Download, FileUp } from 'lucide-react';
+import { MoreVertical, Sparkles, FileText, Download, FileUp, Play } from 'lucide-react';
 import { CsvImportModal } from './CsvImportModal';
 import { AiGenerationModal } from './AiGenerationModal';
 import { PdfGenerationModal } from './PdfGenerationModal';
@@ -27,6 +28,7 @@ interface CollectionHeaderProps {
     onEdit?: () => void;
     onImportCsv?: () => void;
     onExportCsv?: () => void;
+    onStartRankingQuiz?: () => void;
 }
 
 export function CollectionHeader({
@@ -35,7 +37,8 @@ export function CollectionHeader({
     questionCount,
     onEdit,
     onImportCsv,
-    onExportCsv
+    onExportCsv,
+    onStartRankingQuiz
 }: CollectionHeaderProps) {
     const { isAuthenticated } = useAuth();
     const { showToast } = useToast();
@@ -63,7 +66,7 @@ export function CollectionHeader({
                 setFavCount(prev => prev + 1);
             }
         } catch (err) {
-            console.error('お気に入り操作に失敗しました', err);
+            logger.error('お気に入り操作に失敗しました', err);
             showToast({ message: 'お気に入り操作に失敗しました', variant: 'danger' });
         } finally {
             setLoading(false);
@@ -82,7 +85,7 @@ export function CollectionHeader({
             document.body.removeChild(a);
             showToast({ message: 'CSVをエクスポートしました', variant: 'success' });
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             showToast({ message: 'エクスポートに失敗しました', variant: 'danger' });
         }
     };
@@ -100,17 +103,44 @@ export function CollectionHeader({
                             {collection.isOfficial && (
                                 <Badge variant="primary">Official</Badge>
                             )}
-                            <Badge variant="secondary">
-                                {collection.isOpen ? (
-                                    <Flex gap="xs" align="center"><Globe size={12} /> 公開</Flex>
-                                ) : (
-                                    <Flex gap="xs" align="center"><Lock size={12} /> 非公開</Flex>
-                                )}
-                            </Badge>
+                            {isOwner && (
+                                <View className={cn(
+                                    "p-1.5 rounded-full shadow-sm flex items-center justify-center border transition-colors",
+                                    collection.isOpen
+                                        ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
+                                        : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
+                                )} title={collection.isOpen ? "公開中" : "非公開"}>
+                                    {collection.isOpen ? (
+                                        <Unlock size={14} strokeWidth={2.5} />
+                                    ) : (
+                                        <Lock size={14} strokeWidth={2.5} />
+                                    )}
+                                </View>
+                            )}
+                            {collection.userRank && (
+                                <Badge variant="warning" className="border-amber-500/30 bg-amber-500/5 text-amber-700">
+                                    <Flex gap="xs" align="center">
+                                        <Trophy size={12} className="text-amber-500" />
+                                        現在の順位: {collection.userRank}位
+                                    </Flex>
+                                </Badge>
+                            )}
                         </Flex>
                     </Stack>
 
                     <Flex gap="sm" align="center">
+                        {onStartRankingQuiz && (
+                            <Button
+                                variant="outline"
+                                color="primary"
+                                size="sm"
+                                onClick={onStartRankingQuiz}
+                                className="p-2 h-auto shadow-sm rounded-full"
+                                title="ランキングクイズ"
+                            >
+                                <Trophy size={18} strokeWidth={2.5} />
+                            </Button>
+                        )}
                         {isOwner && onEdit && (
                             <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5">
                                 <Edit size={16} />

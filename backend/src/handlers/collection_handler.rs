@@ -30,7 +30,7 @@ pub async fn upload_csv(
         if field_name == Some("file") {
             let bytes_res = field.bytes().await;
             let bytes: axum::body::Bytes = bytes_res.map_err(|e| {
-                eprintln!("Multipart error: {:?}", e);
+                tracing::error!("Multipart error: {:?}", e);
                 StatusCode::INTERNAL_SERVER_ERROR
             })?;
             csv_data = Some(bytes);
@@ -173,7 +173,7 @@ pub async fn batch_collections(
             failed_update_items: Vec::new(),
         })),
         Err(e) => {
-            eprintln!("Batch Collections error: {:?}", e);
+            tracing::error!("Batch Collections error: {:?}", e);
             Err(StatusCode::INTERNAL_SERVER_ERROR)
         }
     }

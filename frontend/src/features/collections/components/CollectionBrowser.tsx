@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { View } from '@/src/design/primitives/View';
@@ -44,7 +45,7 @@ export function CollectionBrowser({
                 setLoadingOfficial(false);
             })
             .catch(err => {
-                console.error('Failed to fetch official user', err);
+                logger.error('Failed to fetch official user', err);
                 setLoadingOfficial(false);
             });
     }, []);

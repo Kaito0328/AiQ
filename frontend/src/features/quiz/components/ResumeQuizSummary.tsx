@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { getResumableQuizzes } from '@/src/features/quiz/api';
@@ -34,7 +35,7 @@ export function ResumeQuizSummary() {
                 );
                 setQuizzes(sorted);
             } catch (err) {
-                console.error('Failed to fetch resumable quizzes', err);
+                logger.error('Failed to fetch resumable quizzes', err);
             } finally {
                 setLoading(false);
             }

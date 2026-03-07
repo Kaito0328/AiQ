@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { Modal } from '@/src/design/baseComponents/Modal';
@@ -68,7 +69,7 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
             }
             onSaved(result);
         } catch (err) {
-            console.error('問題の保存に失敗しました', err);
+            logger.error('問題の保存に失敗しました', err);
             setError('保存に失敗しました。もう一度お試しください。');
         } finally {
             setLoading(false);

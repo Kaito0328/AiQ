@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -69,7 +70,7 @@ export function UserHeader({ profile }: UserHeaderProps) {
                 setFollowerCount(prev => prev + 1);
             }
         } catch (err) {
-            console.error('フォロー操作に失敗しました', err);
+            logger.error('フォロー操作に失敗しました', err);
         } finally {
             setFollowLoading(false);
         }

@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -48,7 +49,7 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
             });
             onCreated(created);
         } catch (err) {
-            console.error('コレクション作成に失敗', err);
+            logger.error('コレクション作成に失敗', err);
             setError('作成に失敗しました');
         } finally {
             setLoading(false);

@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -49,7 +50,7 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
             });
             onUpdated(updated);
         } catch (err) {
-            console.error('コレクション更新に失敗', err);
+            logger.error('コレクション更新に失敗', err);
             setError('更新に失敗しました');
         } finally {
             setLoading(false);

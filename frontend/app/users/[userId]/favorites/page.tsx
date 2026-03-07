@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
@@ -26,7 +27,7 @@ export default function FavoritesPage() {
                 const data = await listFavorites(userId);
                 setCollections(data);
             } catch (err) {
-                console.error('お気に入りの取得に失敗しました', err);
+                logger.error('お気に入りの取得に失敗しました', err);
             } finally {
                 setLoading(false);
             }

@@ -244,5 +244,6 @@ pub fn app(state: AppState) -> Router {
             "/api/edit-requests/{id}",
             patch(handlers::edit_request_handler::update_request_status),
         )
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(state)
 }

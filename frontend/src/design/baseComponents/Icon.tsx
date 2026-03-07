@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React from 'react';
 import * as Icons from 'lucide-react';
@@ -70,7 +71,7 @@ export const Icon = React.forwardRef<SVGSVGElement, IconProps>(
         const LucideIcon = iconMap[name];
 
         if (!LucideIcon) {
-            console.warn(`Icon "${name}" not found in iconMap`);
+            logger.warn(`Icon "${name}" not found in iconMap`);
             return null;
         }
 

@@ -180,7 +180,7 @@ export function BattleResult({ scores, isHost, onReplay, onBackToLobby, roundSum
                                                 })}
                                             >
                                                 <MessageSquare size={12} />
-                                                修正提案
+                                                {isHost ? '修正' : '修正提案'}
                                             </Button>
                                         </Stack>
                                     </Flex>

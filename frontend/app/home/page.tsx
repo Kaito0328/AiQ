@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React from "react";
 import { Container } from "@/src/design/primitives/Container";
@@ -61,7 +62,7 @@ function HomeContent() {
       });
       router.push(`/battle/${resp.roomId}?token=${resp.joinToken}`);
     } catch (err) {
-      console.error('Failed to create room', err);
+      logger.error('Failed to create room', err);
       alert('ルームの作成に失敗しました');
     } finally {
       setIsCreatingRoom(false);

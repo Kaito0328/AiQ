@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -46,7 +47,7 @@ export default function PasswordChangePage() {
             setNewPassword('');
             setConfirmPassword('');
         } catch (err) {
-            console.error('パスワード変更に失敗しました', err);
+            logger.error('パスワード変更に失敗しました', err);
             setError('パスワード変更に失敗しました。現在のパスワードを確認してください。');
         } finally {
             setLoading(false);

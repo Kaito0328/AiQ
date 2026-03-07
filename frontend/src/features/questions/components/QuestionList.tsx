@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -41,6 +42,7 @@ interface QuestionListProps {
     onAddQuestion: () => void;
     onImportCsv: () => void;
     onSuccess: () => void;
+    onOpenAdvanced?: (prompt: string, count: number) => void;
     collectionId?: string;
 }
 
@@ -54,6 +56,7 @@ export function QuestionList({
     onAddQuestion,
     onImportCsv,
     onSuccess,
+    onOpenAdvanced,
     collectionId,
 }: QuestionListProps) {
     const { showToast } = useToast();
@@ -107,7 +110,7 @@ export function QuestionList({
             onToggleEditMode();
             onSuccess();
         } catch (err) {
-            console.error('一括保存に失敗しました', err);
+            logger.error('一括保存に失敗しました', err);
             showToast({ message: '保存に失敗しました', variant: 'danger' });
         } finally {
             setIsSaving(false);
@@ -197,7 +200,7 @@ export function QuestionList({
 
             showToast({ message: 'AIによる補完が完了しました', variant: 'success' });
         } catch (err) {
-            console.error('AI補完に失敗しました', err);
+            logger.error('AI補完に失敗しました', err);
             showToast({ message: '補完に失敗しました', variant: 'danger' });
         } finally {
             setIsAutoFilling(false);
@@ -284,7 +287,7 @@ export function QuestionList({
             await deleteQuestion(questionId);
             onQuestionDeleted(questionId);
         } catch (err) {
-            console.error('問題の削除に失敗しました', err);
+            logger.error('問題の削除に失敗しました', err);
         } finally {
             setDeletingId(null);
         }
@@ -512,7 +515,7 @@ export function QuestionList({
                                 variant="outline"
                                 size="sm"
                                 onClick={onToggleEditMode}
-                                className="gap-1.5 border-gray-200 h-9"
+                                className="gap-1.5 h-9"
                             >
                                 <Edit size={16} />
                                 <Text variant="xs" weight="bold">編集モード</Text>
@@ -535,6 +538,7 @@ export function QuestionList({
                 <AiQuickBar
                     collectionId={collectionId}
                     onSuccess={onSuccess}
+                    onOpenAdvanced={onOpenAdvanced}
                 />
             )}
 
@@ -554,12 +558,12 @@ export function QuestionList({
                             </Stack>
 
                             {isOwner && (
-                                <Flex gap="md" className="w-full max-w-xs justify-center">
+                                <Flex gap="md" className="w-full max-w-xs justify-center flex-col sm:flex-row">
                                     <Button
                                         variant="outline"
                                         size="lg"
                                         onClick={onAddQuestion}
-                                        className="gap-2"
+                                        className="gap-2 w-full sm:w-auto"
                                     >
                                         <Plus size={18} />
                                         手動で追加
@@ -568,16 +572,16 @@ export function QuestionList({
                                         variant="outline"
                                         size="lg"
                                         onClick={onToggleEditMode}
-                                        className="gap-2"
+                                        className="gap-2 w-full sm:w-auto"
                                     >
                                         <Edit size={18} />
                                         編集モード
                                     </Button>
                                     <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         size="lg"
                                         onClick={onImportCsv}
-                                        className="gap-2"
+                                        className="gap-2 w-full sm:w-auto"
                                     >
                                         <FileUp size={18} />
                                         CSV

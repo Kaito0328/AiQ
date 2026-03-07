@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { Modal } from '@/src/design/baseComponents/Modal';
@@ -39,7 +40,7 @@ export function BattleCreateModal({ isOpen, onClose }: BattleCreateModalProps) {
             router.push(`/battle/${resp.roomId}?token=${resp.joinToken}`);
             onClose();
         } catch (err) {
-            console.error('Failed to create room', err);
+            logger.error('Failed to create room', err);
             alert('ルームの作成に失敗しました');
         } finally {
             setLoading(false);
