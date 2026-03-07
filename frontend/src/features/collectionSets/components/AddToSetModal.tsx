@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -31,7 +32,7 @@ export function AddToSetModal({ collectionId, onClose, onSuccess }: AddToSetModa
             onSuccess?.();
             onClose();
         } catch (err: any) {
-            console.error('Failed to add collection to set', err);
+            logger.error('Failed to add collection to set', err);
             // 本来はToastなどを使いたいが、プロジェクトの慣習に合わせる
             alert('セットへの追加に失敗しました。既に含まれている可能性があります。');
         }

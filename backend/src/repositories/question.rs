@@ -185,7 +185,7 @@ impl QuestionRepository {
         filter_node: Option<&FilterNode>,
         sorts: &[crate::dtos::quiz_dto::SortCondition],
     ) -> Result<Vec<Question>, sqlx::Error> {
-        eprintln!("[DEBUG] find_filtered_questions: collections={:?}, user={:?}, sorts={:?}", collection_ids, user_id_opt, sorts);
+        tracing::debug!("find_filtered_questions: collections={:?}, user={:?}, sorts={:?}", collection_ids, user_id_opt, sorts);
         if collection_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -261,8 +261,8 @@ impl QuestionRepository {
         }
 
         let sql = builder.sql();
-        eprintln!("[DEBUG] Executing SQL: {}", sql);
-        eprintln!("[DEBUG] BINDING collection_ids: {:?}", collection_ids);
+        tracing::debug!("Executing SQL: {}", sql);
+        tracing::debug!("BINDING collection_ids: {:?}", collection_ids);
         
         let query = builder.build_query_as::<Question>();
         query.fetch_all(pool).await

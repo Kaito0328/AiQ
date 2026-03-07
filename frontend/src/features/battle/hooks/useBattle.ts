@@ -1,3 +1,4 @@
+import { logger } from '@/src/shared/utils/logger';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { MatchRoom, MatchQuestion, PlayerScore, WsServerMessage, WsClientMessage, RoomStatus, RoomVisibility, MatchConfig } from '@/src/entities/battle';
 import { getMatchWsUrl } from '../api';
@@ -34,7 +35,8 @@ export function useBattle(roomId: string, joinToken: string) {
     const [isConnected, setIsConnected] = useState(false);
     const [selfId, setSelfId] = useState<string | null>(null);
     const [selfUsername, setSelfUsername] = useState<string | null>(null);
-    const [partialAnswer, setPartialAnswer] = useState<string | null>(null);
+    const [partialAnswers, setPartialAnswers] = useState<Record<string, string>>({}); // user_id -> answer
+    const [activeBuzzers, setActiveBuzzers] = useState<Record<string, number>>({}); // user_id -> expires_at_ms
     const [roundSummaries, setRoundSummaries] = useState<{
         questionId: string;
         questionText: string;
@@ -94,10 +96,10 @@ export function useBattle(roomId: string, joinToken: string) {
         };
 
         ws.onmessage = (event) => {
-            console.log('[DEBUG] WS Message received:', event.data);
+            logger.log('[DEBUG] WS Message received:', event.data);
             try {
                 const data: WsServerMessage = JSON.parse(event.data);
-                console.log('[DEBUG] Parsed WS Data:', data);
+                logger.log('[DEBUG] Parsed WS Data:', data);
 
                 switch (data.type) {
                     case 'RoomStateUpdate':
@@ -117,30 +119,8 @@ export function useBattle(roomId: string, joinToken: string) {
                         if (data.preferred_mode) setPreferredMode(data.preferred_mode);
                         if (data.dummy_char_count) setDummyCharCount(data.dummy_char_count);
 
-                        // Late join synchronization
-                        if (data.questions && data.questions.length > 0) {
-                            setQuestions(data.questions);
-                            if (data.current_question_index !== undefined) {
-                                setCurrentQuestionIndex(data.current_question_index);
-                                // If status is Playing and we have a valid index, we might need to sync summaries
-                                if (data.status === 'Playing' && data.current_question_index >= 0) {
-                                    setIsPreparing(false);
-                                    // Initialize summaries for already passed questions if we want history
-                                    // For now just ensure current round summary is initialized
-                                    setRoundSummaries(prev => {
-                                        if (prev.length === 0) {
-                                            const q = data.questions![data.current_question_index!];
-                                            return [{
-                                                questionId: q.id,
-                                                questionText: q.question_text,
-                                                correctAnswer: '',
-                                                correctCount: 0
-                                            }];
-                                        }
-                                        return prev;
-                                    });
-                                }
-                            }
+                        if (data.active_buzzers) {
+                            setActiveBuzzers(data.active_buzzers);
                         }
                         break;
 
@@ -180,7 +160,8 @@ export function useBattle(roomId: string, joinToken: string) {
                         setSubmittedUserIds([]);
                         setIsPreparing(true);
                         setRoundSummaries([]);
-                        setPartialAnswer(null);
+                        setPartialAnswers({});
+                        setActiveBuzzers({});
                         break;
 
                     case 'RoundStarted':
@@ -192,7 +173,8 @@ export function useBattle(roomId: string, joinToken: string) {
                         setIsPreparing(false);
                         setLastRoundResult(null);
                         setExpiresAtMs(data.expires_at_ms);
-                        setPartialAnswer(null);
+                        setPartialAnswers({});
+                        setActiveBuzzers({});
 
                         // Initialize summary for this round
                         const q = questionsRef.current[data.question_index];
@@ -214,13 +196,23 @@ export function useBattle(roomId: string, joinToken: string) {
                         setBuzzedUserIds(data.buzzed_user_ids || []);
                         setBuzzerQueue(data.buzzer_queue || []);
                         setSubmittedUserIds(data.submitted_user_ids || []);
-                        setExpiresAtMs(data.expires_at_ms);
-                        setPartialAnswer(null);
+                        if (data.active_buzzers) {
+                            const lowered: Record<string, number> = {};
+                            Object.entries(data.active_buzzers).forEach(([k, v]) => lowered[k.toLowerCase()] = v);
+                            setActiveBuzzers(lowered);
+                        }
                         break;
 
                     case 'PartialAnswerUpdate':
-                        setPartialAnswer(data.answer);
-                        setExpiresAtMs(data.expires_at_ms);
+                        setPartialAnswers(prev => ({
+                            ...prev,
+                            [data.user_id.toLowerCase()]: data.answer
+                        }));
+                        if (data.active_buzzers) {
+                            const lowered: Record<string, number> = {};
+                            Object.entries(data.active_buzzers).forEach(([k, v]) => lowered[k.toLowerCase()] = v);
+                            setActiveBuzzers(lowered);
+                        }
                         break;
 
                     case 'AnswerResult':
@@ -240,6 +232,14 @@ export function useBattle(roomId: string, joinToken: string) {
                         }
                         if (!data.is_correct) {
                             setBuzzedUserId(null);
+                        }
+                        // Local optimization: remove ourselves from active buzzers if we submitted
+                        if (data.user_id.toLowerCase() === selfId?.toLowerCase()) {
+                            setActiveBuzzers(prev => {
+                                const next = { ...prev };
+                                delete next[data.user_id.toLowerCase()];
+                                return next;
+                            });
                         }
                         // Clear answer result after 3 seconds
                         setTimeout(() => setAnswerResult(null), 3000);
@@ -264,12 +264,15 @@ export function useBattle(roomId: string, joinToken: string) {
                         setRoom(prev => prev ? { ...prev, players: data.scores } : null);
                         setExpiresAtMs(null);
                         setBuzzerQueue([]);
+                        setActiveBuzzers({});
+                        setPartialAnswers({});
                         break;
 
                     case 'MatchResult':
                         setRoom(prev => prev ? { ...prev, status: 'Finished', players: data.final_scores } : null);
                         setExpiresAtMs(null);
                         setBuzzerQueue([]);
+                        setActiveBuzzers({});
                         break;
 
                     case 'Joined':
@@ -286,12 +289,12 @@ export function useBattle(roomId: string, joinToken: string) {
                         break;
 
                     case 'Error':
-                        console.error('[DEBUG] WS Error message:', data.message);
+                        logger.error('[DEBUG] WS Error message:', data.message);
                         setError(data.message);
                         break;
                 }
             } catch (e) {
-                console.error('Failed to parse WS message', e);
+                logger.error('Failed to parse WS message', e);
             }
         };
 
@@ -353,7 +356,8 @@ export function useBattle(roomId: string, joinToken: string) {
         dummyCharCount,
         selfId,
         selfUsername,
-        partialAnswer,
+        partialAnswers,
+        activeBuzzers,
         roundSummaries,
         error,
         isConnected,

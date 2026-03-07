@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 
@@ -62,7 +63,7 @@ export function useAiGeneration(collectionId: string) {
                     setGeneratedQuestions(data.data);
                 }
             } catch (e) {
-                console.error('Failed to parse AI WS message', e);
+                logger.error('Failed to parse AI WS message', e);
                 setStatus('error');
                 setMessage('通信エラーが発生しました');
             }

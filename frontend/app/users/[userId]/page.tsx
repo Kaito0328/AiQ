@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -63,7 +64,7 @@ export default function UserPage() {
             }
             router.push('/quiz');
         } catch (err) {
-            console.error('Failed to start ranking quiz', err);
+            logger.error('Failed to start ranking quiz', err);
         }
     };
 
@@ -73,7 +74,7 @@ export default function UserPage() {
             await deleteCollection(id);
             window.location.reload();
         } catch (err) {
-            console.error('Failed to delete collection', err);
+            logger.error('Failed to delete collection', err);
         }
     };
 
@@ -89,7 +90,7 @@ export default function UserPage() {
             await deleteSet(id);
             refreshSets();
         } catch (err) {
-            console.error('Failed to delete set', err);
+            logger.error('Failed to delete set', err);
         }
     };
 

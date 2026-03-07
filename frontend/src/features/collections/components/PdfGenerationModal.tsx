@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { Modal } from '@/src/design/baseComponents/Modal';
@@ -57,7 +58,7 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
                 explanationLanguage: explanationLanguage || undefined
             });
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             showToast({ message: 'ファイルの読み込みに失敗しました', variant: 'danger' });
         }
     };

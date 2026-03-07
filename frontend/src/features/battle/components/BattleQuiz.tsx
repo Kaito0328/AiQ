@@ -27,7 +27,8 @@ interface BattleQuizProps {
     onBuzz: () => void;
     onSubmit: (answer: string) => void;
     onPartialSubmit: (answer: string) => void;
-    partialAnswer: string | null;
+    partialAnswers: Record<string, string>;
+    activeBuzzers: Record<string, number>;
     expiresAtMs: number | null;
     answerResult: { user_id: string, is_correct: boolean } | null;
     currentQuestionIndex: number;
@@ -52,7 +53,8 @@ export function BattleQuiz({
     onBuzz,
     onSubmit,
     onPartialSubmit,
-    partialAnswer,
+    partialAnswers = {},
+    activeBuzzers = {},
     expiresAtMs,
     answerResult,
     currentQuestionIndex,
@@ -72,10 +74,33 @@ export function BattleQuiz({
     const [timeLeftMs, setTimeLeftMs] = useState<number>(0);
     const [timerTotalMs, setTimerTotalMs] = useState<number>(0); // captures initial timer duration for progress bar
     const timeLeftMsRef = useRef<number>(0);       // live reading for buzz-time capture
+    const lastEffectiveExpiryRef = useRef<number | null>(null);
     const buzzTimesRef = useRef<Map<string, number>>(new Map()); // userId → timeLeftMs when they buzzed
     const inputRef = useRef<HTMLInputElement>(null);
-    const isMyBuzzed = buzzerQueue.some(id => id.toLowerCase() === selfId?.toLowerCase());
-    const isMyActiveAnswer = buzzedUserId?.toLowerCase() === selfId?.toLowerCase();
+
+    const isMyBuzzed = React.useMemo(() =>
+        buzzerQueue.some(id => id.toLowerCase() === selfId?.toLowerCase()),
+        [buzzerQueue, selfId]
+    );
+
+    const myExpiry = React.useMemo(() => {
+        if (!selfId) return null;
+        const entry = Object.entries(activeBuzzers).find(
+            ([uid]) => uid.toLowerCase() === selfId.toLowerCase()
+        );
+        return entry ? entry[1] : null;
+    }, [activeBuzzers, selfId]);
+
+    const isMyActiveAnswer = !!myExpiry;
+
+    const isSubmitted = React.useMemo(() =>
+        submittedUserIds.some(id => id.toLowerCase() === selfId?.toLowerCase()),
+        [submittedUserIds, selfId]
+    );
+
+    const isAnswering = !!myExpiry && !isSubmitted;
+    const canStillBuzz = !isMyBuzzed && buzzerQueue.length < maxBuzzes && timeLeftMs > 0 && !isSubmitted;
+    const hasRights = isAnswering || canStillBuzz;
 
     // Mode fallback logic — runs on every new question AND whenever preferredMode changes
     useEffect(() => {
@@ -126,22 +151,31 @@ export function BattleQuiz({
     }, [question, preferredMode]);
 
     useEffect(() => {
-        if (!expiresAtMs) {
+        const effectiveExpiry = myExpiry || expiresAtMs;
+
+        if (!effectiveExpiry) {
             setTimeLeftMs(0);
             timeLeftMsRef.current = 0;
+            lastEffectiveExpiryRef.current = null;
             return;
         }
 
-        // Capture the total duration the first time we see a new expiresAtMs
-        const now = Date.now();
-        const remaining = Math.max(0, expiresAtMs - now);
-        setTimerTotalMs(remaining);
-        // Reset buzz timestamps for fresh question
-        buzzTimesRef.current.clear();
+        // Only update timerTotalMs if the expiry actually changed
+        if (effectiveExpiry !== lastEffectiveExpiryRef.current) {
+            const now = Date.now();
+            const remaining = Math.max(0, effectiveExpiry - now);
+            setTimerTotalMs(remaining);
+            lastEffectiveExpiryRef.current = effectiveExpiry;
+        }
+
+        // Reset buzz timestamps for fresh question (only if not already buzzing)
+        if (!myExpiry && buzzerQueue.length === 0) {
+            buzzTimesRef.current.clear();
+        }
 
         const updateTimer = () => {
             const n = Date.now();
-            const diff = Math.max(0, expiresAtMs - n);
+            const diff = Math.max(0, effectiveExpiry - n);
             timeLeftMsRef.current = diff;
             setTimeLeftMs(diff);
         };
@@ -149,7 +183,7 @@ export function BattleQuiz({
         updateTimer();
         const interval = setInterval(updateTimer, 50);
         return () => clearInterval(interval);
-    }, [expiresAtMs]);
+    }, [expiresAtMs, myExpiry, buzzerQueue.length]);
 
     // Record the time remaining when each player first enters the buzzer queue
     useEffect(() => {
@@ -160,17 +194,13 @@ export function BattleQuiz({
         });
     }, [buzzerQueue]);
 
+    // Auto-clear answer when result shows up for ME
     useEffect(() => {
-        if (buzzedUserId && buzzedUserId !== selfId) {
-            setAnswer(partialAnswer || '');
-        }
-    }, [partialAnswer, buzzedUserId, selfId]);
-
-    useEffect(() => {
-        if (buzzedUserId) {
+        if (answerResult && answerResult.user_id === selfId) {
             setAnswer('');
         }
-    }, [buzzedUserId]);
+    }, [answerResult, selfId]);
+
 
     const getAnswerFontSize = (text: string) => {
         const len = text.length;
@@ -233,10 +263,10 @@ export function BattleQuiz({
                             return b.score - a.score;
                         })
                         .map((p) => {
-                            const buzzIdx = buzzerQueue.indexOf(p.user_id);
+                            const buzzIdx = buzzerQueue.findIndex(id => id.toLowerCase() === p.user_id.toLowerCase());
                             const isBuzzed = buzzIdx !== -1;
-                            const isActive = buzzedUserId === p.user_id;
-                            const isUserResult = answerResult?.user_id === p.user_id;
+                            const isActive = Object.keys(activeBuzzers).some(uid => uid.toLowerCase() === p.user_id.toLowerCase());
+                            const isUserResult = answerResult?.user_id.toLowerCase() === p.user_id.toLowerCase();
                             const buzzTime = buzzTimesRef.current.get(p.user_id);
 
                             return (
@@ -299,8 +329,9 @@ export function BattleQuiz({
                         {currentQuestionIndex + 1} / {totalQuestions}
                     </Text>
                     <View className="flex-1 flex justify-end">
-                        {expiresAtMs && !lastRoundResult && (
-                            <Flex gap="xs" align="center">
+                        {timeLeftMs > 0 && !lastRoundResult && hasRights && (
+                            <Flex gap="xs" align="center" className="animate-in fade-in duration-300">
+                                {selfId && activeBuzzers[selfId] && <Zap size={10} className="text-yellow-400 animate-pulse" />}
                                 <Clock size={10} className={cn(timeLeftMs < 5000 ? "text-brand-danger animate-pulse" : "text-secondary")} />
                                 <Text className={cn("text-[9px] sm:text-[10px] font-mono font-bold", timeLeftMs < 5000 ? "text-brand-danger" : "text-secondary")}>
                                     {(timeLeftMs / 1000).toFixed(1)}s
@@ -321,7 +352,7 @@ export function BattleQuiz({
                                 : "bg-brand-primary"
                     )}
                     style={{
-                        width: expiresAtMs && !lastRoundResult && timerTotalMs > 0
+                        width: !lastRoundResult && hasRights && timerTotalMs > 0
                             ? `${(timeLeftMs / timerTotalMs) * 100}%`
                             : '0%',
                         transition: 'width 50ms linear, background-color 0.3s'
@@ -388,26 +419,10 @@ export function BattleQuiz({
                                         <Text variant="xs" color="secondary" className="italic opacity-80 leading-relaxed break-words pr-8">
                                             {question.description_text}
                                         </Text>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => setIsEditing(true)}
-                                            className="absolute top-0 right-0 p-1 h-auto text-secondary hover:text-brand-primary"
-                                        >
-                                            <Icon name="edit" size={14} />
-                                        </Button>
                                     </View>
                                 )}
                                 {!question.description_text && (
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setIsEditing(true)}
-                                        className="gap-1.5 text-secondary hover:text-brand-primary h-8"
-                                    >
-                                        <Icon name="edit" size={12} />
-                                        <Text variant="xs">修正提案・解説追加</Text>
-                                    </Button>
+                                    <View className="h-4" />
                                 )}
                             </Stack>
                         </Stack>
@@ -455,10 +470,14 @@ export function BattleQuiz({
                 <View className="h-40 sm:h-48 flex items-center justify-center pt-4 sm:pt-8 shrink-0">
                     {(() => {
                         const isLimitReached = buzzerQueue.length >= maxBuzzes;
-                        const canBuzz = !isMyBuzzed && !isLimitReached && !buzzedUserId;
+                        const isTimeUp = timeLeftMs <= 0;
 
-                        // CASE 1: I am the active buzzer (I need to answer)
-                        if (isMyActiveAnswer) {
+                        // Robust derived states
+                        const isAnswering = isMyActiveAnswer && !isSubmitted;
+                        const hasExhaustedRights = isMyBuzzed || (isLimitReached && !isAnswering) || (isTimeUp && !isAnswering) || isSubmitted;
+
+                        // CASE 1: I am currently answering
+                        if (isAnswering) {
                             const onPartialInput = (newVal: string) => {
                                 const normalized = newVal.replace(/\s/g, "");
                                 setAnswer(normalized);
@@ -476,15 +495,11 @@ export function BattleQuiz({
                                     </View>
                                 );
                             } else if (activeMode === 'chips') {
-                                // Source for chips: rubis if present, else correct_answers
                                 const hasValidRubis = question.answer_rubis && question.answer_rubis.some(r => r.trim().length > 0);
-                                const chipsSource = hasValidRubis
-                                    ? question.answer_rubis!
-                                    : (question.correct_answers || []);
+                                const chipsSource = hasValidRubis ? question.answer_rubis! : (question.correct_answers || []);
                                 const hasChipsSource = chipsSource.some(s => s.trim().length > 0);
 
                                 if (!hasChipsSource) {
-                                    // No source to build chips — show text input as emergency fallback
                                     return (
                                         <View className="w-full max-w-md animate-in slide-in-from-bottom-4">
                                             <View as="form" onSubmit={(e: React.FormEvent) => { e.preventDefault(); if (answer.trim()) onSubmit(answer.trim()); }} className="w-full">
@@ -525,8 +540,6 @@ export function BattleQuiz({
                                                 onInput={(char) => {
                                                     const newAnswer = answer + char;
                                                     const hasKanji = (text: string) => /[\u4E00-\u9FAF]/.test(text);
-
-                                                    // Determine representative target (same logic as CharacterPoolInput)
                                                     let tgt = "";
                                                     const ansList = question.correct_answers || [];
                                                     const rbiList = question.answer_rubis || [];
@@ -542,7 +555,6 @@ export function BattleQuiz({
                                                             break;
                                                         }
                                                     }
-
                                                     onPartialInput(newAnswer);
                                                     if (tgt && newAnswer.replace(/\s/g, "").length >= tgt.length) {
                                                         setTimeout(() => onSubmit(newAnswer.trim()), 50);
@@ -582,40 +594,57 @@ export function BattleQuiz({
                             }
                         }
 
-                        // CASE 2: Someone is buzzing (Show progress)
-                        if (buzzedUserId) {
+                        // CASE 2: I have NO answering rights (Show others' answers)
+                        if (hasExhaustedRights) {
                             return (
-                                <View className="w-full max-w-md bg-brand-primary/5 p-8 rounded-3xl border-2 border-dashed border-brand-primary/20 flex flex-col items-center gap-4">
-                                    <Text variant="detail" color="primary" weight="bold" className="animate-bounce">
-                                        {isMyBuzzed ? "あなたの番を待っています..." : "回答を待っています..."}
-                                    </Text>
-                                    <View className="flex flex-wrap justify-center gap-1">
-                                        {(buzzedUserId === selfId ? answer : partialAnswer || '').split('').map((char, i) => (
-                                            <Text key={i} className="text-4xl font-black tracking-normal text-brand-primary">{char}</Text>
-                                        ))}
-                                        {(buzzedUserId === selfId ? answer : partialAnswer || '').length === 0 && (
-                                            <Text className="text-4xl font-black tracking-widest text-brand-primary opacity-20">...</Text>
-                                        )}
-                                    </View>
+                                <View className="w-full max-w-xl flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-2">
+                                    <Flex wrap="wrap" justify="center" gap="md" className="px-4">
+                                        {buzzerQueue
+                                            .filter(uid => uid.toLowerCase() !== selfId?.toLowerCase())
+                                            .map((uid) => {
+                                                const player = players.find(p => p.user_id.toLowerCase() === uid.toLowerCase());
+                                                const hasSubmitted = submittedUserIds.some(id => id.toLowerCase() === uid.toLowerCase());
+                                                const text = partialAnswers[uid] || "";
+
+                                                return (
+                                                    <Stack key={uid} gap="xs" align="center" className="min-w-[120px] transition-all bg-surface-muted/30 p-3 rounded-2xl border border-brand-primary/10">
+                                                        <Flex align="center" gap="xs">
+                                                            <View className="w-4 h-4 rounded-full overflow-hidden bg-brand-primary/10">
+                                                                {player?.icon_url ? <img src={player.icon_url} className="w-full h-full object-cover" /> : <Text className="text-[6px] text-center">{player?.username[0]}</Text>}
+                                                            </View>
+                                                            <Text weight="bold" className="text-[10px] opacity-70 truncate max-w-[80px]">{player?.username}</Text>
+                                                        </Flex>
+                                                        <View className="h-12 flex items-center justify-center">
+                                                            {text ? (
+                                                                <Text variant="h3" weight="bold" color="primary" className="tracking-tighter">
+                                                                    {text}
+                                                                </Text>
+                                                            ) : (
+                                                                <Text className="opacity-20 italic text-xs animate-pulse">入力中...</Text>
+                                                            )}
+                                                        </View>
+                                                    </Stack>
+                                                );
+                                            })}
+                                    </Flex>
                                 </View>
                             );
                         }
 
-                        // CASE 3: No one is buzzing (Show BUZZ button)
+                        // CASE 3: Active answering possible (Show BUZZ button)
                         return (
                             <Stack gap="md" align="center" className="w-full relative">
                                 <Button
                                     variant="solid"
-                                    color={canBuzz ? "primary" : "secondary"}
-                                    disabled={!canBuzz}
+                                    color="primary"
                                     className={cn(
                                         "w-32 h-32 sm:w-48 sm:h-48 rounded-full shadow-2xl font-black text-xl sm:text-2xl flex flex-col items-center justify-center gap-1 sm:gap-2 transition-all border-4 sm:border-8 border-white",
-                                        canBuzz ? "shadow-brand-primary/40 hover:scale-105 active:scale-95 cursor-pointer" : "opacity-50 grayscale cursor-not-allowed"
+                                        "shadow-brand-primary/40 hover:scale-105 active:scale-95 cursor-pointer"
                                     )}
                                     onClick={onBuzz}
                                 >
                                     <Zap size={32} className="sm:size-[48px]" fill="white" />
-                                    {isLimitReached ? "満員" : "BUZZ!"}
+                                    BUZZ!
                                 </Button>
                             </Stack>
                         );

@@ -10,9 +10,9 @@ import { cn } from '@/src/shared/utils/cn';
 interface BattleQuizHeaderProps {
     players: PlayerScore[];
     buzzerQueue: string[];
-    buzzedUserId: string | null;
     selfId: string | null;
     answerResult: { user_id: string, is_correct: boolean } | null;
+    activeBuzzers: Record<string, number>;
     buzzTimesRef: React.MutableRefObject<Map<string, number>>;
     currentQuestionIndex: number;
     totalQuestions: number;
@@ -30,9 +30,9 @@ const ordinal = (n: number): string => {
 export function BattleQuizHeader({
     players,
     buzzerQueue,
-    buzzedUserId,
     selfId,
     answerResult,
+    activeBuzzers,
     buzzTimesRef,
     currentQuestionIndex,
     totalQuestions,
@@ -53,9 +53,9 @@ export function BattleQuizHeader({
                         return b.score - a.score;
                     })
                     .map((p) => {
-                        const buzzIdx = buzzerQueue.indexOf(p.user_id);
+                        const buzzIdx = buzzerQueue.findIndex(id => id.toLowerCase() === p.user_id.toLowerCase());
                         const isBuzzed = buzzIdx !== -1;
-                        const isActive = buzzedUserId === p.user_id;
+                        const isActive = Object.keys(activeBuzzers).some(uid => uid.toLowerCase() === p.user_id.toLowerCase());
                         const isUserResult = answerResult?.user_id === p.user_id;
                         const buzzTime = buzzTimesRef.current.get(p.user_id);
 

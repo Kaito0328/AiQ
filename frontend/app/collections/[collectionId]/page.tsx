@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -44,6 +45,8 @@ export default function CollectionDetailPage() {
     const [showCollectionModal, setShowCollectionModal] = useState(false);
     const [editingQuestion, setEditingQuestion] = useState<Question | undefined>(undefined);
     const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [aiModalPrompt, setAiModalPrompt] = useState('');
+    const [aiModalCount, setAiModalCount] = useState(5);
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -57,7 +60,7 @@ export default function CollectionDetailPage() {
                 setQuestions(qList);
                 setIsOwner(!!(user && user.id === data.userId));
             } catch (err) {
-                console.error('Failed to fetch collection details', err);
+                logger.error('Failed to fetch collection details', err);
             } finally {
                 setLoading(false);
             }
@@ -97,7 +100,7 @@ export default function CollectionDetailPage() {
             document.body.removeChild(a);
             showToast({ message: 'CSVをエクスポートしました', variant: 'success' });
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             showToast({ message: 'エクスポートに失敗しました', variant: 'danger' });
         }
     };
@@ -133,6 +136,7 @@ export default function CollectionDetailPage() {
                         onEdit={() => setShowCollectionModal(true)}
                         onImportCsv={() => setIsCsvModalOpen(true)}
                         onExportCsv={handleExportCsv}
+                        onStartRankingQuiz={() => router.push(`/collections/${collectionId}/ranking`)}
                     />
 
                     {isOwner && (
@@ -154,6 +158,11 @@ export default function CollectionDetailPage() {
                         onImportCsv={() => setIsCsvModalOpen(true)}
                         onSuccess={handleQuestionSaved}
                         collectionId={collectionId}
+                        onOpenAdvanced={(prompt, count) => {
+                            setAiModalPrompt(prompt);
+                            setAiModalCount(count);
+                            setIsAiModalOpen(true);
+                        }}
                     />
                 </Stack>
             </Container>
@@ -181,9 +190,14 @@ export default function CollectionDetailPage() {
 
             <AiGenerationModal
                 isOpen={isAiModalOpen}
-                onClose={() => setIsAiModalOpen(false)}
+                onClose={() => {
+                    setIsAiModalOpen(false);
+                    setAiModalPrompt('');
+                }}
                 collectionId={collectionId}
                 onSuccess={handleQuestionSaved}
+                initialPrompt={aiModalPrompt}
+                initialCount={aiModalCount}
             />
 
             <PdfGenerationModal

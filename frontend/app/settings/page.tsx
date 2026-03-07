@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -71,7 +72,7 @@ export default function SettingsPage() {
             await refreshUser();
             setMessage({ type: 'success', text: 'プロフィールを更新しました' });
         } catch (err) {
-            console.error('Failed to update profile', err);
+            logger.error('Failed to update profile', err);
             setMessage({ type: 'danger', text: '更新に失敗しました。ユーザー名が既に使用されている可能性があります。' });
         } finally {
             setLoading(false);

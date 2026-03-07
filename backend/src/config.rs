@@ -64,7 +64,7 @@ pub fn init() {
         let config: AppConfig = serde_json::from_str(&content)
             .expect("Failed to parse app_config.json. Invalid JSON format.");
 
-        println!("Loaded application configuration from {}", config_path);
+        tracing::info!("Loaded application configuration from {}", config_path);
         config
     });
 }

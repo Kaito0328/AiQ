@@ -16,13 +16,13 @@ impl FromRequestParts<AppState> for User {
         // Path<HashMap<String, String>> としてすべてのパラメータを受け取る
         let Path(params): Path<HashMap<String, String>> =
             Path::from_request_parts(parts, state).await.map_err(|e| {
-                eprintln!("Failed to parse path params: {:?}", e);
+                tracing::error!("Failed to parse path params: {:?}", e);
                 StatusCode::BAD_REQUEST
             })?;
 
         // "user_id" というキーの値を取り出す
         let user_id_or_username = params.get("user_id").ok_or_else(|| {
-            eprintln!("Missing 'user_id' parameter in path");
+            tracing::error!("Missing 'user_id' parameter in path");
             StatusCode::BAD_REQUEST
         })?;
 
@@ -39,7 +39,7 @@ impl FromRequestParts<AppState> for User {
             .fetch_optional(&state.db)
             .await
             .map_err(|e| {
-                eprintln!("Database error during UUID lookup: {:?}", e);
+                tracing::error!("Database error during UUID lookup: {:?}", e);
                 StatusCode::INTERNAL_SERVER_ERROR
             })?;
 
@@ -60,14 +60,14 @@ impl FromRequestParts<AppState> for User {
         .fetch_optional(&state.db)
         .await
         .map_err(|e| {
-            eprintln!("Database error during username lookup: {:?}", e);
+            tracing::error!("Database error during username lookup: {:?}", e);
             StatusCode::INTERNAL_SERVER_ERROR
         })?;
 
         match user_opt {
             Some(user) => Ok(user),
             None => {
-                println!("User not found: {}", user_id_or_username);
+                tracing::info!("User not found: {}", user_id_or_username);
                 Err(StatusCode::NOT_FOUND)
             }
         }

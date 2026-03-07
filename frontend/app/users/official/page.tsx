@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { View } from '@/src/design/primitives/View';
@@ -33,7 +34,7 @@ export default function OfficialUserPage() {
                 const user = await getOfficialUser();
                 setProfile(user);
             } catch (err) {
-                console.error('公式ユーザーの取得に失敗しました', err);
+                logger.error('公式ユーザーの取得に失敗しました', err);
             } finally {
                 setLoading(false);
             }
@@ -49,7 +50,7 @@ export default function OfficialUserPage() {
             }
             router.push('/quiz');
         } catch (err) {
-            console.error('Failed to start ranking quiz', err);
+            logger.error('Failed to start ranking quiz', err);
         }
     };
 

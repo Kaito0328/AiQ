@@ -1,3 +1,4 @@
+import { logger } from '@/src/shared/utils/logger';
 import React, { useState } from 'react';
 import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
@@ -45,7 +46,7 @@ export function CollectionSetForm({ initialData, onSuccess, onCancel }: Collecti
             onSuccess(result);
         } catch (err) {
             setError('送信に失敗しました。');
-            console.error(err);
+            logger.error(err);
         } finally {
             setLoading(false);
         }

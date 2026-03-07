@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
@@ -55,7 +56,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         audio.load();
 
         if (!isMuted) {
-            audio.play().catch(err => console.error("Audio playback failed:", err));
+            audio.play().catch(err => logger.error("Audio playback failed:", err));
         }
     }, [currentTrack, isMuted]);
 
@@ -66,7 +67,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         if (isMuted) {
             audioRef.current.pause();
         } else {
-            audioRef.current.play().catch(err => console.error("Audio playback failed:", err));
+            audioRef.current.play().catch(err => logger.error("Audio playback failed:", err));
         }
     }, [isMuted]);
 

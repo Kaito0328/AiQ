@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -54,7 +55,7 @@ export default function CollectionSetPage() {
             }
             router.push('/quiz');
         } catch (err) {
-            console.error('Failed to start quiz', err);
+            logger.error('Failed to start quiz', err);
         } finally {
             setIsStartingQuiz(false);
             setShowQuizOptions(false);

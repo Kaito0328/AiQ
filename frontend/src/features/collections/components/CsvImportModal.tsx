@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
 import { Modal } from '@/src/design/baseComponents/Modal';
@@ -45,7 +46,7 @@ export function CsvImportModal({ isOpen, onClose, collectionId, onSuccess }: Csv
             onSuccess();
             onClose();
         } catch (err) {
-            console.error(err);
+            logger.error(err);
             showToast({ message: 'インポートに失敗しました。ファイル形式を確認してください。', variant: 'danger' });
         } finally {
             setLoading(false);

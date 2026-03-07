@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
@@ -50,7 +51,7 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
             }
             setRequests(data);
         } catch (error) {
-            console.error('Failed to fetch requests', error);
+            logger.error('Failed to fetch requests', error);
             showToast({ message: 'リクエストの取得に失敗しました', variant: 'danger' });
         } finally {
             setLoading(false);

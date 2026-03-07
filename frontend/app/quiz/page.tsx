@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
@@ -81,7 +82,7 @@ export default function QuizPage() {
                     setOwnedCollectionIds(prev => new Set([...prev, cid]));
                 }
             } catch (err) {
-                console.error("Failed to check collection ownership", err);
+                logger.error("Failed to check collection ownership", err);
             }
         };
         checkOwnership();
@@ -134,7 +135,7 @@ export default function QuizPage() {
                     sessionStorage.setItem('quizAnswers', JSON.stringify(enrichedAnswers));
                     router.push('/quiz/score');
                 } catch (err) {
-                    console.error('Failed to submit ranking answers', err);
+                    logger.error('Failed to submit ranking answers', err);
                     alert('回答の送信に失敗しました。');
                     setIsSubmitting(false);
                 }
@@ -186,7 +187,7 @@ export default function QuizPage() {
                     });
                 }
             } catch (err) {
-                console.error('Failed to submit casual answer', err);
+                logger.error('Failed to submit casual answer', err);
             }
         }
     }, [questions, currentIndex, quiz, rankingQuizId, judgeAnswer, userAnswers, router, isRetry]);

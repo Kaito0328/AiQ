@@ -82,6 +82,7 @@ export type WsServerMessage =
     questions?: MatchQuestion[];
     current_question_index?: number;
     round_sequence?: number;
+    active_buzzers?: Record<string, number>;
   }
   | {
     type: "MatchStarted";
@@ -96,16 +97,16 @@ export type WsServerMessage =
   | {
     type: "PlayerBuzzed";
     user_id: string;
-    expires_at_ms: number;
     buzzed_user_ids: string[];
     submitted_user_ids: string[];
     buzzer_queue: string[];
+    active_buzzers: Record<string, number>;
   }
   | {
     type: "PartialAnswerUpdate";
     user_id: string;
     answer: string;
-    expires_at_ms: number;
+    active_buzzers: Record<string, number>;
   }
   | {
     type: "AnswerResult";

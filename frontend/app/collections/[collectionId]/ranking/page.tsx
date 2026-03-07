@@ -1,4 +1,5 @@
-"use client";
+"use client"
+import { logger } from '@/src/shared/utils/logger';
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -36,7 +37,7 @@ export default function RankingLeaderboardPage() {
                 setCollection(c);
                 setLeaderboard(l);
             } catch (err) {
-                console.error('Failed to fetch ranking data', err);
+                logger.error('Failed to fetch ranking data', err);
             } finally {
                 setLoading(false);
             }
@@ -50,7 +51,7 @@ export default function RankingLeaderboardPage() {
             sessionStorage.setItem('quizData', JSON.stringify(resp));
             router.push('/quiz');
         } catch (err) {
-            console.error('Failed to start ranking quiz', err);
+            logger.error('Failed to start ranking quiz', err);
             alert('クイズの開始に失敗しました。');
         }
     };

@@ -1,3 +1,4 @@
+use tracing::{error, info, warn};
 use crate::dtos::collection_dto::CreateCollectionRequest;
 use crate::dtos::question_dto::CreateQuestionRequest;
 use crate::error::AppError;
@@ -58,7 +59,7 @@ pub async fn seed_data(pool: &PgPool) {
     let file_content = match fs::read_to_string(&manifest_path) {
         Ok(c) => c,
         Err(_) => {
-            println!(
+            warn!(
                 "manifest.json not found at {}. Skipping seeding.",
                 manifest_path
             );
@@ -69,7 +70,7 @@ pub async fn seed_data(pool: &PgPool) {
     let manifest: Manifest = match serde_json::from_str(&file_content) {
         Ok(m) => m,
         Err(e) => {
-            println!("Failed to parse manifest: {}", e);
+            error!("Failed to parse manifest: {}", e);
             return;
         }
     };
@@ -107,7 +108,7 @@ pub async fn seed_data(pool: &PgPool) {
                     .fetch_optional(pool)
                     .await
                     {
-                        println!(
+                        info!(
                             "Force Reseed: Deleting collection '{}' for user '{}'.",
                             m_coll.name, user.username
                         );
@@ -163,7 +164,7 @@ pub async fn seed_data(pool: &PgPool) {
                                 }
                             }
                         }
-                        println!(
+                        info!(
                             "Seeded collection '{}' for user '{}'.",
                             collection.name, user.username
                         );
@@ -326,7 +327,7 @@ pub async fn seed_data(pool: &PgPool) {
         }
     }
 
-    println!("Data seeding completed.");
+    info!("Data seeding completed.");
 }
 
 async fn ensure_user(

@@ -16,9 +16,8 @@ fn extract_claims(parts: &Parts) -> Result<Option<Claims>, AppError> {
     if let Some(header) = auth_header
         && let Some(token) = header.strip_prefix("Bearer ")
     {
-        eprintln!("[DEBUG] Extracting claims from Authorization header");
         let claims = crate::utils::jwt::verify_token(token).map_err(|e| {
-            eprintln!("[DEBUG] Token verification failed (header): {}", e);
+            tracing::debug!("Token verification failed (header): {}", e);
             AppError::Unauthorized("Invalid or expired token".to_string())
         })?;
         return Ok(Some(claims));
@@ -26,22 +25,22 @@ fn extract_claims(parts: &Parts) -> Result<Option<Claims>, AppError> {
 
     // 2. クエリパラメータから抽出を試みる (WebSocket用など)
     if let Some(query) = parts.uri.query() {
-        eprintln!("[DEBUG] Query string: {}", query);
+        tracing::debug!("Query string: {}", query);
         for param in query.split('&') {
             if let Some(token) = param.strip_prefix("token=") {
-                eprintln!("[DEBUG] Token parameter found in query");
+                tracing::debug!("Token parameter found in query");
                 let claims = crate::utils::jwt::verify_token(token).map_err(|e| {
-                    eprintln!("[DEBUG] Token verification failed (query): {}", e);
+                    tracing::debug!("Token verification failed (query): {}", e);
                     AppError::Unauthorized("Invalid or expired token".to_string())
                 })?;
                 return Ok(Some(claims));
             }
         }
-        eprintln!("[DEBUG] Token parameter NOT found in query");
+        tracing::debug!("Token parameter NOT found in query");
     }
 
     // 3. そもそもトークンが無い場合 -> None として通す
-    eprintln!("[DEBUG] No token found in header or query");
+    tracing::debug!("No token found in header or query");
     Ok(None)
 }
 
