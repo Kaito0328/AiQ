@@ -1,20 +1,20 @@
 # --- 基本ツールをインストールするベース ---
 FROM rust:1-bookworm AS chef
-WORKDIR /app
 RUN cargo install cargo-chef
+WORKDIR /app/backend
 
 # --- キャッシュ用の準備ステージ ---
 FROM chef AS planner
-COPY . .
+COPY backend/ .
 RUN cargo chef prepare --recipe-path recipe.json
 
 # --- 本番ビルド用ステージ ---
 FROM chef AS builder
-COPY --from=planner /app/recipe.json recipe.json
+COPY --from=planner /app/backend/recipe.json recipe.json
 # ここで依存ライブラリだけをビルドし、キャッシュ層を作ります
 RUN cargo chef cook --release --recipe-path recipe.json
 
-COPY . .
+COPY backend/ .
 # sqlxのコンパイル時DB接続を回避するためオフラインモードを有効化
 ENV SQLX_OFFLINE=true
 RUN cargo build --release
@@ -26,11 +26,14 @@ WORKDIR /app
 # 必要な共有ライブラリをインストール
 RUN apt-get update && apt-get install -y libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 # ビルドしたバイナリだけをコピー
-COPY --from=builder /app/target/release/backend /app/backend
+COPY --from=builder /app/backend/target/release/backend /app/backend
 # シードデータもコピー
-COPY --from=builder /app/seeds /app/seeds
+COPY --from=builder /app/backend/seeds /app/seeds
 # シードデータのパスを明示的に指定（デフォルト設定）
 ENV SEED_PATH=/app/seeds
+# アプリ設定ファイルを同梱（Koyeb等でbuild contextをリポジトリルートにした前提）
+COPY app_config.json /app/app_config.json
+ENV APP_CONFIG_PATH=/app/app_config.json
 EXPOSE 8080
 CMD ["./backend"]
 
