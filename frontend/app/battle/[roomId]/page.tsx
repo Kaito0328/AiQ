@@ -56,6 +56,11 @@ function BattlePageContent() {
         updateLocalQuestion
     } = useBattle(roomId, joinToken);
 
+    const isHost = React.useMemo(() => {
+        if (!user || !room) return false;
+        return user.id.toLowerCase() === room.host_id.toLowerCase();
+    }, [user, room]);
+
     // Show loading while connecting, even if there's a transient error
     if (!isConnected || !room) {
         return (
@@ -87,12 +92,6 @@ function BattlePageContent() {
             </div>
         );
     }
-
-    const isHost = React.useMemo(() => {
-        if (!user || !room) return false;
-        return user.id.toLowerCase() === room.host_id.toLowerCase();
-    }, [user, room]);
-
     return (
         <div className="h-[100dvh] overflow-hidden bg-surface-muted/30 flex flex-col">
             <div className="flex-1 flex flex-col overflow-y-auto w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
