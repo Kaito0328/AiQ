@@ -88,7 +88,7 @@ export function CollectionHeader({
     };
 
     return (
-        <Card className="border border-gray-300">
+        <Card border="base">
             <Stack gap="lg">
                 <Flex justify="between" align="start" className="flex-wrap gap-4">
                     <Stack gap="sm" className="flex-1">
@@ -121,14 +121,14 @@ export function CollectionHeader({
                 </Flex>
 
                 {collection.descriptionText && (
-                    <View className="border-t border-gray-200 pt-4">
+                    <View className="border-t border-surface-muted/50 pt-4">
                         <Text variant="detail" color="secondary" className="leading-relaxed">
                             {collection.descriptionText}
                         </Text>
                     </View>
                 )}
 
-                <Flex justify="between" align="end" className="border-t border-gray-200 pt-4">
+                <Flex justify="between" align="end" className="border-t border-surface-muted/50 pt-4">
                     <Flex gap="lg">
                         <Flex gap="xs" align="center" className="text-foreground/60">
                             <BookOpen size={16} />

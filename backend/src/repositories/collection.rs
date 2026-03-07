@@ -12,6 +12,7 @@ impl CollectionRepository {
         name: String,
         description_text: Option<String>,
         is_open: bool,
+        default_mode: String,
     ) -> Result<Collection, sqlx::Error> {
         let mut tx = pool.begin().await?;
 
@@ -22,7 +23,8 @@ impl CollectionRepository {
             user_id,
             name,
             description_text,
-            is_open
+            is_open,
+            default_mode
         )
         .fetch_one(&mut *tx)
         .await?;
@@ -109,6 +111,7 @@ impl CollectionRepository {
         name: String,
         description_text: Option<String>,
         is_open: bool,
+        default_mode: String,
     ) -> Result<Collection, sqlx::Error> {
         let collection = sqlx::query_file_as!(
             Collection,
@@ -116,6 +119,7 @@ impl CollectionRepository {
             name,
             description_text,
             is_open,
+            default_mode,
             collection_id,
             user_id
         )
@@ -150,65 +154,61 @@ impl CollectionRepository {
             return Ok(Vec::new());
         }
 
-        let mut ids = Vec::new();
-        let mut user_ids = Vec::new();
-        let mut names: Vec<Option<String>> = Vec::new();
-        let mut descriptions: Vec<Option<String>> = Vec::new();
-        let mut is_opens: Vec<Option<bool>> = Vec::new();
+        let mut tx = pool.begin().await?;
+        let mut results = Vec::new();
+        let mut new_ids = Vec::new();
 
         for item in items {
             let is_new = item.id.is_none();
-            ids.push(item.id.unwrap_or_else(Uuid::new_v4));
-            user_ids.push(user_id);
+            let item_id = item.id.unwrap_or_else(Uuid::new_v4);
 
-            // 新規の場合はデフォルト値、更新の場合は None を維持（COALESCE用）
-            names.push(item.name.or_else(|| {
-                if is_new {
-                    Some("Untitled".to_string())
-                } else {
-                    None
+            if is_new {
+                // INSERT
+                let name = item.name.unwrap_or_else(|| "Untitled".to_string());
+                let is_open = item.is_open.unwrap_or(false);
+                let default_mode = item.default_mode.unwrap_or_else(|| "omakase".to_string());
+
+                let result = sqlx::query_file_as!(
+                    Collection,
+                    "src/queries/collections/insert_collection_with_id.sql",
+                    item_id,
+                    user_id,
+                    name,
+                    item.description_text,
+                    is_open,
+                    default_mode
+                )
+                .fetch_one(&mut *tx)
+                .await?;
+
+                results.push(result);
+                new_ids.push(item_id);
+            } else {
+                // UPDATE
+                let result = sqlx::query_file_as!(
+                    Collection,
+                    "src/queries/collections/update_collection_with_coalesce.sql",
+                    item_id,
+                    item.name,
+                    item.description_text,
+                    item.is_open,
+                    item.default_mode,
+                    user_id
+                )
+                .fetch_optional(&mut *tx)
+                .await?;
+
+                if let Some(r) = result {
+                    results.push(r);
                 }
-            }));
-            descriptions.push(item.description_text);
-            is_opens.push(item.is_open.or(if is_new { Some(false) } else { None }));
+            }
         }
 
-        let mut tx = pool.begin().await?;
-
-        let results = sqlx::query_as!(
-            Collection,
-            r#"
-            INSERT INTO collections (id, user_id, name, description_text, is_open)
-            SELECT * FROM UNNEST($1::uuid[], $2::uuid[], $3::text[], $4::text[], $5::boolean[])
-            ON CONFLICT (id) DO UPDATE SET
-                name = COALESCE(EXCLUDED.name, collections.name),
-                description_text = COALESCE(EXCLUDED.description_text, collections.description_text),
-                is_open = COALESCE(EXCLUDED.is_open, collections.is_open),
-                updated_at = NOW()
-            WHERE collections.user_id = EXCLUDED.user_id
-            RETURNING *
-            "#,
-            &ids,
-            &user_ids,
-            &names as &[Option<String>],
-            &descriptions as &[Option<String>],
-            &is_opens as &[Option<bool>]
-        )
-        .fetch_all(&mut *tx)
-        .await?;
-
         // upsert collection_stats for new collections safely
-        if !results.is_empty() {
-            sqlx::query!(
-                r#"
-                INSERT INTO collection_stats (collection_id)
-                SELECT id FROM UNNEST($1::uuid[]) AS id
-                ON CONFLICT (collection_id) DO NOTHING
-                "#,
-                &ids
-            )
-            .execute(&mut *tx)
-            .await?;
+        if !new_ids.is_empty() {
+            sqlx::query_file!("src/queries/collections/insert_stats_batch.sql", &new_ids)
+                .execute(&mut *tx)
+                .await?;
         }
 
         tx.commit().await?;
@@ -225,8 +225,8 @@ impl CollectionRepository {
             return Ok(0);
         }
 
-        let result = sqlx::query!(
-            "DELETE FROM collections WHERE user_id = $1 AND id = ANY($2)",
+        let result = sqlx::query_file!(
+            "src/queries/collections/delete_collections_by_ids.sql",
             user_id,
             &collection_ids
         )

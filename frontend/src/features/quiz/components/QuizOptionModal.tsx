@@ -9,20 +9,22 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { View } from '@/src/design/primitives/View';
 import { X, SlidersHorizontal, Shuffle, ArrowDownUp, Hash, Play, Swords } from 'lucide-react';
 import { Modal } from '@/src/design/baseComponents/Modal';
-import { FilterCondition, SortCondition } from '@/src/entities/quiz';
+import { SortCondition, QuizMode, FilterNode } from '@/src/entities/quiz';
 import { QuizOptions } from './QuizOptions';
 
 interface QuizOptionModalProps {
     selectedCount: number;
-    onStart: (filters: FilterCondition[], sorts: SortCondition[], limit: number) => void;
+    onStart: (filterNode: FilterNode | undefined, sorts: SortCondition[], limit: number, mode?: QuizMode, count?: number) => void;
     onCancel: () => void;
     loading?: boolean;
 }
 
 export function QuizOptionModal({ selectedCount, onStart, onCancel, loading }: QuizOptionModalProps) {
-    const [filters, setFilters] = useState<FilterCondition[]>([]);
+    const [filterNode, setFilterNode] = useState<FilterNode | undefined>(undefined);
     const [sorts, setSorts] = useState<SortCondition[]>([]);
     const [limit, setLimit] = useState(10);
+    const [preferredMode, setPreferredMode] = useState<QuizMode>('chips');
+    const [dummyCharCount, setDummyCharCount] = useState<number>(6);
 
     return (
         <Modal
@@ -38,7 +40,7 @@ export function QuizOptionModal({ selectedCount, onStart, onCancel, loading }: Q
                     <Button
                         variant="solid"
                         color="primary"
-                        onClick={() => onStart(filters, sorts, limit)}
+                        onClick={() => onStart(filterNode, sorts, limit, preferredMode, dummyCharCount)}
                         disabled={loading}
                         className="gap-2 flex-1 sm:flex-none"
                     >
@@ -54,12 +56,16 @@ export function QuizOptionModal({ selectedCount, onStart, onCancel, loading }: Q
                 </Text>
 
                 <QuizOptions
-                    filters={filters}
+                    filterNode={filterNode}
                     sorts={sorts}
                     limit={limit}
-                    onFilterChange={setFilters}
+                    preferredMode={preferredMode}
+                    dummyCharCount={dummyCharCount}
+                    onFilterNodeChange={setFilterNode}
                     onSortChange={setSorts}
                     onLimitChange={setLimit}
+                    onModeChange={setPreferredMode}
+                    onDummyCountChange={setDummyCharCount}
                 />
             </Stack>
         </Modal>

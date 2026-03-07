@@ -4,6 +4,11 @@ import { Question } from './question';
 // Quiz Types (matching backend snake_case responses)
 // ==========================================
 
+export type QuizMode = 'text' | 'fourChoice' | 'chips' | 'fuzzy';
+export type PreferredQuestionMode = QuizMode | 'default';
+export type DefaultCollectionMode = QuizMode | 'omakase';
+export type RecommendedMode = 'choice' | 'recall' | QuizMode;
+
 export interface CasualQuiz {
     id: string;
     collectionNames: string[];
@@ -12,6 +17,8 @@ export interface CasualQuiz {
     answeredQuestionIds: string[];
     correctCount: number;
     elapsedTimeMillis: number;
+    preferredMode: QuizMode;
+    dummyCharCount: number;
     isActive: boolean;
     createdAt: string;
 }
@@ -109,6 +116,11 @@ export interface FilterCondition {
     value?: number;
 }
 
+export type FilterNode =
+    | { operator: 'AND'; conditions: FilterNode[] }
+    | { operator: 'OR'; conditions: FilterNode[] }
+    | { operator: 'CONDITION'; condition: FilterCondition };
+
 export interface SortCondition {
     key: SortKey;
     direction?: SortDirection;
@@ -118,7 +130,9 @@ export interface SortCondition {
 export interface QuizRequest {
     collectionIds: string[];
     collectionSetId?: string;
-    filters: FilterCondition[];
+    filterNode?: FilterNode;
     sorts: SortCondition[];
     limit: number;
+    preferredMode?: QuizMode;
+    dummyCharCount?: number;
 }

@@ -8,23 +8,25 @@ import { Grid } from '@/src/design/primitives/Grid';
 import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
+import { Badge } from '@/src/design/baseComponents/Badge';
 import { UserProfile } from '@/src/entities/user';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { followUser, unfollowUser } from '@/src/features/follow/api';
-import { UserCircle, Users, BookOpen, Layers, UserPlus, UserMinus } from 'lucide-react';
+import { Icon, IconName } from '@/src/design/baseComponents/Icon';
 import { useRouter } from 'next/navigation';
 
 interface StatProps {
     label: string;
     value: number;
-    icon: React.ReactNode;
+    iconName: IconName;
+    className?: string;
 }
 
-function Stat({ label, value, icon }: StatProps) {
+function Stat({ label, value, iconName, className }: StatProps) {
     return (
-        <Stack gap="xs" align="center">
+        <Stack gap="xs" align="center" className={className}>
             <Flex gap="xs" align="center" className="text-foreground/60">
-                {icon}
+                <Icon name={iconName} size={18} />
                 <Text variant="xs" color="muted">{label}</Text>
             </Flex>
             <Text weight="bold" variant="detail">{value}</Text>
@@ -82,7 +84,7 @@ export function UserHeader({ profile }: UserHeaderProps) {
                             {profile.iconUrl ? (
                                 <img src={profile.iconUrl} alt={profile.displayName || profile.username} className="w-full h-full object-cover" />
                             ) : (
-                                <UserCircle size={40} className="text-brand-primary" />
+                                <Icon name="user" size={40} className="text-brand-primary" />
                             )}
                         </View>
                         <Stack gap="xs">
@@ -91,9 +93,9 @@ export function UserHeader({ profile }: UserHeaderProps) {
                                 <Text variant="xs" color="secondary">@{profile.username}</Text>
                             )}
                             {profile.isOfficial && (
-                                <Text variant="xs" color="primary" className="bg-brand-primary/10 px-2 py-0.5 rounded-full font-bold w-fit">
+                                <Badge variant="primary" className="w-fit">
                                     Official
-                                </Text>
+                                </Badge>
                             )}
                             {profile.bio && (
                                 <Text variant="xs" color="secondary" className="mt-1">{profile.bio}</Text>
@@ -104,7 +106,7 @@ export function UserHeader({ profile }: UserHeaderProps) {
                     <Flex gap="md">
                         {isSelf ? (
                             <Button variant="outline" onClick={() => router.push('/settings')} className="gap-1.5">
-                                設定
+                                プロフィール設定
                             </Button>
                         ) : isAuthenticated ? (
                             <Button
@@ -116,12 +118,12 @@ export function UserHeader({ profile }: UserHeaderProps) {
                             >
                                 {isFollowing ? (
                                     <>
-                                        <UserMinus size={16} />
+                                        <Icon name="unfollow" size={16} />
                                         フォロー中
                                     </>
                                 ) : (
                                     <>
-                                        <UserPlus size={16} />
+                                        <Icon name="follow" size={16} />
                                         フォローする
                                     </>
                                 )}
@@ -131,10 +133,10 @@ export function UserHeader({ profile }: UserHeaderProps) {
                 </Flex>
 
                 <Grid cols={2} gap="md" className="border-t border-surface-muted pt-6 sm:grid-cols-4">
-                    <Stat label="フォロワー" value={followerCount} icon={<Users size={18} />} />
-                    <Stat label="フォロー中" value={profile.followingCount || 0} icon={<Users size={18} />} />
-                    <Stat label="問題集" value={profile.collectionCount || 0} icon={<BookOpen size={18} />} />
-                    <Stat label="まとめ枠" value={profile.setCount || 0} icon={<Layers size={18} />} />
+                    <Stat label="フォロワー" value={followerCount} iconName="users" />
+                    <Stat label="フォロー中" value={profile.followingCount || 0} iconName="users" />
+                    <Stat label="コレクション" value={profile.collectionCount || 0} iconName="collection" className="hidden sm:flex" />
+                    <Stat label="セット" value={profile.setCount || 0} iconName="collectionSet" className="hidden sm:flex" />
                 </Grid>
             </Stack>
         </Card>

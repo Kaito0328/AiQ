@@ -81,16 +81,8 @@ impl IntoResponse for AppError {
                 "INTERNAL_SERVER_ERROR",
                 msg, // 元々Stringなのでそのまま渡す（所有権の移動）
             ),
-            AppError::Forbidden(msg) => (
-                StatusCode::FORBIDDEN,
-                "FORBIDDEN",
-                msg,
-            ),
-            AppError::BadRequest(msg) => (
-                StatusCode::BAD_REQUEST,
-                "BAD_REQUEST",
-                msg,
-            ),
+            AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, "FORBIDDEN", msg),
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "BAD_REQUEST", msg),
             AppError::CannotFollowSelf => (
                 StatusCode::BAD_REQUEST,
                 "CANNOT_FOLLOW_SELF",

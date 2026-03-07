@@ -71,7 +71,9 @@ pub async fn batch_questions(
     Path(collection_id): Path<Uuid>,
     Json(payload): Json<crate::dtos::question_dto::BatchQuestionsRequest>,
 ) -> Result<Json<crate::dtos::batch_dto::BatchUpsertResponse<Question>>, StatusCode> {
-    match QuestionService::batch_questions(&state.db, collection_id, claims.user_id(), payload).await {
+    match QuestionService::batch_questions(&state.db, collection_id, claims.user_id(), payload)
+        .await
+    {
         Ok((upserted, _deleted)) => Ok(Json(crate::dtos::batch_dto::BatchUpsertResponse {
             success_items: upserted,
             failed_create_items: Vec::new(),

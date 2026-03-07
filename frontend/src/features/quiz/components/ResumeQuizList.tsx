@@ -97,7 +97,7 @@ export function ResumeQuizList() {
                                             </Text>
                                         </Flex>
                                         {/* プログレスバー */}
-                                        <View className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mt-1">
+                                        <View className="w-full h-1.5 bg-surface-muted rounded-full overflow-hidden mt-1">
                                             <View
                                                 className="h-full bg-brand-primary transition-all duration-500"
                                                 style={{ width: `${progress}%` }}

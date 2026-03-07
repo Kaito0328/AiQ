@@ -13,102 +13,109 @@ import { useRecentCollections, useFolloweeCollections } from '@/src/features/col
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
 import { QuizOptionModal } from '@/src/features/quiz/components/QuizOptionModal';
+import { QuizMode, FilterNode } from '@/src/entities/quiz';
 import { startCasualQuiz } from '@/src/features/quiz/api';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { LayoutGrid, List } from 'lucide-react';
+import { cn } from '@/src/shared/utils/cn';
+import { Button } from '@/src/design/baseComponents/Button';
 
 interface TimelineListProps {
     type: 'recent' | 'following';
     onAddToSet: (id: string) => void;
-    onQuickPlay: (id: string) => void;
+    viewMode: 'grid' | 'list';
+    setViewMode: (mode: 'grid' | 'list') => void;
 }
 
-function TimelineList({ type, onAddToSet, onQuickPlay }: TimelineListProps) {
+function TimelineList({ type, onAddToSet, viewMode, setViewMode }: TimelineListProps) {
     const { isAuthenticated } = useAuth();
     const recent = useRecentCollections(type === 'recent');
     const followee = useFolloweeCollections(isAuthenticated && type === 'following');
 
     const currentData = type === 'following' ? followee : recent;
 
-    if (currentData.loading) {
-        return (
-            <Flex justify="center" className="py-20">
-                <Spinner size="lg" />
-            </Flex>
-        );
-    }
-
-    if (currentData.error) {
-        return (
-            <View className="bg-brand-danger/10 p-6 rounded-lg text-center">
-                <Text color="danger">エラー: {currentData.error}</Text>
-            </View>
-        );
-    }
-
-    if (currentData.collections.length === 0) {
-        return (
-            <View className="py-20 text-center">
-                <Text color="secondary">投稿がありません</Text>
-            </View>
-        );
-    }
-
     return (
-        <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
-            {currentData.collections.map((collection) => (
-                <CollectionCard
-                    key={collection.id}
-                    collection={collection}
-                    onAddToSet={isAuthenticated ? onAddToSet : undefined}
-                    onClick={() => {
-                        onQuickPlay(collection.id);
-                    }}
-                />
-            ))}
-        </Grid>
+        <Stack gap="md">
+            {/* View Mode Toggle Bar */}
+            <Flex justify="end" align="center" className="mb-2">
+                <Flex gap="xs" align="center" className="bg-surface-muted/50 p-1 rounded-lg border border-surface-muted">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                            "w-8 h-8 p-0 transition-all",
+                            viewMode === 'grid' ? "bg-surface-base shadow-sm text-brand-primary" : "text-secondary"
+                        )}
+                        onClick={() => setViewMode('grid')}
+                    >
+                        <LayoutGrid size={16} />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                            "w-8 h-8 p-0 transition-all",
+                            viewMode === 'list' ? "bg-surface-base shadow-sm text-brand-primary" : "text-secondary"
+                        )}
+                        onClick={() => setViewMode('list')}
+                    >
+                        <List size={16} />
+                    </Button>
+                </Flex>
+            </Flex>
+
+            {currentData.loading ? (
+                <View padding="xl">
+                    <Flex justify="center">
+                        <Spinner size="lg" />
+                    </Flex>
+                </View>
+            ) : currentData.error ? (
+                <View className="bg-brand-danger/10" padding="xl" rounded="lg">
+                    <Text align="center" color="danger">エラー: {currentData.error}</Text>
+                </View>
+            ) : currentData.collections.length === 0 ? (
+                <View padding="xl">
+                    <Text align="center" color="secondary">投稿がありません</Text>
+                </View>
+            ) : viewMode === 'grid' ? (
+                <Grid cols={{ sm: 1, md: 2, lg: 3 }} gap="md" className="grid-cols-1">
+                    {currentData.collections.map((collection) => (
+                        <CollectionCard
+                            key={collection.id}
+                            collection={collection}
+                            displayMode="grid"
+                            onAddToSet={isAuthenticated ? onAddToSet : undefined}
+                        />
+                    ))}
+                </Grid>
+            ) : (
+                <Stack gap="sm">
+                    {currentData.collections.map((collection) => (
+                        <CollectionCard
+                            key={collection.id}
+                            collection={collection}
+                            displayMode="list"
+                            onAddToSet={isAuthenticated ? onAddToSet : undefined}
+                        />
+                    ))}
+                </Stack>
+            )}
+        </Stack>
     );
 }
-
 export function TimelineTabs() {
-    const router = useRouter();
+    const router = useRouter(); // Note: kept for handleQuickPlay if needed, but we remove that. Keep for uniformity.
     const { isAuthenticated } = useAuth();
     const [collectionToAddToSet, setCollectionToAddToSet] = useState<string | null>(null);
-    const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
-    const [isStartingQuiz, setIsStartingQuiz] = useState(false);
-
-    const handleQuickPlay = (id: string) => {
-        setSelectedCollectionId(id);
-    };
-
-    const handleStartQuiz = async (filters: any[], sorts: any[], limit: number) => {
-        if (!selectedCollectionId) return;
-        setIsStartingQuiz(true);
-        try {
-            const resp = await startCasualQuiz({
-                collectionIds: [selectedCollectionId],
-                filters,
-                sorts,
-                limit
-            });
-            if (typeof window !== 'undefined') {
-                sessionStorage.setItem('quizData', JSON.stringify(resp));
-            }
-            router.push('/quiz');
-        } catch (err) {
-            console.error('Failed to start quiz', err);
-        } finally {
-            setIsStartingQuiz(false);
-            setSelectedCollectionId(null);
-        }
-    };
-
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     const items: TabItem[] = [
         {
             id: 'recent',
             label: '最新の投稿',
-            content: <TimelineList type="recent" onAddToSet={setCollectionToAddToSet} onQuickPlay={handleQuickPlay} />
+            content: <TimelineList type="recent" onAddToSet={setCollectionToAddToSet} viewMode={viewMode} setViewMode={setViewMode} />
         }
     ];
 
@@ -116,7 +123,7 @@ export function TimelineTabs() {
         items.unshift({
             id: 'following',
             label: 'フォロー中',
-            content: <TimelineList type="following" onAddToSet={setCollectionToAddToSet} onQuickPlay={handleQuickPlay} />
+            content: <TimelineList type="following" onAddToSet={setCollectionToAddToSet} viewMode={viewMode} setViewMode={setViewMode} />
         });
     }
 
@@ -128,15 +135,6 @@ export function TimelineTabs() {
                 <AddToSetModal
                     collectionId={collectionToAddToSet}
                     onClose={() => setCollectionToAddToSet(null)}
-                />
-            )}
-
-            {selectedCollectionId && (
-                <QuizOptionModal
-                    selectedCount={1}
-                    onStart={handleStartQuiz}
-                    onCancel={() => setSelectedCollectionId(null)}
-                    loading={isStartingQuiz}
                 />
             )}
         </Stack>

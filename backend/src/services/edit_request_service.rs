@@ -1,9 +1,9 @@
-use sqlx::PgPool;
-use uuid::Uuid;
-use crate::models::edit_request::EditRequest;
-use crate::repositories::edit_request::EditRequestRepository;
 use crate::dtos::edit_request_dto::{CreateEditRequest, EditRequestResponse};
 use crate::error::AppError;
+use crate::models::edit_request::EditRequest;
+use crate::repositories::edit_request::EditRequestRepository;
+use sqlx::PgPool;
+use uuid::Uuid;
 
 pub struct EditRequestService;
 
@@ -19,11 +19,15 @@ impl EditRequestService {
             requester_id,
             req.question_text,
             req.correct_answers,
+            req.answer_rubis,
+            req.distractors,
             req.description_text,
             req.reason_id,
         )
         .await
-        .map_err(|e| AppError::InternalServerError(format!("Failed to create edit request: {}", e)))?;
+        .map_err(|e| {
+            AppError::InternalServerError(format!("Failed to create edit request: {}", e))
+        })?;
 
         Ok(Self::map_to_response(request))
     }
@@ -34,9 +38,14 @@ impl EditRequestService {
     ) -> Result<Vec<EditRequestResponse>, AppError> {
         let requests = EditRequestRepository::find_by_collection_id(pool, collection_id)
             .await
-            .map_err(|e| AppError::InternalServerError(format!("Failed to list edit requests: {}", e)))?;
+            .map_err(|e| {
+                AppError::InternalServerError(format!("Failed to list edit requests: {}", e))
+            })?;
 
-        Ok(requests.into_iter().map(|r| Self::map_to_response(r)).collect())
+        Ok(requests
+            .into_iter()
+            .map(|r| Self::map_to_response(r))
+            .collect())
     }
 
     pub async fn list_by_owner(
@@ -45,9 +54,14 @@ impl EditRequestService {
     ) -> Result<Vec<EditRequestResponse>, AppError> {
         let requests = EditRequestRepository::find_by_owner_id(pool, owner_id)
             .await
-            .map_err(|e| AppError::InternalServerError(format!("Failed to list owner edit requests: {}", e)))?;
+            .map_err(|e| {
+                AppError::InternalServerError(format!("Failed to list owner edit requests: {}", e))
+            })?;
 
-        Ok(requests.into_iter().map(|r| Self::map_to_response(r)).collect())
+        Ok(requests
+            .into_iter()
+            .map(|r| Self::map_to_response(r))
+            .collect())
     }
 
     pub async fn update_status(
@@ -57,7 +71,12 @@ impl EditRequestService {
     ) -> Result<EditRequestResponse, AppError> {
         let request = EditRequestRepository::update_status(pool, id, status)
             .await
-            .map_err(|e| AppError::InternalServerError(format!("Failed to update edit request status: {}", e)))?;
+            .map_err(|e| {
+                AppError::InternalServerError(format!(
+                    "Failed to update edit request status: {}",
+                    e
+                ))
+            })?;
 
         Ok(Self::map_to_response(request))
     }
@@ -70,12 +89,16 @@ impl EditRequestService {
             requester_name: er.requester_name,
             question_text: er.question_text,
             correct_answers: er.correct_answers,
+            answer_rubis: er.answer_rubis,
+            distractors: er.distractors,
             description_text: er.description_text,
             reason_id: er.reason_id,
             status: er.status,
             created_at: er.created_at,
             original_question_text: er.original_question_text,
             original_correct_answers: er.original_correct_answers,
+            original_answer_rubis: er.original_answer_rubis,
+            original_distractors: er.original_distractors,
             original_description_text: er.original_description_text,
             collection_name: er.collection_name,
         }

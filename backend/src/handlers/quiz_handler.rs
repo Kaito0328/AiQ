@@ -1,28 +1,29 @@
 use crate::{
-    dtos::quiz_dto::{StartCasualQuizRequest, SubmitAnswerRequest, CasualQuizResponse, QuizStartResponse, QuizResumeResponse},
+    dtos::quiz_dto::{
+        CasualQuizResponse, QuizResumeResponse, QuizStartResponse, StartCasualQuizRequest,
+        SubmitAnswerRequest,
+    },
     error::AppError,
-    utils::jwt::Claims,
-    services::quiz_service::QuizService,
     repositories::{question::QuestionRepository, quiz::QuizRepository},
+    services::quiz_service::QuizService,
     state::AppState,
+    utils::jwt::Claims,
 };
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
 use uuid::Uuid;
 
+use crate::extractors::auth::OptionalClaims;
+
 pub async fn start_casual_quiz(
     State(state): State<AppState>,
-    claims: Claims,
+    OptionalClaims(claims): OptionalClaims,
     Json(req): Json<StartCasualQuizRequest>,
 ) -> Result<Json<QuizStartResponse>, AppError> {
-    let quiz = QuizService::start_casual_quiz(
-        &state.db,
-        claims.user_id(),
-        req,
-    )
-    .await?;
+    let user_id = claims.map(|c| c.user_id());
+    let quiz = QuizService::start_casual_quiz(&state.db, user_id, req).await?;
 
     let mut questions = Vec::new();
     for &q_id in &quiz.question_ids {
@@ -39,13 +40,14 @@ pub async fn start_casual_quiz(
 
 pub async fn submit_answer(
     State(state): State<AppState>,
-    claims: Claims,
+    OptionalClaims(claims): OptionalClaims,
     Path(quiz_id): Path<Uuid>,
     Json(req): Json<SubmitAnswerRequest>,
 ) -> Result<Json<CasualQuizResponse>, AppError> {
+    let user_id = claims.map(|c| c.user_id());
     let quiz = QuizService::submit_answer(
         &state.db,
-        claims.user_id(),
+        user_id,
         quiz_id,
         req.question_id,
         Some(req.user_answer),
@@ -67,11 +69,12 @@ pub async fn get_resumes(
 
 pub async fn resume_quiz(
     State(state): State<AppState>,
-    claims: Claims,
+    OptionalClaims(claims): OptionalClaims,
     Path(quiz_id): Path<Uuid>,
 ) -> Result<Json<QuizResumeResponse>, AppError> {
-    let quiz = QuizService::resume_quiz(&state.db, claims.user_id(), quiz_id).await?;
-    
+    let user_id = claims.map(|c| c.user_id());
+    let quiz = QuizService::resume_quiz(&state.db, user_id, quiz_id).await?;
+
     let mut questions = Vec::new();
     for &q_id in &quiz.question_ids {
         if let Ok(q) = QuestionRepository::find_by_id(&state.db, q_id).await {
@@ -79,7 +82,9 @@ pub async fn resume_quiz(
         }
     }
 
-    let answers = QuizRepository::find_answers_by_quiz_id(&state.db, quiz_id).await.unwrap_or_default();
+    let answers = QuizRepository::find_answers_by_quiz_id(&state.db, quiz_id)
+        .await
+        .unwrap_or_default();
     let answers_outputs = answers.into_iter().map(Into::into).collect();
 
     let response = QuizResumeResponse {

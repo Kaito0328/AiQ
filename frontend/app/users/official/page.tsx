@@ -10,9 +10,11 @@ import { getOfficialUser } from '@/src/features/auth/api';
 import { UserHeader } from '@/src/features/users/components/UserHeader';
 import { UserContentTabs } from '@/src/features/users/components/UserContentTabs';
 import { startRankingQuiz } from '@/src/features/quiz/api';
-import { Book } from 'lucide-react';
+import { Book, LayoutGrid, List } from 'lucide-react';
 import { UserProfile } from '@/src/entities/user';
 import { useRouter } from 'next/navigation';
+import { Flex } from '@/src/design/primitives/Flex';
+import { Button } from '@/src/design/baseComponents/Button';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
 
@@ -23,6 +25,7 @@ export default function OfficialUserPage() {
 
     const [targetCollectionId, setTargetCollectionId] = useState<string | null>(null);
     const [isAddToSetModalOpen, setIsAddToSetModalOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
         const fetchOfficial = async () => {
@@ -81,14 +84,6 @@ export default function OfficialUserPage() {
             <BackButton />
             <Container className="pt-20 pb-12">
                 <Stack gap="xl">
-                    <Stack gap="sm" align="center" className="text-center">
-                        <Book size={32} className="text-brand-primary" />
-                        <Text variant="h1" weight="bold">公式の問題集</Text>
-                        <Text color="secondary" variant="detail">
-                            公式が提供する学習コレクション
-                        </Text>
-                    </Stack>
-
                     <UserHeader profile={profile} />
 
                     <UserContentTabs
@@ -98,7 +93,30 @@ export default function OfficialUserPage() {
                         onToggleCollection={() => { }}
                         onStartRanking={handleStartRanking}
                         onAddToSet={handleOpenAddToSet}
+                        collectionActions={
+                            <Flex gap="xs" className="bg-surface-muted p-1 rounded-lg ml-auto">
+                                <Button
+                                    size="sm"
+                                    variant={viewMode === 'grid' ? 'solid' : 'ghost'}
+                                    className="p-1.5 h-auto"
+                                    onClick={() => setViewMode('grid')}
+                                    title="グリッド表示"
+                                >
+                                    <LayoutGrid size={16} className="opacity-60" />
+                                </Button>
+                                <Button
+                                    size="sm"
+                                    variant={viewMode === 'list' ? 'solid' : 'ghost'}
+                                    className="p-1.5 h-auto"
+                                    onClick={() => setViewMode('list')}
+                                    title="リスト表示"
+                                >
+                                    <List size={16} className="opacity-60" />
+                                </Button>
+                            </Flex>
+                        }
                         hideExtras={false}
+                        displayMode={viewMode}
                     />
                 </Stack>
             </Container>

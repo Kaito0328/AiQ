@@ -42,11 +42,24 @@ async fn test_batch_collections(pool: sqlx::PgPool) {
         .unwrap();
 
     let res_batch = app.clone().oneshot(req_batch).await.unwrap();
-    assert_eq!(res_batch.status(), StatusCode::OK);
-
+    let status = res_batch.status();
     let body_bytes = res_batch.into_body().collect().await.unwrap().to_bytes();
+    if status != StatusCode::OK {
+        let err_body = String::from_utf8_lossy(&body_bytes);
+        println!("Batch Request Failed with status {}: {}", status, err_body);
+    }
+    assert_eq!(status, StatusCode::OK);
+
     let result: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(result.get("successItems").unwrap().as_array().unwrap().len(), 2);
+    assert_eq!(
+        result
+            .get("successItems")
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
 }
 
 #[sqlx::test]
@@ -85,5 +98,13 @@ async fn test_batch_questions(pool: sqlx::PgPool) {
 
     let body_bytes = res_batch.into_body().collect().await.unwrap().to_bytes();
     let result: serde_json::Value = serde_json::from_slice(&body_bytes).unwrap();
-    assert_eq!(result.get("successItems").unwrap().as_array().unwrap().len(), 1);
+    assert_eq!(
+        result
+            .get("successItems")
+            .unwrap()
+            .as_array()
+            .unwrap()
+            .len(),
+        1
+    );
 }

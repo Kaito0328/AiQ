@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { useParams, useSearchParams } from 'next/navigation';
+import React, { Suspense } from 'react';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useBattle } from '@/src/features/battle/hooks/useBattle';
 import { BattleLobby } from '@/src/features/battle/components/BattleLobby';
 import { BattleQuiz } from '@/src/features/battle/components/BattleQuiz';
@@ -15,9 +15,10 @@ import { AlertCircle, Zap } from 'lucide-react';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 import { Stack } from '@/src/design/primitives/Stack';
 
-export default function BattlePage() {
+function BattlePageContent() {
     const params = useParams();
     const searchParams = useSearchParams();
+    const router = useRouter();
     const { user } = useAuth();
 
     const roomId = params.roomId as string;
@@ -28,6 +29,7 @@ export default function BattlePage() {
         questions,
         currentQuestionIndex,
         buzzedUserId,
+        buzzerQueue,
         buzzedUserIds,
         submittedUserIds,
         lastRoundResult,
@@ -35,18 +37,40 @@ export default function BattlePage() {
         expiresAtMs,
         isPreparing,
         maxBuzzes,
+        config,
         selfId,
+        partialAnswer,
         roundSummaries,
         error,
         isConnected,
         startMatch,
         buzz,
         submitAnswer,
+        submitPartialAnswer,
         updateConfig,
+        updateMatchConfig,
         updateVisibility,
         backToLobby,
-        resetMatch
+        resetMatch,
+        updateLocalQuestion
     } = useBattle(roomId, joinToken);
+
+    // Show loading while connecting, even if there's a transient error
+    if (!isConnected || !room) {
+        return (
+            <div className="container mx-auto py-12 px-4">
+                <Flex direction="column" align="center" justify="center" className="min-h-[50vh] gap-4">
+                    <Spinner size="lg" />
+                    <Text color="secondary" weight="bold">サーバーに接続中...</Text>
+                    {error && (
+                        <Text variant="xs" color="danger" className="animate-pulse">
+                            接続エラーが発生しています：{error}
+                        </Text>
+                    )}
+                </Flex>
+            </div>
+        );
+    }
 
     if (error) {
         return (
@@ -63,22 +87,11 @@ export default function BattlePage() {
         );
     }
 
-    if (!isConnected || !room) {
-        return (
-            <div className="container mx-auto py-12 px-4">
-                <Flex direction="column" align="center" justify="center" className="min-h-[50vh] gap-4">
-                    <Spinner size="lg" />
-                    <Text color="secondary" weight="bold">サーバーに接続中...</Text>
-                </Flex>
-            </div>
-        );
-    }
-
     const isHost = user?.id === room.host_id;
 
     return (
-        <div className="min-h-screen bg-surface-muted/30">
-            <div className="container mx-auto py-8 md:py-12 px-4">
+        <div className="h-[100dvh] overflow-hidden bg-surface-muted/30 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-y-auto w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
                 {room.status === 'Waiting' && (
                     <BattleLobby
                         room={room}
@@ -89,6 +102,9 @@ export default function BattlePage() {
                         onUpdateVisibility={updateVisibility}
                         onResetMatch={resetMatch}
                         selfId={selfId}
+                        config={config}
+                        onUpdateMatchConfig={updateMatchConfig}
+                        onLeave={() => router.push('/home')}
                     />
                 )}
 
@@ -117,18 +133,26 @@ export default function BattlePage() {
                     <BattleQuiz
                         question={questions[currentQuestionIndex]}
                         buzzedUserId={buzzedUserId}
-                        buzzedUserIds={buzzedUserIds}
+                        buzzerQueue={buzzerQueue}
                         submittedUserIds={submittedUserIds}
                         lastRoundResult={lastRoundResult}
                         players={room.players}
                         selfId={selfId}
                         onBuzz={buzz}
                         onSubmit={submitAnswer}
+                        onPartialSubmit={submitPartialAnswer}
+                        partialAnswer={partialAnswer}
                         expiresAtMs={expiresAtMs}
                         answerResult={answerResult}
                         currentQuestionIndex={currentQuestionIndex}
                         totalQuestions={questions.length}
                         maxBuzzes={maxBuzzes}
+                        preferredMode={room.preferred_mode}
+                        dummyCharCount={room.dummy_char_count}
+                        config={config}
+                        onBackToLobby={backToLobby}
+                        onUpdateLocalQuestion={updateLocalQuestion}
+                        isHost={isHost}
                     />
                 )}
 
@@ -137,8 +161,9 @@ export default function BattlePage() {
                         scores={room.players}
                         isHost={isHost}
                         onBackToLobby={backToLobby}
-                        onReplay={startMatch} // Replay same questions
+                        onReplay={startMatch}
                         roundSummaries={roundSummaries}
+                        onUpdateLocalQuestion={updateLocalQuestion}
                     />
                 )}
             </div>
@@ -146,3 +171,17 @@ export default function BattlePage() {
     );
 }
 
+export default function BattlePage() {
+    return (
+        <Suspense fallback={
+            <div className="container mx-auto py-12 px-4">
+                <Flex direction="column" align="center" justify="center" className="min-h-[50vh] gap-4">
+                    <Spinner size="lg" />
+                    <Text color="secondary" weight="bold">読み込み中...</Text>
+                </Flex>
+            </div>
+        }>
+            <BattlePageContent />
+        </Suspense>
+    );
+}

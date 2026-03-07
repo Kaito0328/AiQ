@@ -92,7 +92,11 @@ impl CollectionSetService {
         }
 
         // ここで Collection が公開されているか自信のものかチェックする
-        let collection = crate::repositories::collection::CollectionRepository::find_by_id(pool, req.collection_id).await?;
+        let collection = crate::repositories::collection::CollectionRepository::find_by_id(
+            pool,
+            req.collection_id,
+        )
+        .await?;
         if !collection.is_open && collection.user_id != user_id {
             return Err(sqlx::Error::RowNotFound);
         }

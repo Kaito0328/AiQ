@@ -2,14 +2,40 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct FilterCondition {
+    #[serde(rename = "type")]
+    pub filter_type: String,
+    pub value: Option<i32>,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(tag = "operator")]
+pub enum FilterNode {
+    #[serde(rename = "AND")]
+    And { conditions: Vec<FilterNode> },
+    #[serde(rename = "OR")]
+    Or { conditions: Vec<FilterNode> },
+    #[serde(rename = "CONDITION")]
+    Condition { condition: FilterCondition },
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct SortCondition {
+    pub key: String,
+    pub direction: Option<String>,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StartCasualQuizRequest {
     pub collection_ids: Vec<Uuid>,
     pub collection_set_id: Option<Uuid>,
-    pub filter_types: Vec<String>,
-    pub sort_keys: Vec<String>,
+    pub filter_node: Option<FilterNode>,
+    pub sorts: Vec<SortCondition>,
     pub total_questions: i32,
+    pub preferred_mode: Option<String>,
+    pub dummy_char_count: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -30,11 +56,13 @@ pub struct CasualQuizResponse {
     pub answered_question_ids: Vec<Uuid>,
     pub correct_count: i32,
     pub elapsed_time_millis: i64,
+    pub preferred_mode: String,
+    pub dummy_char_count: i32,
     pub is_active: bool,
     pub created_at: DateTime<Utc>,
 }
 
-use crate::models::{quiz::CasualQuiz, question::Question, quiz::CasualQuizAnswer};
+use crate::models::{question::Question, quiz::CasualQuiz, quiz::CasualQuizAnswer};
 
 impl From<CasualQuiz> for CasualQuizResponse {
     fn from(quiz: CasualQuiz) -> Self {
@@ -46,6 +74,8 @@ impl From<CasualQuiz> for CasualQuizResponse {
             answered_question_ids: quiz.answered_question_ids,
             correct_count: quiz.correct_count,
             elapsed_time_millis: quiz.elapsed_time_millis,
+            preferred_mode: quiz.preferred_mode,
+            dummy_char_count: quiz.dummy_char_count,
             is_active: quiz.is_active,
             created_at: quiz.created_at,
         }

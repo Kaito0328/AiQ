@@ -9,6 +9,8 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { View } from '@/src/design/primitives/View';
 import { Range } from '@/src/design/baseComponents/Range';
+import { Select } from '@/src/design/baseComponents/Select';
+import { FormField } from '@/src/design/baseComponents/FormField';
 import {
     Sparkles,
     Settings,
@@ -38,6 +40,7 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
     const [answerFormat, setAnswerFormat] = useState('');
     const [exampleQuestion, setExampleQuestion] = useState('');
     const [exampleAnswer, setExampleAnswer] = useState('');
+    const [explanationLanguage, setExplanationLanguage] = useState('');
     const [pdfFile, setPdfFile] = useState<File | null>(null);
     const [pdfBase64, setPdfBase64] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -68,11 +71,12 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
         generate({
             prompt,
             count,
-            pdf_data: pdfBase64 || undefined,
-            question_format: questionFormat || undefined,
-            answer_format: answerFormat || undefined,
-            example_question: exampleQuestion || undefined,
-            example_answer: exampleAnswer || undefined
+            pdfData: pdfBase64 || undefined,
+            questionFormat: questionFormat || undefined,
+            answerFormat: answerFormat || undefined,
+            exampleQuestion: exampleQuestion || undefined,
+            exampleAnswer: exampleAnswer || undefined,
+            explanationLanguage: explanationLanguage || undefined
         });
     };
 
@@ -289,49 +293,71 @@ export function AiQuickBar({ collectionId, onSuccess }: AiQuickBarProps) {
                                 </Flex>
 
                                 <Flex gap="lg" className="flex-col sm:flex-row">
-                                    <Stack gap="xs" className="flex-1">
-                                        <Text variant="xs" weight="bold" color="secondary">問題の形式</Text>
-                                        <Input
-                                            placeholder="例：日本語、記述式、4択..."
-                                            value={questionFormat}
-                                            onChange={(e) => setQuestionFormat(e.target.value)}
-                                            disabled={isProcessing}
-                                            className="h-10 text-sm"
-                                        />
-                                    </Stack>
-                                    <Stack gap="xs" className="flex-1">
-                                        <Text variant="xs" weight="bold" color="secondary">回答の形式</Text>
-                                        <Input
-                                            placeholder="例：英単語、一言で、A/B..."
-                                            value={answerFormat}
-                                            onChange={(e) => setAnswerFormat(e.target.value)}
-                                            disabled={isProcessing}
-                                            className="h-10 text-sm"
-                                        />
-                                    </Stack>
+                                    <View className="flex-1">
+                                        <FormField label="問題の形式">
+                                            <Input
+                                                placeholder="例：日本語、記述式、4択..."
+                                                value={questionFormat}
+                                                onChange={(e) => setQuestionFormat(e.target.value)}
+                                                disabled={isProcessing}
+                                                className="h-10 text-sm"
+                                            />
+                                        </FormField>
+                                    </View>
+                                    <View className="flex-1">
+                                        <FormField label="回答の形式">
+                                            <Input
+                                                placeholder="例：英単語、一言で、A/B..."
+                                                value={answerFormat}
+                                                onChange={(e) => setAnswerFormat(e.target.value)}
+                                                disabled={isProcessing}
+                                                className="h-10 text-sm"
+                                            />
+                                        </FormField>
+                                    </View>
                                 </Flex>
 
                                 <Flex gap="lg" className="flex-col sm:flex-row">
-                                    <Stack gap="xs" className="flex-1">
-                                        <Text variant="xs" weight="bold" color="secondary">問題の例</Text>
-                                        <Input
-                                            placeholder="例：The capital of Japan is..."
-                                            value={exampleQuestion}
-                                            onChange={(e) => setExampleQuestion(e.target.value)}
-                                            disabled={isProcessing}
-                                            className="h-10 text-sm"
-                                        />
-                                    </Stack>
-                                    <Stack gap="xs" className="flex-1">
-                                        <Text variant="xs" weight="bold" color="secondary">解答の例</Text>
-                                        <Input
-                                            placeholder="例：Tokyo"
-                                            value={exampleAnswer}
-                                            onChange={(e) => setExampleAnswer(e.target.value)}
-                                            disabled={isProcessing}
-                                            className="h-10 text-sm"
-                                        />
-                                    </Stack>
+                                    <View className="flex-1">
+                                        <FormField label="問題の例">
+                                            <Input
+                                                placeholder="例：The capital of Japan is..."
+                                                value={exampleQuestion}
+                                                onChange={(e) => setExampleQuestion(e.target.value)}
+                                                disabled={isProcessing}
+                                                className="h-10 text-sm"
+                                            />
+                                        </FormField>
+                                    </View>
+                                    <View className="flex-1">
+                                        <FormField label="解答の例">
+                                            <Input
+                                                placeholder="例：Tokyo"
+                                                value={exampleAnswer}
+                                                onChange={(e) => setExampleAnswer(e.target.value)}
+                                                disabled={isProcessing}
+                                                className="h-10 text-sm"
+                                            />
+                                        </FormField>
+                                    </View>
+                                </Flex>
+
+                                <Flex gap="lg" className="flex-col sm:flex-row">
+                                    <View className="flex-1">
+                                        <FormField label="解説の言語">
+                                            <Select
+                                                value={explanationLanguage}
+                                                onChange={(e) => setExplanationLanguage(e.target.value)}
+                                                disabled={isProcessing}
+                                                className="h-10 text-sm"
+                                            >
+                                                <option value="">自動（推測）</option>
+                                                <option value="日本語">日本語</option>
+                                                <option value="英語">英語</option>
+                                            </Select>
+                                        </FormField>
+                                    </View>
+                                    <View className="flex-1" /> {/* Spacer */}
                                 </Flex>
 
                                 <Text variant="xs" color="secondary" className="mt-1 opacity-60">

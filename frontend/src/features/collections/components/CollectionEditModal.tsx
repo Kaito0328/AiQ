@@ -8,12 +8,15 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { X, Edit3 } from 'lucide-react';
+import { Select } from '@/src/design/baseComponents/Select';
 import { updateCollection } from '@/src/features/collections/api';
 import { Collection } from '@/src/entities/collection';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { TextArea } from '@/src/design/baseComponents/TextArea';
+import { FormField } from '@/src/design/baseComponents/FormField';
 import { View } from '@/src/design/primitives/View';
 import { Modal } from '@/src/design/baseComponents/Modal';
+import AppConfig from '@/src/app_config';
 
 interface CollectionEditModalProps {
     collection: Collection;
@@ -25,6 +28,7 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
     const [name, setName] = useState(collection.name);
     const [descriptionText, setDescriptionText] = useState(collection.descriptionText || '');
     const [isOpen, setIsOpen] = useState(collection.isOpen);
+    const [defaultMode, setDefaultMode] = useState<any>(collection.defaultMode || 'omakase');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,7 +44,8 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
             const updated = await updateCollection(collection.id, {
                 name: name.trim(),
                 descriptionText: descriptionText.trim() || undefined,
-                isOpen
+                isOpen,
+                defaultMode
             });
             onUpdated(updated);
         } catch (err) {
@@ -57,8 +62,9 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
             onClose={onCancel}
             title="コレクションの編集"
             size="md"
+            centerTitle={true}
             footer={
-                <Flex gap="sm" justify="end">
+                <Flex gap="sm" justify="center">
                     <Button variant="outline" type="button" onClick={onCancel}>
                         キャンセル
                     </Button>
@@ -68,29 +74,29 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
                 </Flex>
             }
         >
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="py-4">
                 <Stack gap="lg">
                     <Stack gap="md">
-                        <Stack gap="xs">
-                            <Text variant="xs" weight="bold">コレクション名 *</Text>
+                        <FormField label="コレクション名 *" required>
                             <Input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="例: 英語の基本単語"
+                                maxLength={AppConfig.collection.name_max_length}
                                 autoFocus
                             />
-                        </Stack>
+                        </FormField>
 
-                        <Stack gap="xs">
-                            <Text variant="xs" weight="bold">説明</Text>
+                        <FormField label="説明">
                             <TextArea
                                 value={descriptionText}
                                 onChange={(e) => setDescriptionText(e.target.value)}
                                 placeholder="コレクションの内容について説明を入力してください"
+                                maxLength={AppConfig.collection.description_max_length}
                             />
-                        </Stack>
+                        </FormField>
 
-                        <label className="flex items-center gap-3 cursor-pointer group">
+                        <View as="label" className="flex items-center gap-3 cursor-pointer group">
                             <Checkbox
                                 checked={isOpen}
                                 onChange={() => setIsOpen(!isOpen)}
@@ -99,7 +105,22 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
                                 <Text variant="xs" weight="bold">公開する</Text>
                                 <Text variant="xs" color="secondary" className="opacity-70">このコレクションを他のユーザーからも見えるようにします</Text>
                             </Stack>
-                        </label>
+                        </View>
+
+                        <FormField
+                            label="推奨回答方式 (デフォルト)"
+                            description="※ コレクション全体で優先して使用する回答方式を選択してください。"
+                        >
+                            <Select
+                                value={defaultMode}
+                                onChange={(e) => setDefaultMode(e.target.value as any)}
+                            >
+                                <option value="omakase">おまかせ (AI搭載自動判定)</option>
+                                <option value="text">テキスト入力</option>
+                                <option value="fourChoice">4択</option>
+                                <option value="chips">文字チップ</option>
+                            </Select>
+                        </FormField>
                     </Stack>
 
                     {error && (

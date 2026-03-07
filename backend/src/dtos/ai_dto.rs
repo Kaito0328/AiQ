@@ -10,6 +10,7 @@ pub struct GenerateQuestionsRequest {
     pub answer_format: Option<String>,
     pub example_question: Option<String>,
     pub example_answer: Option<String>,
+    pub explanation_language: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -18,6 +19,9 @@ pub struct GeneratedQuestion {
     pub id: Option<String>,
     pub question_text: String,
     pub correct_answers: Vec<String>,
+    pub answer_rubis: Option<Vec<String>>,
+    pub distractors: Vec<String>,
+    pub recommended_mode: Option<String>,
     pub description_text: Option<String>,
 }
 
@@ -35,6 +39,9 @@ pub struct PartialQuestion {
     pub id: Option<String>,
     pub question_text: Option<String>,
     pub correct_answers: Option<Vec<String>>,
+    pub answer_rubis: Option<Vec<String>>,
+    pub distractors: Option<Vec<String>>,
+    pub recommended_mode: Option<String>,
     pub description_text: Option<String>,
 }
 
@@ -45,4 +52,5 @@ pub struct CompleteQuestionsRequest {
     pub complete_description: Option<bool>,
     pub question_format: Option<String>,
     pub answer_format: Option<String>,
+    pub explanation_language: Option<String>,
 }

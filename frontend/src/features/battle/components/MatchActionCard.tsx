@@ -12,8 +12,9 @@ interface MatchActionCardProps {
     title: string;
     description: string;
     icon: React.ReactNode;
-    onClick: () => void;
+    onClick?: () => void;
     isLoading?: boolean;
+    disabled?: boolean;
 }
 
 export function MatchActionCard({
@@ -22,15 +23,18 @@ export function MatchActionCard({
     icon,
     onClick,
     isLoading = false,
+    disabled = false,
 }: MatchActionCardProps) {
     return (
         <Card
-            onClick={isLoading ? undefined : onClick}
+            onClick={isLoading || disabled ? undefined : onClick}
             bg="base"
             border="primary"
             className={cn(
-                "cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 active:scale-95 h-full group",
-                isLoading && "opacity-70 cursor-not-allowed pointer-events-none"
+                "transition-all h-full group",
+                !isLoading && !disabled && "cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-95",
+                isLoading && "opacity-70 cursor-not-allowed pointer-events-none",
+                disabled && "opacity-50 cursor-not-allowed"
             )}
         >
             <Stack gap="md" align="center" className="py-8">

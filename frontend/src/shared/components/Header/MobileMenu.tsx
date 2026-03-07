@@ -7,7 +7,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { cn } from '@/src/shared/utils/cn';
-import { X, Home, Book, User, Users, LogOut, Heart, Settings, MessageSquare, History, LogIn } from 'lucide-react';
+import { X, User, LogOut, Heart, Settings, MessageSquare, History, LogIn, FileText } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/shared/auth/useAuth';
 
@@ -65,7 +65,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                                     <Flex gap="md" align="center">
                                         <View className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center overflow-hidden border-2 border-brand-primary/20 shrink-0">
                                             {user?.iconUrl ? (
-                                                <img src={user.iconUrl} alt={user.username} className="w-full h-full object-cover" />
+                                                <View as="img" src={user.iconUrl} alt={user.username} className="w-full h-full object-cover" />
                                             ) : (
                                                 <User size={32} className="text-brand-primary" />
                                             )}
@@ -90,6 +90,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                                     <MenuLink icon={<MessageSquare size={20} />} label="修正依頼の管理" onClick={() => handleNavigate('/edit-requests')} />
                                     <MenuLink icon={<History size={20} />} label="中断したクイズ" onClick={() => handleNavigate('/quiz/resume')} />
                                     <MenuLink icon={<Settings size={20} />} label="設定" onClick={() => handleNavigate('/settings')} />
+                                    <MenuLink icon={<FileText size={20} />} label="クレジット" onClick={() => handleNavigate('/credits')} />
                                 </Stack>
 
                                 {/* Footer Section with Logout */}

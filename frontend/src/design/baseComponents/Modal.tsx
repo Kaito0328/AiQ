@@ -13,6 +13,7 @@ export interface ModalProps {
     children: React.ReactNode;
     footer?: React.ReactNode;
     size?: 'sm' | 'md' | 'lg' | 'xl';
+    centerTitle?: boolean;
 }
 
 const sizeClasses = {
@@ -25,7 +26,7 @@ const sizeClasses = {
 /**
  * オーバーレイとダイアログを組み合わせたモーダルコンポーネントです。
  */
-export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, footer, size = 'md', centerTitle = false }: ModalProps) {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
@@ -42,8 +43,7 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
     return (
         <Portal>
             <View
-                zIndex="overlay"
-                className="fixed inset-0 flex items-center justify-center p-4"
+                className="fixed inset-0 flex items-start pt-[12dvh] sm:pt-0 sm:items-center justify-center p-4 z-[9999]"
             >
                 {/* Overlay */}
                 <div
@@ -56,31 +56,32 @@ export function Modal({ isOpen, onClose, title, children, footer, size = 'md' }:
                     bg="card"
                     rounded="lg"
                     shadow="lg"
-                    zIndex="modal"
                     className={cn(
-                        "relative w-full overflow-hidden animate-fast animate-in zoom-in-95 fade-in",
+                        "relative w-full flex flex-col max-h-[calc(100dvh-4rem)] overflow-hidden animate-fast animate-in zoom-in-95 fade-in z-[10000]",
                         sizeClasses[size]
                     )}
                 >
                     {/* Header */}
-                    <Flex align="center" justify="between" className="px-6 py-4 border-b">
+                    <Flex align="center" justify={centerTitle ? "center" : "between"} className="px-6 py-4 border-b shrink-0 relative">
                         <Text variant="h4" weight="bold">{title}</Text>
-                        <IconButton
-                            icon={<span>✕</span>}
-                            variant="ghost"
-                            onClick={onClose}
-                            className="rounded-full"
-                        />
+                        <View className={cn("absolute right-4", centerTitle ? "" : "relative right-0")}>
+                            <IconButton
+                                icon={<span>✕</span>}
+                                variant="ghost"
+                                onClick={onClose}
+                                className="rounded-full"
+                            />
+                        </View>
                     </Flex>
 
                     {/* Body */}
-                    <View padding="lg" className="max-h-[70vh] overflow-y-auto">
+                    <View padding="lg" className="overflow-y-auto flex-1">
                         {children}
                     </View>
 
                     {/* Footer */}
                     {footer && (
-                        <View padding="md" className="border-t bg-surface-muted/30">
+                        <View padding="md" className="border-t bg-surface-muted/30 shrink-0">
                             {footer}
                         </View>
                     )}

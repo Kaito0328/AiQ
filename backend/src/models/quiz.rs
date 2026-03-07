@@ -3,13 +3,14 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 
+use crate::dtos::quiz_dto::FilterNode;
+
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct CasualQuiz {
     pub id: Uuid,
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
 
-    // PostgreSQLの TEXT[] は Vec<String> に対応
-    pub filter_types: Vec<String>,
+    pub filter_node: Option<serde_json::Value>,
     pub sort_keys: Vec<String>,
     pub collection_names: Vec<String>,
 
@@ -20,6 +21,8 @@ pub struct CasualQuiz {
     pub total_questions: i32,
     pub correct_count: i32,
     pub elapsed_time_millis: i64, // BIGINT は i64
+    pub preferred_mode: String,
+    pub dummy_char_count: i32,
     pub is_active: bool,
 
     pub created_at: DateTime<Utc>,

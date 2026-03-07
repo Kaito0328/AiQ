@@ -260,7 +260,9 @@ async fn test_add_and_remove_collection_from_set(pool: sqlx::PgPool) {
             format!("Bearer {}", owner_token), // 追加するのはオーナー
         )
         .header(http::header::CONTENT_TYPE, "application/json")
-        .body(Body::from(serde_json::to_vec(&add_other_public_body).unwrap()))
+        .body(Body::from(
+            serde_json::to_vec(&add_other_public_body).unwrap(),
+        ))
         .unwrap();
     let res_add_public = app.clone().oneshot(req_add_public).await.unwrap();
     assert_eq!(res_add_public.status(), StatusCode::CREATED);
@@ -279,7 +281,9 @@ async fn test_add_and_remove_collection_from_set(pool: sqlx::PgPool) {
             format!("Bearer {}", owner_token),
         )
         .header(http::header::CONTENT_TYPE, "application/json")
-        .body(Body::from(serde_json::to_vec(&add_other_private_body).unwrap()))
+        .body(Body::from(
+            serde_json::to_vec(&add_other_private_body).unwrap(),
+        ))
         .unwrap();
     let res_add_private = app.clone().oneshot(req_add_private).await.unwrap();
     assert_eq!(res_add_private.status(), StatusCode::FORBIDDEN);

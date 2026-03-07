@@ -33,13 +33,13 @@ const alignMap: Record<TextAlignKey, string> = {
 const textVariants = cva('transition-colors', {
     variants: {
         variant: {
-            h1: 'text-3xl sm:text-4xl md:text-5xl font-bold',
-            h2: 'text-2xl sm:text-3xl md:text-4xl font-bold',
-            h3: 'text-xl sm:text-2xl md:text-3xl font-semibold',
-            h4: 'text-lg sm:text-xl md:text-2xl font-semibold',
-            body: 'text-base sm:text-lg md:text-xl',
-            detail: 'text-sm sm:text-base md:text-lg',
-            xs: 'text-xs sm:text-sm md:text-base',
+            h1: 'text-2xl sm:text-4xl md:text-5xl font-bold',
+            h2: 'text-xl sm:text-3xl md:text-4xl font-bold',
+            h3: 'text-lg sm:text-2xl md:text-3xl font-semibold',
+            h4: 'text-base sm:text-xl md:text-2xl font-semibold',
+            body: 'text-sm sm:text-base md:text-xl',
+            detail: 'text-xs sm:text-sm md:text-lg',
+            xs: 'text-[10px] sm:text-xs md:text-base',
         },
         color: colorMap,
         weight: weightMap,

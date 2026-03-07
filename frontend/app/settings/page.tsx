@@ -13,6 +13,8 @@ import { Input } from '@/src/design/baseComponents/Input';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { updateProfile } from '@/src/features/auth/api';
 import { User as UserIcon, Lock, Camera, CheckCircle2, AlertCircle } from 'lucide-react';
+import { BackButton } from '@/src/shared/components/Navigation/BackButton';
+import AppConfig from '@/src/app_config';
 
 export default function SettingsPage() {
     const router = useRouter();
@@ -85,9 +87,10 @@ export default function SettingsPage() {
     }
 
     return (
-        <View className="min-h-screen bg-surface-muted py-12">
+        <View className="min-h-screen bg-surface-muted py-6 sm:py-12">
             <Container>
-                <Stack gap="xl" className="max-w-2xl mx-auto">
+                <Stack gap="lg" className="max-w-2xl mx-auto">
+                    <BackButton />
                     <Text variant="h2" weight="bold">設定</Text>
 
                     {/* Profile Section */}
@@ -158,6 +161,7 @@ export default function SettingsPage() {
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value)}
                                             placeholder="username"
+                                            maxLength={AppConfig.user.username_max_length}
                                             required
                                         />
                                     </Stack>
@@ -179,6 +183,7 @@ export default function SettingsPage() {
                                             onChange={(e) => setBio(e.target.value)}
                                             placeholder="自己紹介を書いてみましょう"
                                             className="min-h-[100px] resize-none"
+                                            maxLength={AppConfig.user.bio_max_length}
                                         />
                                     </Stack>
                                 </Stack>

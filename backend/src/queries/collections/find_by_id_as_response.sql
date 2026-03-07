@@ -6,6 +6,7 @@ SELECT
     c.created_at,
     c.updated_at,
     c.is_open,
+    c.default_mode,
     COALESCE(u.username, '') as "author_name!",
     u.icon_url as author_icon_url,
     u.is_official as "is_official!",

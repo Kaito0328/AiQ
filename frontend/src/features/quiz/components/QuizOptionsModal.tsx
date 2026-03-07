@@ -3,69 +3,111 @@
 import React from 'react';
 import { Modal } from '@/src/design/baseComponents/Modal';
 import { QuizOptions } from './QuizOptions';
-import { FilterCondition, SortCondition } from '@/src/entities/quiz';
+import { SortCondition, QuizMode, FilterNode } from '@/src/entities/quiz';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Flex } from '@/src/design/primitives/Flex';
+import { MatchConfig } from '@/src/entities/battle';
+import { View } from '@/src/design/primitives/View';
 
 interface QuizOptionsModalProps {
     isOpen: boolean;
     onClose: () => void;
-    filters: FilterCondition[];
+    filterNode: FilterNode | undefined;
     sorts: SortCondition[];
     limit: number;
     maxLimit: number;
     isLoading?: boolean;
-    onFilterChange: (filters: FilterCondition[]) => void;
+    onFilterNodeChange: (node: FilterNode | undefined) => void;
     onSortChange: (sorts: SortCondition[]) => void;
     onLimitChange: (limit: number) => void;
-    onStart: () => void;
+    preferredMode: QuizMode;
+    onModeChange: (mode: QuizMode) => void;
+    dummyCharCount: number;
+    onDummyCountChange: (count: number) => void;
+    onStart?: () => void;
+    matchConfig?: MatchConfig;
+    onMatchConfigChange?: (config: MatchConfig) => void;
+    hideFuzzy?: boolean;
+    hideMatchConfig?: boolean;
+    hideLimit?: boolean;
+    readOnly?: boolean;
 }
 
 export function QuizOptionsModal({
     isOpen,
     onClose,
-    filters,
+    filterNode,
     sorts,
     limit,
     maxLimit,
     isLoading = false,
-    onFilterChange,
+    onFilterNodeChange,
     onSortChange,
     onLimitChange,
+    preferredMode,
+    onModeChange,
+    dummyCharCount,
+    onDummyCountChange,
+    matchConfig,
+    onMatchConfigChange,
+    hideFuzzy = false,
+    hideMatchConfig = false,
+    hideLimit = false,
     onStart,
+    readOnly = false,
 }: QuizOptionsModalProps) {
     return (
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="出題設定"
+            title={readOnly ? "出題設定 (表示のみ)" : "出題設定"}
             size="md"
             footer={
-                <Flex justify="end" gap="sm" className="w-full">
-                    <Button variant="ghost" onClick={onClose} disabled={isLoading}>
-                        キャンセル
-                    </Button>
-                    <Button
-                        variant="solid"
-                        color="primary"
-                        onClick={onStart}
-                        loading={isLoading}
-                        className="px-8"
-                    >
-                        クイズを開始
-                    </Button>
+                <Flex justify="center" gap="sm" className="w-full">
+                    {readOnly ? (
+                        <Button variant="solid" color="primary" onClick={onClose} className="px-12">
+                            閉じる
+                        </Button>
+                    ) : (
+                        <>
+                            <Button variant="ghost" onClick={onClose} disabled={isLoading}>
+                                キャンセル
+                            </Button>
+                            <Button
+                                variant="solid"
+                                color="primary"
+                                onClick={onStart ? onStart : onClose}
+                                loading={isLoading}
+                                className="px-8 gap-2"
+                            >
+                                {onStart ? 'クイズ開始' : '適用する'}
+                            </Button>
+                        </>
+                    )}
                 </Flex>
             }
         >
-            <QuizOptions
-                filters={filters}
-                sorts={sorts}
-                limit={limit}
-                maxLimit={maxLimit}
-                onFilterChange={onFilterChange}
-                onSortChange={onSortChange}
-                onLimitChange={onLimitChange}
-            />
+            <View className="p-3 sm:p-4 pb-6">
+                <QuizOptions
+                    filterNode={filterNode}
+                    sorts={sorts}
+                    limit={limit}
+                    maxLimit={maxLimit}
+                    onFilterNodeChange={onFilterNodeChange}
+                    onSortChange={onSortChange}
+                    onLimitChange={onLimitChange}
+                    preferredMode={preferredMode}
+                    onModeChange={onModeChange}
+                    dummyCharCount={dummyCharCount}
+                    onDummyCountChange={onDummyCountChange}
+                    matchConfig={matchConfig}
+                    onMatchConfigChange={onMatchConfigChange}
+                    hideFuzzy={hideFuzzy}
+                    hideMatchConfig={hideMatchConfig}
+                    hideLimit={hideLimit}
+                    readOnly={readOnly}
+                />
+            </View>
         </Modal>
     );
 }

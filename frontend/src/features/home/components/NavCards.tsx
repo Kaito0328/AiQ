@@ -6,19 +6,18 @@ import { Card } from "@/src/design/baseComponents/Card";
 import { Stack } from "@/src/design/primitives/Stack";
 import { Text } from "@/src/design/baseComponents/Text";
 import { View } from "@/src/design/primitives/View";
-import { Book, User, Users, LayoutGrid, PlayCircle } from "lucide-react";
+import { Icon } from "@/src/design/baseComponents/Icon";
 import { useRouter } from "next/navigation";
-import { SectionHeader } from "@/src/shared/components/SectionHeader";
 import { useAuth } from "@/src/shared/auth/useAuth";
 
 interface NavCardProps {
   label: string;
-  icon: React.ReactNode;
+  iconName: React.ComponentProps<typeof Icon>['name'];
   onClick: () => void;
   color?: "primary" | "secondary" | "accent";
 }
 
-function NavCard({ label, icon, onClick }: NavCardProps) {
+function NavCard({ label, iconName, onClick }: NavCardProps) {
   return (
     <Card
       onClick={onClick}
@@ -26,14 +25,18 @@ function NavCard({ label, icon, onClick }: NavCardProps) {
       bg="base"
       border="base"
     >
-      <Stack gap="md" align="center" className="py-6">
-        <View bg="muted" className="p-4 rounded-brand-full text-brand-primary">
-          {icon}
-        </View>
-        <Text weight="bold" align="center" className="transition-colors group-hover:text-brand-primary">
-          {label}
-        </Text>
-      </Stack>
+      <View padding="xl">
+        <Stack gap="md" align="center">
+          <View bg="muted" padding="lg" rounded="full">
+            <Text color="primary" span>
+              <Icon name={iconName} size={32} />
+            </Text>
+          </View>
+          <Text weight="bold" align="center" className="transition-colors group-hover:text-brand-primary">
+            {label}
+          </Text>
+        </Stack>
+      </View>
     </Card>
   );
 }
@@ -43,9 +46,6 @@ export function NavCards() {
   const { user } = useAuth();
 
   const handleNavigateToOfficial = () => {
-    // バックエンドの仕様上、公式ユーザーのIDを取得してそのページへ
-    // ここでは一旦 /users/official という仮のルーティングまたは
-    // 直接 ID を取得するロジックを期待
     router.push("/users/official");
   };
 
@@ -69,24 +69,24 @@ export function NavCards() {
     <Grid cols={{ sm: 1, md: 2, lg: 4 }} gap="md">
       <NavCard
         label="クイズを始める"
-        icon={<PlayCircle size={32} />}
+        iconName="play"
         onClick={handleNavigateToQuizStart}
       />
       <NavCard
         label="公式の問題集"
-        icon={<Book size={32} />}
+        iconName="collection"
         onClick={handleNavigateToOfficial}
       />
       {user && (
         <NavCard
           label="自分の問題集"
-          icon={<User size={32} />}
+          iconName="user"
           onClick={handleNavigateToMe}
         />
       )}
       <NavCard
         label="ユーザーリスト"
-        icon={<Users size={32} />}
+        iconName="users"
         onClick={handleNavigateToUsers}
       />
     </Grid>

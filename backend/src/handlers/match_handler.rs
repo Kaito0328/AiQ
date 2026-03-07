@@ -13,9 +13,11 @@ pub fn routes() -> Router<AppState> {
         .route("/room", get(list_rooms))
 }
 
+use crate::extractors::auth::OptionalClaims;
+
 pub async fn list_rooms(
     State(state): State<AppState>,
-    _claims: Claims,
+    OptionalClaims(_claims): OptionalClaims,
 ) -> Result<Json<Vec<crate::dtos::match_dto::MatchRoomListItem>>, AppError> {
     let result = MatchService::list_public_rooms(&state.match_state).await?;
     Ok(Json(result))
@@ -26,6 +28,7 @@ pub async fn create_room(
     claims: Claims,
     Json(req): Json<CreateMatchRoomRequest>,
 ) -> Result<Json<crate::dtos::match_dto::CreateMatchRoomResponse>, AppError> {
+    eprintln!("[DEBUG] create_room: req.visibility = {:?}", req.visibility);
     let result = MatchService::create_room(&state.db, &state.match_state, claims.sub, req).await?;
     Ok(Json(result))
 }

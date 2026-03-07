@@ -11,16 +11,24 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { AnswerHistory } from '@/src/entities/quiz';
 import { Question } from '@/src/entities/question';
-import { Home, CheckCircle, XCircle, Trophy, MessageSquare } from 'lucide-react';
+import { Home, CheckCircle, XCircle, Trophy, MessageSquare, Sparkles, RefreshCcw, Settings } from 'lucide-react';
 import { cn } from '@/src/shared/utils/cn';
 import { EditRequestModal } from '@/src/features/questions/components/EditRequestModal';
+import { QuizOptionsModal } from '@/src/features/quiz/components/QuizOptionsModal';
 import { RankingQuizResultDto } from '@/src/features/quiz/api';
+import { QuizMode } from '@/src/entities/quiz';
 
 export default function QuizScorePage() {
     const router = useRouter();
     const [answers, setAnswers] = useState<AnswerHistory[]>([]);
     const [rankingResult, setRankingResult] = useState<RankingQuizResultDto | null>(null);
     const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+
+    // Retry settings state
+    const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
+    const [retryOnlyMistakes, setRetryOnlyMistakes] = useState(false);
+    const [preferredMode, setPreferredMode] = useState<QuizMode>('text');
+    const [dummyCharCount, setDummyCharCount] = useState(6);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -35,27 +43,28 @@ export default function QuizScorePage() {
         const storedAnswers = sessionStorage.getItem('quizAnswers');
         if (storedAnswers) {
             setAnswers(JSON.parse(storedAnswers));
-            // Keep quizAnswers for retry potential, but normally we'd clean up.
-            // For now, let's keep it until they leave the page or retry.
         }
-
-        // We'll keep quizData if we want to retry using the exact same settings,
-        // but since we have answers, we can reconstruct it.
     }, []);
 
-    const handleRetry = (onlyMistakes = false) => {
-        const retryQuestions = onlyMistakes
+    const openRetryOptions = (onlyMistakes = false) => {
+        setRetryOnlyMistakes(onlyMistakes);
+        setIsOptionsModalOpen(true);
+    };
+
+    const handleStartRetry = () => {
+        const retryQuestions = retryOnlyMistakes
             ? answers.filter(a => !a.correct).map(a => a.question)
             : answers.map(a => a.question);
 
         if (retryQuestions.length === 0) return;
 
-        // Reconstruct quizData for app/quiz/page.tsx
         const quizData = {
             questions: retryQuestions,
             isRetry: true,
-            // We can keep the same quiz settings or id if needed, 
-            // but isRetry will flag the quiz page to skip submissions.
+            quiz: {
+                preferredMode,
+                dummyCharCount
+            }
         };
 
         sessionStorage.setItem('quizData', JSON.stringify(quizData));
@@ -85,8 +94,14 @@ export default function QuizScorePage() {
                     {/* Score Summary */}
                     <Card className="border border-gray-300 text-center">
                         <Stack gap="lg" align="center" className="py-6">
-                            <Trophy size={48} className="text-brand-primary" />
-                            <Text variant="h1" weight="bold">クイズ完了！</Text>
+                            {rankingResult ? (
+                                <Trophy size={48} className="text-brand-primary" />
+                            ) : (
+                                <Sparkles size={48} className="text-brand-success animate-pulse" />
+                            )}
+                            <Text variant="h1" weight="bold">
+                                {rankingResult ? 'ランキング完了！' : 'クイズ完了！'}
+                            </Text>
 
                             <View className="text-center">
                                 <Text
@@ -121,17 +136,17 @@ export default function QuizScorePage() {
                                 <Button
                                     variant="solid"
                                     color="primary"
-                                    onClick={() => handleRetry(false)}
+                                    onClick={() => openRetryOptions(false)}
                                     className="gap-1.5"
                                 >
-                                    <Trophy size={16} />
+                                    <RefreshCcw size={16} />
                                     もう一度解く
                                 </Button>
                                 {answers.some(a => !a.correct) && (
                                     <Button
                                         variant="outline"
                                         color="primary"
-                                        onClick={() => handleRetry(true)}
+                                        onClick={() => openRetryOptions(true)}
                                         className="gap-1.5"
                                     >
                                         <XCircle size={16} />
@@ -149,6 +164,14 @@ export default function QuizScorePage() {
                                         ランキング
                                     </Button>
                                 )}
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => router.push('/quiz/start')}
+                                    className="gap-1.5 border border-surface-muted-border"
+                                >
+                                    <Settings size={16} />
+                                    設定に戻る
+                                </Button>
                                 <Button
                                     variant="ghost"
                                     onClick={() => router.push('/home')}
@@ -219,6 +242,25 @@ export default function QuizScorePage() {
                 <EditRequestModal
                     question={selectedQuestion}
                     onClose={() => setSelectedQuestion(null)}
+                />
+            )}
+
+            {isOptionsModalOpen && (
+                <QuizOptionsModal
+                    isOpen={isOptionsModalOpen}
+                    onClose={() => setIsOptionsModalOpen(false)}
+                    filterNode={undefined}
+                    sorts={[]}
+                    limit={retryOnlyMistakes ? answers.filter(a => !a.correct).length : answers.length}
+                    maxLimit={retryOnlyMistakes ? answers.filter(a => !a.correct).length : answers.length}
+                    onFilterNodeChange={() => { }}
+                    onSortChange={() => { }}
+                    onLimitChange={() => { }}
+                    preferredMode={preferredMode}
+                    onModeChange={setPreferredMode}
+                    dummyCharCount={dummyCharCount}
+                    onDummyCountChange={setDummyCharCount}
+                    onStart={handleStartRetry}
                 />
             )}
         </View>

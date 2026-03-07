@@ -21,7 +21,7 @@ import { useUserCollections } from '@/src/features/collections/hooks/useCollecti
 import { Card } from '@/src/design/baseComponents/Card';
 import { cn } from '@/src/shared/utils/cn';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
-import { FilterCondition, SortCondition } from '@/src/entities/quiz';
+import { FilterCondition, SortCondition, FilterNode } from '@/src/entities/quiz';
 
 export default function CollectionSetPage() {
     const params = useParams();
@@ -39,13 +39,13 @@ export default function CollectionSetPage() {
 
     const isOwner = !!(user && set && user.id === set.userId);
 
-    const handleStartQuiz = async (filters: FilterCondition[], sorts: SortCondition[], limit: number) => {
+    const handleStartQuiz = async (filterNode: FilterNode | undefined, sorts: SortCondition[], limit: number) => {
         setIsStartingQuiz(true);
         try {
             const resp = await startCasualQuiz({
                 collectionIds: [], // Empty because we use collectionSetId
                 collectionSetId: setId,
-                filters,
+                filterNode,
                 sorts,
                 limit
             });

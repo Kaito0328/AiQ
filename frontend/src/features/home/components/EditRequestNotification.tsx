@@ -39,7 +39,7 @@ export function EditRequestNotification() {
     if (!user || loading) return null;
     if (requests.length === 0) {
         return (
-            <Card border="secondary" bg="transparent" className="border-dashed py-4">
+            <Card border="secondary" bg="transparent" padding="lg" className="border-dashed">
                 <Flex gap="sm" align="center" justify="center" className="opacity-40">
                     <MessageSquare size={20} />
                     <Text variant="xs" weight="medium">新しい通知はありません</Text>
@@ -66,8 +66,8 @@ export function EditRequestNotification() {
                     className="cursor-pointer hover:bg-surface-primary transition-all hover:shadow-md group"
                 >
                     <Flex gap="sm" align="center" className="h-full">
-                        <View className="bg-brand-secondary/10 p-2 rounded-full text-brand-secondary flex-shrink-0">
-                            <MessageSquare size={16} />
+                        <View className="bg-brand-secondary/10 flex-shrink-0" padding="sm" rounded="full">
+                            <Text color="secondary" span><MessageSquare size={16} /></Text>
                         </View>
                         <View className="min-w-0 flex-1">
                             <Text variant="detail" weight="bold" className="line-clamp-1 transition-colors group-hover:text-brand-primary">
@@ -87,11 +87,13 @@ export function EditRequestNotification() {
                     border="secondary"
                     bg="transparent"
                     padding="sm"
-                    className="cursor-pointer hover:bg-brand-secondary/5 transition-all text-brand-secondary border-dashed flex items-center justify-center min-h-[60px]"
+                    className="cursor-pointer hover:bg-brand-secondary/5 transition-all text-brand-secondary border-dashed"
                 >
-                    <Flex gap="xs" align="center">
-                        <Text variant="detail" weight="bold">他 {requests.length - (MAX_DISPLAY - 1)} 件を見る</Text>
-                        <ChevronRight size={16} />
+                    <Flex justify="center" align="center" className="min-h-[60px]">
+                        <Flex gap="xs" align="center">
+                            <Text variant="detail" weight="bold">他 {requests.length - (MAX_DISPLAY - 1)} 件を見る</Text>
+                            <ChevronRight size={16} />
+                        </Flex>
                     </Flex>
                 </Card>
             )}

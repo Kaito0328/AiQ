@@ -11,6 +11,7 @@ pub struct Collection {
     pub name: String,
     pub description_text: Option<String>,
     pub is_open: bool,
+    pub default_mode: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

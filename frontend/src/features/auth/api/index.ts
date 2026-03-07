@@ -63,7 +63,7 @@ export const getUsers = async (params?: { q?: string; sort?: string; page?: numb
         const queryString = searchParams.toString();
         if (queryString) url += `?${queryString}`;
     }
-    return await apiClient<UserProfile[]>(url, { authenticated: true });
+    return await apiClient<UserProfile[]>(url, { authenticated: false });
 };
 
 export const updateProfile = async (data: { username?: string; displayName?: string; bio?: string; iconUrl?: string }): Promise<UserProfile> => {

@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
 import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
+import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { createSet, updateSet, CreateCollectionSetRequest, UpdateCollectionSetRequest } from '../api';
 import { CollectionSet } from '@/src/entities/collection';
 import { Card } from '@/src/design/baseComponents/Card';
 import { Modal } from '@/src/design/baseComponents/Modal';
+import { FormField } from '@/src/design/baseComponents/FormField';
+import { Input } from '@/src/design/baseComponents/Input';
+import { TextArea } from '@/src/design/baseComponents/TextArea';
+import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 
 interface CollectionSetFormProps {
     initialData?: CollectionSet;
@@ -53,7 +58,7 @@ export function CollectionSetForm({ initialData, onSuccess, onCancel }: Collecti
             title={isEdit ? 'セットを編集' : '新しいセットを作成'}
             size="md"
             footer={
-                <View className="flex gap-3 pt-2">
+                <Flex gap="md" className="pt-2">
                     <Button
                         type="button"
                         variant="ghost"
@@ -72,7 +77,7 @@ export function CollectionSetForm({ initialData, onSuccess, onCancel }: Collecti
                     >
                         {isEdit ? '更新' : '作成'}
                     </Button>
-                </View>
+                </Flex>
             }
         >
             <form onSubmit={handleSubmit}>
@@ -83,40 +88,34 @@ export function CollectionSetForm({ initialData, onSuccess, onCancel }: Collecti
                         </View>
                     )}
 
-                    <Stack gap="xs">
-                        <label className="text-xs font-bold text-slate-500 ml-1">名前</label>
-                        <input
-                            type="text"
+                    <FormField label="名前">
+                        <Input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full p-3 rounded-brand-md border border-surface-muted bg-surface-base focus:border-brand-primary outline-none transition-all"
                             placeholder="セット名を入力..."
                             required
                         />
-                    </Stack>
+                    </FormField>
 
-                    <Stack gap="xs">
-                        <label className="text-xs font-bold text-slate-500 ml-1">説明</label>
-                        <textarea
+                    <FormField label="説明">
+                        <TextArea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="w-full p-3 rounded-brand-md border border-surface-muted bg-surface-base focus:border-brand-primary outline-none transition-all min-h-[100px] resize-none"
                             placeholder="セットの説明を入力..."
+                            rows={4}
                         />
-                    </Stack>
+                    </FormField>
 
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                        <input
-                            type="checkbox"
+                    <Flex as="label" align="center" gap="md" className="cursor-pointer group">
+                        <Checkbox
                             checked={isOpen}
                             onChange={(e) => setIsOpen(e.target.checked)}
-                            className="w-5 h-5 rounded border-surface-muted text-brand-primary focus:ring-brand-primary cursor-pointer"
                         />
                         <Stack gap="none">
                             <Text variant="xs" weight="bold">公開する</Text>
                             <Text variant="xs" color="secondary" className="opacity-70">セットを他のユーザーからも見えるようにします</Text>
                         </Stack>
-                    </label>
+                    </Flex>
                 </Stack>
             </form>
         </Modal>

@@ -31,8 +31,7 @@ impl Claims {
 
 // 🌟 トークンの生成: user_id を受け取るように変更
 pub fn generate_token(user_id: Uuid) -> Result<String, String> {
-    let exp_hours_str = std::env::var("JWT_EXP_HOURS").unwrap_or_else(|_| "24".to_string());
-    let exp_hours: u64 = exp_hours_str.parse().unwrap_or(24);
+    let exp_hours = crate::config::get().security.jwt_exp_hours as u64;
 
     let expiration = if exp_hours == 0 {
         None

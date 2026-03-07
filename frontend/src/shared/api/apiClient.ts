@@ -1,6 +1,18 @@
 import { ApiError, ErrorCodeType } from './error';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+export const getApiBaseUrl = () => {
+    const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
+    if (typeof window !== 'undefined' && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
+        try {
+            const urlObj = new URL(envUrl);
+            return `http://${window.location.hostname}:${urlObj.port}`;
+        } catch {
+            return `http://${window.location.hostname}:8080`;
+        }
+    }
+    return envUrl;
+};
+const API_BASE_URL = getApiBaseUrl();
 const API_PREFIX = '/api';
 
 interface RequestOptions extends RequestInit {

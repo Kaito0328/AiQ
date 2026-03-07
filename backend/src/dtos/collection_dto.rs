@@ -6,6 +6,7 @@ pub struct CreateCollectionRequest {
     pub name: String,
     pub description_text: Option<String>,
     pub is_open: bool,
+    pub default_mode: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -14,6 +15,7 @@ pub struct UpdateCollectionRequest {
     pub name: String,
     pub description_text: Option<String>,
     pub is_open: bool,
+    pub default_mode: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -23,6 +25,7 @@ pub struct UpsertCollectionItem {
     pub name: Option<String>,
     pub description_text: Option<String>,
     pub is_open: Option<bool>,
+    pub default_mode: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -40,6 +43,7 @@ pub struct CollectionResponse {
     pub name: String,
     pub description_text: Option<String>,
     pub is_open: bool,
+    pub default_mode: String,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
     pub author_name: Option<String>,

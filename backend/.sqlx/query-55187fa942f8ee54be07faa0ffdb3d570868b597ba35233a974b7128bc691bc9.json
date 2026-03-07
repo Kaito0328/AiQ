@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO collection_stats (collection_id)\nSELECT id FROM UNNEST($1::uuid[]) AS id\nON CONFLICT (collection_id) DO NOTHING\n",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "UuidArray"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "55187fa942f8ee54be07faa0ffdb3d570868b597ba35233a974b7128bc691bc9"
+}

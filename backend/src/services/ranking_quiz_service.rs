@@ -3,8 +3,9 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::dtos::ranking_quiz_dto::{
-    RankingQuizQuestionDto, RankingQuizResultDto, StartRankingQuizRequest, StartRankingQuizResponse,
-    SubmitRankingAllAnswersRequest, SubmitRankingAnswerRequest, SubmitRankingAnswerResponse,
+    RankingQuizQuestionDto, RankingQuizResultDto, StartRankingQuizRequest,
+    StartRankingQuizResponse, SubmitRankingAllAnswersRequest, SubmitRankingAnswerRequest,
+    SubmitRankingAnswerResponse,
 };
 use crate::error::AppError;
 use crate::repositories::collection::CollectionRepository;
@@ -25,7 +26,9 @@ impl RankingQuizService {
             .map_err(|_| AppError::InternalServerError("Collection not found".into()))?;
 
         if !collection.is_open && collection.user_id != user_id {
-            return Err(AppError::Unauthorized("Cannot access this collection".into()));
+            return Err(AppError::Unauthorized(
+                "Cannot access this collection".into(),
+            ));
         }
 
         // Fetch all questions
@@ -34,7 +37,9 @@ impl RankingQuizService {
             .map_err(|_| AppError::InternalServerError("Failed to fetch questions".into()))?;
 
         if questions.is_empty() {
-            return Err(AppError::InternalServerError("Collection has no questions".into()));
+            return Err(AppError::InternalServerError(
+                "Collection has no questions".into(),
+            ));
         }
 
         // Shuffle questions randomly
@@ -56,7 +61,9 @@ impl RankingQuizService {
             total_questions,
         )
         .await
-        .map_err(|e| AppError::InternalServerError(format!("Failed to create ranking quiz: {}", e)))?;
+        .map_err(|e| {
+            AppError::InternalServerError(format!("Failed to create ranking quiz: {}", e))
+        })?;
 
         // Format all questions (Hide answers!)
         let questions_dto: Vec<RankingQuizQuestionDto> = questions
@@ -85,14 +92,18 @@ impl RankingQuizService {
         // 1. Fetch active quiz
         let quiz = RankingQuizRepository::find_active_by_id(pool, quiz_id)
             .await
-            .map_err(|_| AppError::InternalServerError("Active quiz not found or already finished".into()))?;
+            .map_err(|_| {
+                AppError::InternalServerError("Active quiz not found or already finished".into())
+            })?;
 
         if quiz.user_id != user_id {
             return Err(AppError::Unauthorized("Not your quiz".into()));
         }
 
         if req.answers.len() != quiz.question_ids.len() {
-            return Err(AppError::InternalServerError("Missing answers for some questions".into()));
+            return Err(AppError::InternalServerError(
+                "Missing answers for some questions".into(),
+            ));
         }
 
         // 2. Fetch all real questions to check answers
@@ -102,11 +113,12 @@ impl RankingQuizService {
             let actual_question = QuestionRepository::find_by_id(pool, ans.question_id)
                 .await
                 .map_err(|_| AppError::InternalServerError("Question not found".into()))?;
-            
+
             let trimmed_ans = ans.answer.trim().to_lowercase();
-            let is_correct = actual_question.correct_answers.iter().any(|correct| {
-                correct.trim().to_lowercase() == trimmed_ans
-            });
+            let is_correct = actual_question
+                .correct_answers
+                .iter()
+                .any(|correct| correct.trim().to_lowercase() == trimmed_ans);
             correct_results.push(is_correct);
             detailed_results.push(crate::dtos::ranking_quiz_dto::RankingAnswerResultDto {
                 question_id: ans.question_id,
@@ -116,7 +128,8 @@ impl RankingQuizService {
         }
 
         // 3. Record all answers and complete quiz
-        let total_time_millis = chrono::Utc::now().timestamp_millis() - quiz.started_at.timestamp_millis();
+        let total_time_millis =
+            chrono::Utc::now().timestamp_millis() - quiz.started_at.timestamp_millis();
         let updated_quiz = RankingQuizRepository::record_all_answers(
             pool,
             quiz_id,
@@ -174,7 +187,9 @@ impl RankingQuizService {
         // 1. Fetch active quiz
         let quiz = RankingQuizRepository::find_active_by_id(pool, quiz_id)
             .await
-            .map_err(|_| AppError::InternalServerError("Active quiz not found or already finished".into()))?;
+            .map_err(|_| {
+                AppError::InternalServerError("Active quiz not found or already finished".into())
+            })?;
 
         if quiz.user_id != user_id {
             return Err(AppError::Unauthorized("Not your quiz".into()));
@@ -183,12 +198,16 @@ impl RankingQuizService {
         // 2. Identify current question index
         let current_index = quiz.answered_question_ids.len();
         if current_index >= quiz.question_ids.len() {
-            return Err(AppError::InternalServerError("Quiz already completed".into()));
+            return Err(AppError::InternalServerError(
+                "Quiz already completed".into(),
+            ));
         }
 
         let expected_question_id = quiz.question_ids[current_index];
         if expected_question_id != req.question_id {
-            return Err(AppError::InternalServerError("Question ID mismatch (anti-cheat)".into()));
+            return Err(AppError::InternalServerError(
+                "Question ID mismatch (anti-cheat)".into(),
+            ));
         }
 
         // 3. Fetch the real Question to check answer
@@ -197,9 +216,10 @@ impl RankingQuizService {
             .map_err(|_| AppError::InternalServerError("Question not found".into()))?;
 
         let trimmed_ans = req.answer.trim();
-        let is_correct = actual_question.correct_answers.iter().any(|correct| {
-            correct.trim() == trimmed_ans
-        });
+        let is_correct = actual_question
+            .correct_answers
+            .iter()
+            .any(|correct| correct.trim() == trimmed_ans);
 
         // 4. Update state
         let next_index = current_index + 1;
@@ -221,7 +241,9 @@ impl RankingQuizService {
         let mut result_dto = None;
         if is_completed {
             let total_time_millis = match updated_quiz.completed_at {
-                Some(ended) => ended.timestamp_millis() - updated_quiz.started_at.timestamp_millis(),
+                Some(ended) => {
+                    ended.timestamp_millis() - updated_quiz.started_at.timestamp_millis()
+                }
                 None => 0,
             };
 
@@ -245,9 +267,10 @@ impl RankingQuizService {
             .map_err(|e| AppError::InternalServerError(format!("Failed to save ranking: {}", e)))?;
 
             // 5. Fetch user rank
-            let rank = RankingQuizRepository::get_user_rank(pool, user_id, updated_quiz.collection_id)
-                .await
-                .unwrap_or(None);
+            let rank =
+                RankingQuizRepository::get_user_rank(pool, user_id, updated_quiz.collection_id)
+                    .await
+                    .unwrap_or(None);
 
             result_dto = Some(RankingQuizResultDto {
                 quiz_id,
@@ -292,7 +315,9 @@ impl RankingQuizService {
     ) -> Result<crate::dtos::collection_dto::LeaderboardResponse, AppError> {
         let entries = RankingQuizRepository::get_leaderboard(pool, collection_id)
             .await
-            .map_err(|e| AppError::InternalServerError(format!("Failed to fetch leaderboard: {}", e)))?;
+            .map_err(|e| {
+                AppError::InternalServerError(format!("Failed to fetch leaderboard: {}", e))
+            })?;
 
         Ok(crate::dtos::collection_dto::LeaderboardResponse {
             collection_id,

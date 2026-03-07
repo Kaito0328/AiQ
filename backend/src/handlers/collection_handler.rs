@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State, Query},
+    extract::{Path, Query, State},
     http::StatusCode,
 };
 use uuid::Uuid;
@@ -9,12 +9,12 @@ use crate::{extractors::auth::OptionalClaims, state::AppState};
 use crate::{models::user::User, utils::jwt::Claims};
 
 // --- Collection Handlers ---
-use axum::extract::Multipart;
 use crate::dtos::collection_dto::{CreateCollectionRequest, UpdateCollectionRequest};
 use crate::models::collection::Collection;
 use crate::services::collection_service::CollectionService;
 use crate::services::csv_service::CsvService;
 use crate::services::question_service::QuestionService;
+use axum::extract::Multipart;
 use axum::response::IntoResponse;
 
 pub async fn upload_csv(
@@ -39,16 +39,22 @@ pub async fn upload_csv(
     }
 
     let csv_data = csv_data.ok_or(StatusCode::BAD_REQUEST)?;
-    let upsert_items = crate::services::csv_service::CsvService::parse_csv(csv_data.as_ref()).map_err(|_| StatusCode::BAD_REQUEST)?;
+    let upsert_items = crate::services::csv_service::CsvService::parse_csv(csv_data.as_ref())
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let batch_req = crate::dtos::question_dto::BatchQuestionsRequest {
         upsert_items,
         delete_ids: vec![],
     };
 
-    crate::services::question_service::QuestionService::batch_questions(&state.db, collection_id, claims.user_id(), batch_req)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    crate::services::question_service::QuestionService::batch_questions(
+        &state.db,
+        collection_id,
+        claims.user_id(),
+        batch_req,
+    )
+    .await
+    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(StatusCode::OK)
 }
@@ -59,19 +65,22 @@ pub async fn export_csv(
     Path(collection_id): Path<Uuid>,
 ) -> Result<impl IntoResponse, StatusCode> {
     // Check ownership
-    let collection = CollectionService::get_collection(&state.db, collection_id, Some(claims.user_id()))
-        .await
-        .map_err(|_| StatusCode::FORBIDDEN)?;
+    let collection =
+        CollectionService::get_collection(&state.db, collection_id, Some(claims.user_id()))
+            .await
+            .map_err(|_| StatusCode::FORBIDDEN)?;
 
     if collection.user_id != claims.user_id() {
         return Err(StatusCode::FORBIDDEN);
     }
 
-    let questions: Vec<crate::models::question::Question> = QuestionService::get_collection_questions(&state.db, collection_id, Some(claims.user_id()))
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let questions: Vec<crate::models::question::Question> =
+        QuestionService::get_collection_questions(&state.db, collection_id, Some(claims.user_id()))
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    let csv_string = CsvService::generate_csv(&questions).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    let csv_string =
+        CsvService::generate_csv(&questions).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     let mut headers = axum::http::HeaderMap::new();
     headers.insert(
@@ -163,7 +172,10 @@ pub async fn batch_collections(
             failed_create_items: Vec::new(),
             failed_update_items: Vec::new(),
         })),
-        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+        Err(e) => {
+            eprintln!("Batch Collections error: {:?}", e);
+            Err(StatusCode::INTERNAL_SERVER_ERROR)
+        }
     }
 }
 
@@ -178,7 +190,9 @@ pub async fn get_followee_collections(
     claims: Claims,
     Query(query): Query<TimelineQuery>,
 ) -> Result<Json<Vec<crate::dtos::collection_dto::CollectionResponse>>, StatusCode> {
-    let limit = query.limit.unwrap_or(20);
+    let limit = query
+        .limit
+        .unwrap_or_else(|| crate::config::get().collection.timeline_pagination_default);
     let offset = query.offset.unwrap_or(0);
 
     match CollectionService::get_followee_collections(&state.db, claims.user_id(), limit, offset)
@@ -194,7 +208,9 @@ pub async fn get_recent_collections(
     OptionalClaims(claims): OptionalClaims,
     Query(query): Query<TimelineQuery>,
 ) -> Result<Json<Vec<crate::dtos::collection_dto::CollectionResponse>>, StatusCode> {
-    let limit = query.limit.unwrap_or(20);
+    let limit = query
+        .limit
+        .unwrap_or_else(|| crate::config::get().collection.timeline_pagination_default);
     let offset = query.offset.unwrap_or(0);
     let requester_id = claims.map(|c| c.user_id());
 

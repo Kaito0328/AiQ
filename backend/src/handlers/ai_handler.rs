@@ -1,16 +1,22 @@
 use axum::{
-    extract::{Path, State, WebSocketUpgrade, ws::{Message, WebSocket}},
+    extract::{
+        Path, State, WebSocketUpgrade,
+        ws::{Message, WebSocket},
+    },
     response::IntoResponse,
 };
-use uuid::Uuid;
 use futures::{sink::SinkExt, stream::StreamExt};
 use std::sync::Arc;
+use uuid::Uuid;
 
 use crate::{
-    dtos::{ai_dto::{GenerateQuestionsRequest, WsMessage}, question_dto::{BatchQuestionsRequest, UpsertQuestionItem}},
-    utils::jwt::Claims,
+    dtos::{
+        ai_dto::{GenerateQuestionsRequest, WsMessage},
+        question_dto::{BatchQuestionsRequest, UpsertQuestionItem},
+    },
     services::{ai_service::AiService, question_service::QuestionService},
     state::AppState,
+    utils::jwt::Claims,
 };
 
 pub async fn generate_ai_questions_ws(
@@ -40,11 +46,17 @@ async fn handle_ws(
                 request_payload = Some(req);
                 break;
             } else {
-                let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
-                    status: "error".into(),
-                    message: "Invalid JSON format for generation request".into(),
-                    data: None,
-                }).unwrap().into())).await;
+                let _ = socket
+                    .send(Message::Text(
+                        serde_json::to_string(&WsMessage {
+                            status: "error".into(),
+                            message: "Invalid JSON format for generation request".into(),
+                            data: None,
+                        })
+                        .unwrap()
+                        .into(),
+                    ))
+                    .await;
                 return;
             }
         }
@@ -58,36 +70,58 @@ async fn handle_ws(
     let count = req.count.unwrap_or(5);
 
     // Send processing status
-    let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
-        status: "processing".into(),
-        message: format!("Generating {} questions with AI...", count),
-        data: None,
-    }).unwrap().into())).await;
+    let _ = socket
+        .send(Message::Text(
+            serde_json::to_string(&WsMessage {
+                status: "processing".into(),
+                message: format!("Generating {} questions with AI...", count),
+                data: None,
+            })
+            .unwrap()
+            .into(),
+        ))
+        .await;
 
     // Generate questions
     match AiService::generate_questions(
-        &req.prompt, 
-        count, 
+        &req.prompt,
+        count,
         req.pdf_data.as_deref(),
         req.question_format.as_deref(),
         req.answer_format.as_deref(),
         req.example_question.as_deref(),
-        req.example_answer.as_deref()
-    ).await {
+        req.example_answer.as_deref(),
+        req.explanation_language.as_deref(),
+    )
+    .await
+    {
         Ok(questions) => {
             // Save to DB
-            let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
-                status: "saving".into(),
-                message: "Saving generated questions to database...".into(),
-                data: None,
-            }).unwrap().into())).await;
+            let _ = socket
+                .send(Message::Text(
+                    serde_json::to_string(&WsMessage {
+                        status: "saving".into(),
+                        message: "Saving generated questions to database...".into(),
+                        data: None,
+                    })
+                    .unwrap()
+                    .into(),
+                ))
+                .await;
 
-            let upsert_items: Vec<UpsertQuestionItem> = questions.iter().map(|q| UpsertQuestionItem {
-                id: None,
-                question_text: Some(q.question_text.clone()),
-                correct_answers: Some(q.correct_answers.clone()),
-                description_text: q.description_text.clone(),
-            }).collect();
+            let upsert_items: Vec<UpsertQuestionItem> = questions
+                .iter()
+                .map(|q| UpsertQuestionItem {
+                    id: None,
+                    question_text: Some(q.question_text.clone()),
+                    correct_answers: Some(q.correct_answers.clone()),
+                    answer_rubis: q.answer_rubis.clone(),
+                    distractors: Some(q.distractors.clone()),
+                    preferred_mode: None,
+                    recommended_mode: q.recommended_mode.clone(),
+                    description_text: q.description_text.clone(),
+                })
+                .collect();
 
             let batch_req = BatchQuestionsRequest {
                 upsert_items,
@@ -96,27 +130,45 @@ async fn handle_ws(
 
             match QuestionService::batch_questions(&pool, collection_id, user_id, batch_req).await {
                 Ok(_) => {
-                    let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
-                        status: "completed".into(),
-                        message: "Successfully generated and saved questions!".into(),
-                        data: Some(questions),
-                    }).unwrap().into())).await;
-                },
+                    let _ = socket
+                        .send(Message::Text(
+                            serde_json::to_string(&WsMessage {
+                                status: "completed".into(),
+                                message: "Successfully generated and saved questions!".into(),
+                                data: Some(questions),
+                            })
+                            .unwrap()
+                            .into(),
+                        ))
+                        .await;
+                }
                 Err(e) => {
-                    let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
-                        status: "error".into(),
-                        message: format!("Failed to save questions: {}", e),
-                        data: None,
-                    }).unwrap().into())).await;
+                    let _ = socket
+                        .send(Message::Text(
+                            serde_json::to_string(&WsMessage {
+                                status: "error".into(),
+                                message: format!("Failed to save questions: {}", e),
+                                data: None,
+                            })
+                            .unwrap()
+                            .into(),
+                        ))
+                        .await;
                 }
             }
-        },
+        }
         Err(e) => {
-            let _ = socket.send(Message::Text(serde_json::to_string(&WsMessage {
-                status: "error".into(),
-                message: format!("AI Generation failed: {}", e),
-                data: None,
-            }).unwrap().into())).await;
+            let _ = socket
+                .send(Message::Text(
+                    serde_json::to_string(&WsMessage {
+                        status: "error".into(),
+                        message: format!("AI Generation failed: {}", e),
+                        data: None,
+                    })
+                    .unwrap()
+                    .into(),
+                ))
+                .await;
         }
     }
 
@@ -132,6 +184,8 @@ pub async fn complete_ai_questions(
         req.complete_description.unwrap_or(true),
         req.question_format,
         req.answer_format,
-    ).await?;
+        req.explanation_language,
+    )
+    .await?;
     Ok(axum::Json(questions))
 }

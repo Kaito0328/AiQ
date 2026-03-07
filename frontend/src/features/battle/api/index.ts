@@ -1,4 +1,4 @@
-import { apiClient } from '@/src/shared/api/apiClient';
+import { apiClient, getApiBaseUrl } from '@/src/shared/api/apiClient';
 import { FilterType, SortKey } from '@/src/entities/quiz';
 
 export interface CreateMatchRoomRequest {
@@ -8,6 +8,8 @@ export interface CreateMatchRoomRequest {
     totalQuestions: number;
     maxBuzzesPerRound: number;
     visibility?: 'public' | 'private' | 'followers';
+    preferredMode?: string;
+    dummyCharCount?: number;
 }
 
 export interface CreateMatchRoomResponse {
@@ -34,13 +36,13 @@ export const createMatchRoom = async (req: CreateMatchRoomRequest): Promise<Crea
 
 export const getPublicRooms = async (): Promise<MatchRoomListItem[]> => {
     return await apiClient<MatchRoomListItem[]>('/match/room', {
-        authenticated: true,
+        authenticated: false,
     });
 };
 
 export const getMatchWsUrl = (roomId: string): string => {
     // API_BASE_URL (http://localhost:8080等) を取得
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+    const apiBaseUrl = getApiBaseUrl();
 
     // http:// -> ws://, https:// -> wss:// に変換
     const wsBaseUrl = apiBaseUrl.replace(/^http/, 'ws');

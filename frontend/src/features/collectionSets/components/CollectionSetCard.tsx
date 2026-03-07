@@ -56,7 +56,7 @@ export function CollectionSetCard({
         >
             <Stack gap="md" className="h-full">
                 <Flex gap="md" align="center">
-                    <View className="p-3 rounded-brand-lg bg-brand-primary/10 text-brand-primary">
+                    <View padding="md" rounded="lg" className="bg-brand-primary/10 text-brand-primary">
                         <FolderOpen size={24} />
                     </View>
                     <Stack gap="none" className="flex-1 pr-16">
@@ -89,11 +89,15 @@ export function CollectionSetCard({
                 {isExpanded && (
                     <View className="mt-4 pt-4 border-t border-surface-muted/50 transition-all animate-in slide-in-from-top-2 duration-300">
                         {loading ? (
-                            <Flex justify="center" className="py-4">
-                                <Spinner size="sm" />
-                            </Flex>
+                            <View padding="lg">
+                                <Flex justify="center">
+                                    <Spinner size="sm" />
+                                </Flex>
+                            </View>
                         ) : collections.length === 0 ? (
-                            <Text variant="xs" color="secondary" align="center" className="py-2">コレクションがありません</Text>
+                            <View padding="sm">
+                                <Text variant="xs" color="secondary" align="center">コレクションがありません</Text>
+                            </View>
                         ) : (
                             <Stack gap="xs">
                                 {collections.map(c => {
@@ -101,29 +105,33 @@ export function CollectionSetCard({
                                     return (
                                         <View
                                             key={c.id}
+                                            padding="sm"
+                                            rounded="sm"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onToggleCollection?.(c.id, c.name, c.questionCount);
                                             }}
                                             className={cn(
-                                                "p-2 rounded flex items-center justify-between group/item transition-colors",
+                                                "group/item transition-colors",
                                                 isSelected
                                                     ? "bg-brand-primary/10 border border-brand-primary/20"
                                                     : "hover:bg-brand-primary/5"
                                             )}
                                         >
-                                            <Stack gap="none">
-                                                <Text variant="xs" weight="bold">{c.name}</Text>
-                                                <Text variant="xs" color="secondary" className="opacity-60">{c.questionCount || 0} 問</Text>
-                                            </Stack>
-                                            <Checkbox
-                                                checked={isSelected}
-                                                readOnly
-                                                className={cn(
-                                                    "transition-all shadow-sm",
-                                                    isSelected && "scale-110"
-                                                )}
-                                            />
+                                            <Flex align="center" justify="between">
+                                                <Stack gap="none">
+                                                    <Text variant="xs" weight="bold">{c.name}</Text>
+                                                    <Text variant="xs" color="secondary" className="opacity-60">{c.questionCount || 0} 問</Text>
+                                                </Stack>
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    readOnly
+                                                    className={cn(
+                                                        "transition-all shadow-sm",
+                                                        isSelected && "scale-110"
+                                                    )}
+                                                />
+                                            </Flex>
                                         </View>
                                     );
                                 })}
@@ -137,38 +145,40 @@ export function CollectionSetCard({
 
     return (
         <View className="relative group h-full">
-            <View zIndex="docked" className="absolute top-2 right-2 flex gap-2">
-                {onEdit && (
-                    <Button
-                        size="sm"
-                        variant="ghost"
-                        className="p-2 h-auto rounded-full text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/20 shadow-sm transition-all active:scale-90"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            onEdit(set.id);
-                        }}
-                    >
-                        <Edit size={16} strokeWidth={2.5} />
-                    </Button>
-                )}
-                {onDelete && (
-                    <Button
-                        size="sm"
-                        variant="ghost"
-                        color="danger"
-                        className="p-2 h-auto rounded-full text-brand-danger bg-brand-danger/5 hover:bg-brand-danger/20 shadow-sm transition-all active:scale-90"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (window.confirm(`セット「${set.name}」を削除しますか？`)) {
-                                onDelete(set.id);
-                            }
-                        }}
-                    >
-                        <Trash2 size={16} strokeWidth={2.5} />
-                    </Button>
-                )}
+            <View zIndex="docked" className="absolute top-2 right-2">
+                <Flex gap="sm">
+                    {onEdit && (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className="p-2 h-auto rounded-full text-brand-primary bg-brand-primary/5 hover:bg-brand-primary/20 shadow-sm transition-all active:scale-90"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onEdit(set.id);
+                            }}
+                        >
+                            <Edit size={16} strokeWidth={2.5} />
+                        </Button>
+                    )}
+                    {onDelete && (
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            color="danger"
+                            className="p-2 h-auto rounded-full text-brand-danger bg-brand-danger/5 hover:bg-brand-danger/20 shadow-sm transition-all active:scale-90"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (window.confirm(`セット「${set.name}」を削除しますか？`)) {
+                                    onDelete(set.id);
+                                }
+                            }}
+                        >
+                            <Trash2 size={16} strokeWidth={2.5} />
+                        </Button>
+                    )}
+                </Flex>
             </View>
 
             {

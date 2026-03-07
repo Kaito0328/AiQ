@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
-import { Grid } from '@/src/design/primitives/Grid';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
@@ -85,26 +84,28 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
     const renderUserList = (users: User[], loading: boolean, emptyMessage: string) => {
         if (loading) {
             return (
-                <View className="flex justify-center py-12">
-                    <Spinner size="lg" />
+                <View padding="xl">
+                    <Flex justify="center">
+                        <Spinner size="lg" />
+                    </Flex>
                 </View>
             );
         }
 
         if (users.length === 0) {
             return (
-                <View className="py-12 text-center">
-                    <Text color="secondary">{emptyMessage}</Text>
+                <View padding="xl">
+                    <Text align="center" color="secondary">{emptyMessage}</Text>
                 </View>
             );
         }
 
         return (
-            <Grid cols={{ sm: 2, lg: 3 }} gap="md" className="p-1">
+            <Stack gap="sm" className="p-1">
                 {users.map(u => (
                     <UserCard key={u.id} user={u} onClick={onUserClick} />
                 ))}
-            </Grid>
+            </Stack>
         );
     };
 
