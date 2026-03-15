@@ -11,7 +11,11 @@ import { getOfficialUser } from '@/src/features/auth/api';
 import { UserHeader } from '@/src/features/users/components/UserHeader';
 import { UserContentTabs } from '@/src/features/users/components/UserContentTabs';
 import { startRankingQuiz } from '@/src/features/quiz/api';
-import { Book, LayoutGrid, List } from 'lucide-react';
+import { Book, LayoutGrid, List, WifiOff } from 'lucide-react';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { db } from '@/src/shared/db/db';
+import { ApiError } from '@/src/shared/api/error';
+import { saveOfflineProfile } from '@/src/shared/api/offlineApi';
 import { UserProfile } from '@/src/entities/user';
 import { useRouter } from 'next/navigation';
 import { Flex } from '@/src/design/primitives/Flex';
@@ -21,6 +25,7 @@ import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSet
 
 export default function OfficialUserPage() {
     const router = useRouter();
+    const { isOnline } = useNetworkStatus();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -31,16 +36,28 @@ export default function OfficialUserPage() {
     useEffect(() => {
         const fetchOfficial = async () => {
             try {
-                const user = await getOfficialUser();
-                setProfile(user);
+                if (isOnline) {
+                    const user = await getOfficialUser();
+                    setProfile(user);
+                    saveOfflineProfile(user).catch(err => logger.error('Failed to cache official profile', err));
+                } else {
+                    // オフライン時はDBから公式ユーザーを探す
+                    const users = await db.profiles.toArray();
+                    const official = users.find(u => u.isOfficial);
+                    if (official) {
+                        setProfile(official as UserProfile);
+                    }
+                }
             } catch (err) {
-                logger.error('公式ユーザーの取得に失敗しました', err);
+                if (!(err instanceof ApiError && err.status === 503)) {
+                    logger.error('公式ユーザーの取得に失敗しました', err);
+                }
             } finally {
                 setLoading(false);
             }
         };
         fetchOfficial();
-    }, []);
+    }, [isOnline]);
 
     const handleStartRanking = async (id: string) => {
         try {
@@ -69,11 +86,21 @@ export default function OfficialUserPage() {
 
     if (!profile) {
         return (
-            <div className="min-h-screen bg-surface-muted pt-20">
-                <BackButton />
+            <div className="min-h-screen bg-surface-muted pt-6">
                 <Container>
-                    <Stack gap="lg" align="center" className="py-20">
-                        <Text variant="h2" weight="bold">公式ユーザーが見つかりません</Text>
+                    <Stack gap="lg" align="center" className="py-20 text-center">
+                        <WifiOff size={48} className="text-foreground/20 mb-4" />
+                        <Text variant="h2" weight="bold">
+                            {isOnline ? "公式ユーザーが見つかりません" : "オフライン環境です"}
+                        </Text>
+                        {!isOnline && (
+                            <Text color="secondary">
+                                オンライン時に一度このページを訪れると、オフラインでも表示できるようになります。
+                            </Text>
+                        )}
+                        <Button variant="outline" onClick={() => router.push('/home')} className="mt-4">
+                            ホームに戻る
+                        </Button>
                     </Stack>
                 </Container>
             </div>
@@ -82,8 +109,7 @@ export default function OfficialUserPage() {
 
     return (
         <div className="min-h-screen bg-surface-muted transition-all duration-300">
-            <BackButton />
-            <Container className="pt-20 pb-12">
+            <Container className="pt-6 pb-12">
                 <Stack gap="xl">
                     <UserHeader profile={profile} />
 

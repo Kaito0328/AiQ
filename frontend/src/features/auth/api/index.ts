@@ -81,3 +81,10 @@ export const changePassword = async (oldPassword: string, newPassword: string): 
         authenticated: true,
     });
 };
+
+export const deleteAccount = async (): Promise<void> => {
+    await apiClient<void>('/auth/me', {
+        method: 'DELETE',
+        authenticated: true,
+    });
+};

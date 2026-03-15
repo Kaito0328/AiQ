@@ -12,7 +12,7 @@ export default function LoginPage() {
     const router = useRouter();
 
     const handleSuccess = () => {
-        router.push('/');
+        router.push('/home');
     };
 
     return (

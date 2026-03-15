@@ -16,6 +16,8 @@ import { useToast } from '@/src/shared/contexts/ToastContext';
 import { createEditRequest, updateQuestion } from '../api';
 import { Question } from '@/src/entities/question';
 import { cn } from '@/src/shared/utils/cn';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { syncManager } from '@/src/shared/api/SyncManager';
 
 interface EditRequestModalProps {
     question: Question;
@@ -38,12 +40,15 @@ export function EditRequestModal({ question, onClose, onDirectUpdate, isOwner = 
     const [questionText, setQuestionText] = useState(question.questionText);
     const [correctAnswers, setCorrectAnswers] = useState(question.correctAnswers.join('; '));
     const [answerRubis, setAnswerRubis] = useState(question.answerRubis?.join('; ') || '');
+    const [chipAnswer, setChipAnswer] = useState(question.chipAnswer || '');
     const [distractors, setDistractors] = useState(question.distractors?.join('; ') || '');
     const [descriptionText, setDescriptionText] = useState(question.descriptionText || '');
+    const [isSelectionOnly, setIsSelectionOnly] = useState(question.isSelectionOnly || false);
     const [reasonId, setReasonId] = useState<number>(1);
     const [reasonDetails, setReasonDetails] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { showToast } = useToast();
+    const { isOnline } = useNetworkStatus();
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
@@ -52,22 +57,38 @@ export function EditRequestModal({ question, onClose, onDirectUpdate, isOwner = 
                 questionText,
                 correctAnswers: correctAnswers.split(';').map(a => a.trim()).filter(a => a !== ''),
                 answerRubis: answerRubis.split(';').map(a => a.trim()).filter(a => a !== ''),
+                chipAnswer: chipAnswer.trim() !== '' ? chipAnswer : undefined,
                 distractors: distractors.split(';').map(a => a.trim()).filter(a => a !== ''),
                 descriptionText: descriptionText.trim() !== '' ? descriptionText : undefined,
+                isSelectionOnly: isSelectionOnly,
             };
 
             if (isOwner) {
                 // Direct update for owners
-                await updateQuestion(question.id, updates);
-                showToast({ message: '問題を保存・更新しました', variant: 'success' });
+                if (isOnline) {
+                    await updateQuestion(question.id, updates);
+                    showToast({ message: '問題を保存・更新しました', variant: 'success' });
+                } else {
+                    await syncManager.addAction('UPDATE_QUESTION', { questionId: question.id, data: updates });
+                    showToast({ message: 'オフラインで保存しました。オンライン復帰時に同期されます。', variant: 'success' });
+                }
             } else {
                 // Suggestion for non-owners
-                await createEditRequest({
-                    questionId: question.id,
-                    ...updates,
-                    reasonId,
-                });
-                showToast({ message: '修正依頼を送信しました。オーナーの承認をお待ちください。', variant: 'success' });
+                if (isOnline) {
+                    await createEditRequest({
+                        questionId: question.id,
+                        ...updates,
+                        reasonId,
+                    });
+                    showToast({ message: '修正依頼を送信しました。オーナーの承認をお待ちください。', variant: 'success' });
+                } else {
+                    await syncManager.addAction('CREATE_EDIT_REQUEST', {
+                        questionId: question.id,
+                        ...updates,
+                        reasonId,
+                    });
+                    showToast({ message: 'オフラインで修正依頼を保存しました。オンライン復帰時に送信されます。', variant: 'success' });
+                }
             }
 
             // Reflect changes locally immediately
@@ -161,6 +182,28 @@ export function EditRequestModal({ question, onClose, onDirectUpdate, isOwner = 
                                 placeholder="ぱり; PARI"
                             />
                         </FormField>
+                    </Grid>
+
+                    <Grid cols={{ sm: 1, md: 2 }} gap="md">
+                        <FormField label="チップ用回答 (任意)">
+                            <Input
+                                value={chipAnswer}
+                                onChange={(e) => setChipAnswer(e.target.value)}
+                                placeholder="ぱり"
+                            />
+                        </FormField>
+                        <Flex align="center" gap="sm" className="h-full pt-6">
+                            <input
+                                type="checkbox"
+                                id="isSelectionOnly"
+                                checked={isSelectionOnly}
+                                onChange={(e) => setIsSelectionOnly(e.target.checked)}
+                                className="w-5 h-5 accent-brand-primary"
+                            />
+                            <label htmlFor="isSelectionOnly" className="text-sm font-bold cursor-pointer">
+                                4択専用にする
+                            </label>
+                        </Flex>
                     </Grid>
 
                     <FormField label="誤答/選択肢 (任意、セミコロン区切り)">

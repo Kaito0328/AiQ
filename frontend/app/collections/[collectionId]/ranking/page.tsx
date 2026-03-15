@@ -14,13 +14,15 @@ import { getLeaderboard, startRankingQuiz } from '@/src/features/quiz/api';
 import { getCollection } from '@/src/features/collections/api';
 import { Collection } from '@/src/entities/collection';
 import { LeaderboardResponse } from '@/src/features/quiz/api';
-import { Trophy, Play, User } from 'lucide-react';
+import { Trophy, Play, User, WifiOff } from 'lucide-react';
 import { useAuth } from '@/src/shared/auth/useAuth';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
 export default function RankingLeaderboardPage() {
     const params = useParams();
     const router = useRouter();
     const { user } = useAuth();
+    const { isOnline } = useNetworkStatus();
     const collectionId = params.collectionId as string;
 
     const [collection, setCollection] = useState<Collection | null>(null);
@@ -93,10 +95,13 @@ export default function RankingLeaderboardPage() {
                                 color="primary"
                                 className="px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-transform"
                                 onClick={handleStartQuiz}
+                                disabled={!isOnline}
                             >
                                 <Flex gap="sm" align="center">
-                                    <Play size={20} fill="currentColor" />
-                                    <Text weight="bold">クイズに挑戦する</Text>
+                                    {isOnline ? <Play size={20} fill="currentColor" /> : <WifiOff size={20} />}
+                                    <Text weight="bold">
+                                        {isOnline ? 'クイズに挑戦する' : 'オフライン中はプレイ不可'}
+                                    </Text>
                                 </Flex>
                             </Button>
                         </View>

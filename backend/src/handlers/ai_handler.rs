@@ -84,9 +84,12 @@ async fn handle_ws(
 
     // Generate questions
     match AiService::generate_questions(
+        &pool,
+        user_id,
         &req.prompt,
         count,
         req.pdf_data.as_deref(),
+        req.pdf_page_count,
         req.question_format.as_deref(),
         req.answer_format.as_deref(),
         req.example_question.as_deref(),
@@ -117,8 +120,8 @@ async fn handle_ws(
                     correct_answers: Some(q.correct_answers.clone()),
                     answer_rubis: q.answer_rubis.clone(),
                     distractors: Some(q.distractors.clone()),
-                    preferred_mode: None,
-                    recommended_mode: q.recommended_mode.clone(),
+                    chip_answer: q.chip_answer.clone(),
+                    is_selection_only: q.is_selection_only,
                     description_text: q.description_text.clone(),
                 })
                 .collect();
@@ -175,11 +178,26 @@ async fn handle_ws(
     let _ = socket.close().await;
 }
 
+pub async fn get_ai_usage(
+    State(state): State<crate::AppState>,
+    claims: crate::utils::jwt::Claims,
+) -> Result<axum::Json<crate::dtos::ai_dto::AiUsageResponse>, crate::error::AppError> {
+    let usage = crate::services::ai_limit_service::AiLimitService::get_usage(
+        &state.db,
+        claims.user_id(),
+    )
+    .await?;
+    Ok(axum::Json(usage))
+}
+
 pub async fn complete_ai_questions(
-    State(_state): axum::extract::State<crate::AppState>,
+    State(state): axum::extract::State<crate::AppState>,
+    claims: Claims,
     axum::Json(req): axum::Json<crate::dtos::ai_dto::CompleteQuestionsRequest>,
 ) -> Result<axum::Json<Vec<crate::dtos::ai_dto::GeneratedQuestion>>, crate::error::AppError> {
     let questions = crate::services::ai_service::AiService::complete_questions(
+        &state.db,
+        claims.user_id(),
         req.items,
         req.complete_description.unwrap_or(true),
         req.question_format,

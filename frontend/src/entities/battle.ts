@@ -6,8 +6,9 @@ export interface MatchQuestion {
   correct_answers: string[];
   description_text?: string;
   answer_rubis: string[];
+  chip_answer?: string;
   distractors: string[];
-  recommended_mode: string;
+  is_selection_only: boolean;
 }
 
 export interface PlayerScore {
@@ -64,7 +65,8 @@ export type WsClientMessage =
     dummy_char_count?: number;
   }
   | { type: "UpdateVisibility"; visibility: RoomVisibility }
-  | { type: "UpdateMatchConfig"; config: MatchConfig };
+  | { type: "UpdateMatchConfig"; config: MatchConfig }
+  | { type: "Ping" };
 
 // WebSocket Messages (Server -> Client)
 export type WsServerMessage =
@@ -119,4 +121,5 @@ export type WsServerMessage =
   | { type: "MatchResult"; final_scores: PlayerScore[] }
   | { type: "RoomConfigUpdated"; max_buzzes: number }
   | { type: "RoomVisibilityUpdated"; visibility: RoomVisibility }
-  | { type: "Joined"; user_id: string; username: string };
+  | { type: "Joined"; user_id: string; username: string; server_now_ms: number }
+  | { type: "Pong" };

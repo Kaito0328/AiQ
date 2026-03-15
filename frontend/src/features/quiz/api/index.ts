@@ -9,24 +9,55 @@ import {
     RankingAnswerResponse,
 } from '@/src/entities/quiz';
 
+import { startOfflineQuiz } from './offlineStart';
+import { db } from '@/src/shared/db/db';
+
 /**
  * カジュアルクイズを開始
  * フロントエンドの camelCase を バックエンドの snake_case に変換して送信
+ * ネットワークエラー時は IndexedDB のキャッシュから開始を試みます
  */
 export const startCasualQuiz = async (data: QuizRequest): Promise<QuizStartResponse> => {
-    return await apiClient<QuizStartResponse>('/quiz/start', {
-        method: 'POST',
-        body: JSON.stringify({
-            collectionIds: data.collectionIds,
-            collectionSetId: data.collectionSetId,
-            filterNode: data.filterNode,
-            sorts: data.sorts,
-            totalQuestions: data.limit,
-            preferredMode: data.preferredMode,
-            dummyCharCount: data.dummyCharCount,
-        }),
-        authenticated: true,
-    });
+    try {
+        const resp = await apiClient<QuizStartResponse>('/quiz/start', {
+            method: 'POST',
+            body: JSON.stringify({
+                collectionIds: data.collectionIds,
+                collectionSetId: data.collectionSetId,
+                filterNode: data.filterNode,
+                sorts: data.sorts,
+                totalQuestions: data.limit,
+                preferredMode: data.preferredMode,
+                dummyCharCount: data.dummyCharCount,
+            }),
+            authenticated: true,
+        });
+
+        // 成功時: バックグラウンドで自動的にキャッシュを更新（LRU的な挙動の準備）
+        // 開発者の意向より、画像等はないため積極的にキャッシュして良い
+        if (resp.questions.length > 0) {
+            // コレクション情報を取得して保存（簡易版：本来は詳細が必要だが既にあるものを流用）
+            // ここでは問題データのみを更新保存する
+            const savedAt = Date.now();
+            await db.questions.bulkPut(resp.questions.map(q => ({ ...q, savedAt })));
+        }
+
+        return resp;
+    } catch (err) {
+        console.warn('API engagement failed, attempting offline start...', err);
+        // ネットワークエラー等の場合に IndexedDB からの起動を試みる
+        if (typeof window !== 'undefined' && !navigator.onLine) {
+            return await startOfflineQuiz(data);
+        }
+        
+        // サーバーが落ちている場合なども含めてフォールバックを試みる
+        try {
+            return await startOfflineQuiz(data);
+        } catch (offlineErr) {
+            // オフラインでも失敗（キャッシュがない）場合は元のエラーを投げる
+            throw err;
+        }
+    }
 };
 
 /**
@@ -44,6 +75,18 @@ export const startRankingQuiz = async (collectionId: string): Promise<QuizStartR
  * クイズの回答を送信
  */
 export const submitAnswer = async (quizId: string, data: AnswerRequest): Promise<void> => {
+    // オフラインクイズ（サーバーにセッションがないもの）は送信をスキップ
+    if (quizId.startsWith('offline-')) {
+        return;
+    }
+
+    // オフラインまたはマニュアルオフライン時は Outbox に追加
+    if (typeof window !== 'undefined' && (localStorage.getItem('aiq_manual_offline') === 'true' || !navigator.onLine)) {
+        const { syncManager } = await import('@/src/shared/api/SyncManager');
+        await syncManager.addAction('SUBMIT_QUIZ_RESULT', { quizId, data });
+        return;
+    }
+
     await apiClient<void>(`/quiz/${quizId}/submit`, {
         method: 'POST',
         body: JSON.stringify(data),

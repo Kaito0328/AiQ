@@ -34,7 +34,7 @@ const responsiveColsMap: Record<string, Record<number, string>> = {
 };
 
 export interface GridProps extends React.HTMLAttributes<HTMLDivElement> {
-    cols?: number | { sm?: number; md?: number; lg?: number; xl?: number };
+    cols?: number | { base?: number; sm?: number; md?: number; lg?: number; xl?: number };
     gap?: SpacingKey;
     align?: 'start' | 'center' | 'end' | 'stretch';
 }
@@ -52,6 +52,7 @@ export function Grid({
     const colClasses = typeof cols === 'number'
         ? (colsMap[cols] || `grid-cols-${cols}`)
         : cn(
+            cols.base && (colsMap[cols.base] || `grid-cols-${cols.base}`),
             cols.sm && (responsiveColsMap.sm[cols.sm] || `sm:grid-cols-${cols.sm}`),
             cols.md && (responsiveColsMap.md[cols.md] || `md:grid-cols-${cols.md}`),
             cols.lg && (responsiveColsMap.lg[cols.lg] || `lg:grid-cols-${cols.lg}`),

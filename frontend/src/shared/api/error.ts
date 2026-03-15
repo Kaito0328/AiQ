@@ -21,6 +21,7 @@ export enum ErrorCodeType {
     COLLECTION_OPEN_EMPTY = 'COLLECTION_OPEN_EMPTY',
     LOGIN_REQUIRED = 'LOGIN_REQUIRED',
     UNKNOWN_ERROR = 'UNKNOWN_ERROR',
+    TIMEOUT = 'TIMEOUT',
 }
 
 export interface ErrorCode {

@@ -1,7 +1,7 @@
 "use client"
 import { logger } from '@/src/shared/utils/logger';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '@/src/design/baseComponents/Modal';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
@@ -9,11 +9,9 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { View } from '@/src/design/primitives/View';
-import { Select } from '@/src/design/baseComponents/Select';
 import { FormField } from '@/src/design/baseComponents/FormField';
-import { Badge } from '@/src/design/baseComponents/Badge';
 import { Question, QuestionInput } from '@/src/entities/question';
-import { createQuestion, updateQuestion } from '@/src/features/questions/api';
+import { useQuestionMutations } from '../hooks/useQuestionMutations';
 import AppConfig from '@/src/app_config';
 
 interface QuestionFormProps {
@@ -24,14 +22,16 @@ interface QuestionFormProps {
 }
 
 export function QuestionForm({ collectionId, question, onSaved, onCancel }: QuestionFormProps) {
+    const { createQuestion: doCreateQuestion, updateQuestion: doUpdateQuestion } = useQuestionMutations();
     const isEditing = !!question;
     const [input, setInput] = useState<QuestionInput>({
         questionText: question?.questionText || '',
         correctAnswers: question?.correctAnswers || [''],
         answerRubis: question?.answerRubis || [''],
+        chipAnswer: question?.chipAnswer || '',
         distractors: question?.distractors || ['', '', ''],
         descriptionText: question?.descriptionText || '',
-        preferredMode: question?.preferredMode || 'default',
+        isSelectionOnly: question?.isSelectionOnly || false,
     });
     const [answersString, setAnswersString] = useState(question?.correctAnswers.join(', ') || '');
     const [rubisString, setRubisString] = useState(question?.answerRubis?.join(', ') || '');
@@ -63,9 +63,9 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
         try {
             let result: Question;
             if (isEditing && question) {
-                result = await updateQuestion(question.id, data);
+                result = await doUpdateQuestion(question.id, data);
             } else {
-                result = await createQuestion(collectionId, data);
+                result = await doCreateQuestion(collectionId, data);
             }
             onSaved(result);
         } catch (err) {
@@ -135,6 +135,31 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
                     </FormField>
 
                     <View className="pt-2 border-t border-surface-muted/50">
+                        <FormField label="チップ用回答 (任意)">
+                            <Input
+                                value={input.chipAnswer}
+                                onChange={(e) => setInput({ ...input, chipAnswer: e.target.value })}
+                                placeholder="ぱり"
+                            />
+                        </FormField>
+                    </View>
+
+                    <FormField label="回答設定">
+                        <Flex align="center" gap="sm">
+                            <input
+                                type="checkbox"
+                                id="isSelectionOnlyForm"
+                                checked={input.isSelectionOnly}
+                                onChange={(e) => setInput({ ...input, isSelectionOnly: e.target.checked })}
+                                className="w-5 h-5 accent-brand-primary"
+                            />
+                            <label htmlFor="isSelectionOnlyForm" className="text-sm font-bold cursor-pointer">
+                                4択専用にする（「どれ？」形式など）
+                            </label>
+                        </Flex>
+                    </FormField>
+
+                    <View className="pt-2 border-t border-surface-muted/50">
                         <FormField
                             label="4択の選択肢 (誤答)"
                             description="※ 4択モードで使用"
@@ -146,35 +171,6 @@ export function QuestionForm({ collectionId, question, onSaved, onCancel }: Ques
                             />
                         </FormField>
                     </View>
-
-                    <FormField label="回答方式の設定">
-                        <Stack gap="sm">
-                            {question?.recommendedMode && (
-                                <View>
-                                    <Badge variant="primary">
-                                        AI推奨: {
-                                            question.recommendedMode === 'chips' ? '文字チップ' :
-                                                question.recommendedMode === 'fourChoice' ? '4択' :
-                                                    question.recommendedMode === 'text' ? 'テキスト' :
-                                                        question.recommendedMode === 'choice' ? '選択肢系' : '通常'
-                                        }
-                                    </Badge>
-                                </View>
-                            )}
-                            <Select
-                                value={input.preferredMode}
-                                onChange={(e) => setInput({ ...input, preferredMode: e.target.value as any })}
-                            >
-                                <option value="default">自動 (おまかせ)</option>
-                                <option value="text">テキスト入力</option>
-                                <option value="fourChoice">4択</option>
-                                <option value="chips">文字チップ</option>
-                            </Select>
-                            <Text variant="xs" color="secondary">
-                                ※ 「自動」を選択すると、上記AI推奨や画面設定に合わせて最適化されます。
-                            </Text>
-                        </Stack>
-                    </FormField>
 
                     {error && (
                         <Text variant="xs" color="danger">{error}</Text>

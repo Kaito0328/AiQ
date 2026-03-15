@@ -37,6 +37,7 @@ pub enum WsClientMessage {
     UpdateMatchConfig {
         config: crate::state::match_state::MatchConfig,
     },
+    Ping,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -118,5 +119,7 @@ pub enum WsServerMessage {
     Joined {
         user_id: Uuid,
         username: String,
+        server_now_ms: u64,
     },
+    Pong,
 }

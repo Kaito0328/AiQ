@@ -17,6 +17,7 @@ import { Sparkles, CheckCircle, AlertCircle, FileText, FileUp, X, Upload } from 
 import { useAiGeneration } from '../hooks/useAiGeneration';
 import { useToast } from '@/src/shared/contexts/ToastContext';
 import { cn } from '@/src/shared/utils/cn';
+import { AiUsageDisplay } from './AiUsageDisplay';
 
 interface AiGenerationModalProps {
     isOpen: boolean;
@@ -96,6 +97,7 @@ export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess, in
             size="lg"
         >
             <Stack gap="xl">
+                <AiUsageDisplay />
                 {status === 'idle' ? (
                     <>
                         <Stack gap="sm">
@@ -171,16 +173,6 @@ export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess, in
                                             placeholder="例：日本語、記述式、4択..."
                                             value={questionFormat}
                                             onChange={(e) => setQuestionFormat(e.target.value)}
-                                            className="h-10 text-sm"
-                                        />
-                                    </FormField>
-                                </View>
-                                <View className="flex-1">
-                                    <FormField label="回答の形式">
-                                        <Input
-                                            placeholder="例：英単語、一言で、A/B..."
-                                            value={answerFormat}
-                                            onChange={(e) => setAnswerFormat(e.target.value)}
                                             className="h-10 text-sm"
                                         />
                                     </FormField>

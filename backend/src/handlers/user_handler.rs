@@ -116,6 +116,15 @@ pub async fn update_profile(
     Ok(Json(json!({ "message": "Profile updated successfully" })))
 }
 
+pub async fn delete_account(
+    State(state): State<AppState>,
+    claims: Claims,
+) -> Result<Json<Value>> {
+    user_service::delete_user(&state.db, claims.user_id()).await?;
+
+    Ok(Json(json!({ "message": "Account deleted successfully" })))
+}
+
 // GET /api/users/official
 pub async fn get_official_user(
     State(state): State<AppState>,

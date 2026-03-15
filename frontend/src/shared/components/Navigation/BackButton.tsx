@@ -16,12 +16,12 @@ export function BackButton({ className }: { className?: string }) {
     return (
         <View className={cn("fixed top-20 left-4 z-[100]", className)}>
             <Button
-                variant="solid"
+                variant="ghost"
                 onClick={() => router.back()}
-                className="gap-1 px-3 sm:px-4 shadow-brand-lg hover:shadow-brand-md transition-all active:scale-95 h-10 sm:h-12 rounded-full border-2 border-brand-primary/20 bg-white text-slate-900 font-bold"
+                className="gap-1.5 px-2 hover:bg-brand-primary/5 transition-all active:scale-95 h-10 rounded-full text-brand-primary font-bold"
             >
-                <ChevronLeft size={20} className="sm:w-6 sm:h-6 text-brand-primary" strokeWidth={3} />
-                <span className="text-xs sm:text-base">戻る</span>
+                <ChevronLeft size={22} strokeWidth={2.5} />
+                <span className="text-sm">戻る</span>
             </Button>
         </View>
     );

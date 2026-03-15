@@ -18,23 +18,24 @@ import { useTheme } from '@/src/shared/contexts/ThemeContext';
  */
 export default function LandingPage() {
   const router = useRouter();
-  const { loading: authLoading } = useAuth();
+  const { loading: authLoading, isTechnicalError, refreshUser, isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    if (!authLoading) {
-      setReady(true);
-    }
-  }, [authLoading]);
+  }, []);
 
-  const handleStart = () => {
-    if (ready) {
-      router.push('/home');
+  const handleStart = async () => {
+    if (isTechnicalError) {
+      await refreshUser();
+      return;
     }
+    router.push('/home');
   };
+
+  const isReady = !authLoading && !isTechnicalError;
+  const showExplanatoryText = isTechnicalError || authLoading;
 
   return (
     <View bg="base" className="min-h-screen flex items-center justify-center p-6">
@@ -60,15 +61,28 @@ export default function LandingPage() {
         </Stack>
 
         <View className="w-full mt-8">
-          <Button
-            size="lg"
-            fullWidth
-            loading={!ready}
-            onClick={handleStart}
-            className="py-6 text-lg"
-          >
-            はじめる
-          </Button>
+          <Stack gap="md">
+            {showExplanatoryText && (
+              <View className="p-3 bg-surface-muted/50 rounded-lg border border-surface-muted animate-in fade-in duration-500">
+                <Text variant="xs" color="secondary" className="text-center leading-relaxed">
+                  {authLoading 
+                    ? "セッションを読み込んでいます..." 
+                    : "サーバーを起動しています。これには数十秒かかる場合があります。"}
+                </Text>
+              </View>
+            )}
+            <Button
+              size="lg"
+              fullWidth
+              loading={authLoading}
+              onClick={handleStart}
+              className="py-6 text-lg shadow-xl shadow-brand-primary/10"
+              color={isTechnicalError ? "secondary" : "primary"}
+              variant={isTechnicalError ? "outline" : "solid"}
+            >
+              {isTechnicalError ? "サーバーを準備して開始" : "はじめる"}
+            </Button>
+          </Stack>
         </View>
 
         {/* Footer */}

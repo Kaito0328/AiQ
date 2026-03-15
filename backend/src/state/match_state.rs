@@ -67,7 +67,8 @@ pub struct MatchQuestion {
     pub correct_answers: Vec<String>,
     pub answer_rubis: Vec<String>,
     pub distractors: Vec<String>,
-    pub recommended_mode: String,
+    pub chip_answer: Option<String>,
+    pub is_selection_only: bool,
 }
 
 #[derive(Debug)]

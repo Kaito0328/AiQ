@@ -9,7 +9,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Badge } from '@/src/design/baseComponents/Badge';
 import { View } from '@/src/design/primitives/View';
 import { Collection } from '@/src/entities/collection';
-import { Book, Heart, Trophy, Trash2, Edit, FolderPlus, Lock, Unlock } from 'lucide-react';
+import { Book, Heart, Trophy, Trash2, Edit, FolderPlus, Lock, Unlock, Cloud, AlertTriangle, WifiOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { Button } from '@/src/design/baseComponents/Button';
@@ -17,6 +17,8 @@ import { addFavorite, removeFavorite } from '@/src/features/favorites/api';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { cn } from '@/src/shared/utils/cn';
 import { useState, useEffect } from 'react';
+import { useSyncStatus } from '@/src/shared/hooks/useSyncStatus';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
 interface CollectionCardProps {
     collection: Collection;
@@ -49,10 +51,17 @@ export function CollectionCard({
 }: CollectionCardProps) {
     const router = useRouter();
     const { isAuthenticated, user } = useAuth();
+    const { isOnline } = useNetworkStatus();
     const [isFavorited, setIsFavorited] = useState(collection.isFavorited || false);
     const [favCount, setFavCount] = useState(collection.favoriteCount || 0);
+    const syncStatus = useSyncStatus(collection.id);
+    const isPending = syncStatus?.isPending;
+    const hasError = syncStatus?.hasError;
+    const error = syncStatus?.error;
+    const actionId = syncStatus?.actionId;
 
     const isOwner = user?.id === collection.userId;
+    const { syncManager } = require('@/src/shared/api/SyncManager');
 
     useEffect(() => {
         setIsFavorited(collection.isFavorited || false);
@@ -116,15 +125,48 @@ export function CollectionCard({
                 className={cn("h-full", !isSelectionMode && "cursor-pointer")}
             >
                 <Card
-                    border="primary"
-                    shadow={selected ? "lg" : "sm"}
-                    bg={selected ? "muted" : "card"}
+                    border={hasError ? 'danger' : (isPending ? 'warning' : (displayMode === 'list' ? 'none' : 'primary'))}
+                    shadow={displayMode === 'list' ? 'none' : (selected ? 'lg' : 'sm')}
+                    bg={displayMode === 'list' ? 'transparent' : (selected ? 'muted' : 'card')}
                     className={cn(
                         "h-full transition-all duration-500 overflow-hidden relative",
-                        "group-hover:shadow-lg group-hover:border-brand-primary/60 group-hover:-translate-y-0.5",
-                        selected && "ring-2 ring-brand-primary/20"
+                        displayMode !== 'list' && "group-hover:shadow-lg group-hover:border-brand-primary/60 group-hover:-translate-y-0.5",
+                        selected && displayMode !== 'list' && "ring-2 ring-brand-primary/20",
+                        isPending && !hasError && "border-dashed border-amber-400/60 animate-pulse-subtle",
+                        hasError && "border-red-500/60 shadow-red-100/20"
                     )}
                 >
+                    {/* 同期ステータスアイコン */}
+                    {(isPending || hasError) && (
+                        <View className="absolute top-3 left-3 z-[10] flex items-center gap-1">
+                            {hasError ? (
+                                <Flex gap="xs">
+                                    <View className="p-1 rounded-full bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400" title={`同期エラー: ${error}`}>
+                                        <AlertTriangle size={14} />
+                                    </View>
+                                    <View className="flex gap-1 animate-in fade-in slide-in-from-left-2">
+                                        <Button 
+                                            size="sm" variant="solid" color="primary" className="h-6 px-2 text-[10px] py-0"
+                                            onClick={(e) => { e.stopPropagation(); actionId && syncManager.retryAction(actionId); }}
+                                        >
+                                            再試行
+                                        </Button>
+                                        <Button 
+                                            size="sm" variant="outline" className="h-6 px-2 text-[10px] py-0 bg-white dark:bg-gray-800"
+                                            onClick={(e) => { e.stopPropagation(); actionId && syncManager.discardAction(actionId); }}
+                                        >
+                                            破棄
+                                        </Button>
+                                    </View>
+                                </Flex>
+                            ) : (
+                                <View className="p-1 rounded-full bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 animate-bounce-subtle" title="同期待ち...">
+                                    <Cloud size={14} />
+                                </View>
+                            )}
+                        </View>
+                    )}
+
                     {/* Checkbox moved into the title flex for better layout */}
                     {/* 操作ボタン */}
                     {displayMode !== 'list' && (
@@ -194,8 +236,16 @@ export function CollectionCard({
                     )}
 
                     {displayMode === 'list' ? (
-                        <Flex gap="md" align="center" justify="between" className="h-full px-4 py-3 w-full">
-                            <Flex gap="md" align="center" className="flex-1 min-w-0">
+                        <Flex
+                            gap="md"
+                            align="center"
+                            justify="between"
+                            className={cn(
+                                "py-3 px-1 transition-colors group/list-item border-b border-surface-muted/50 last:border-b-0",
+                                selected && "bg-brand-primary/5"
+                            )}
+                        >
+                            <Flex gap="sm" align="center" className="flex-1 min-w-0">
                                 {(isSelectionMode || selectable) && (
                                     <Checkbox
                                         checked={selected}
@@ -207,21 +257,46 @@ export function CollectionCard({
                                             e.stopPropagation();
                                         }}
                                         className={cn(
-                                            "transition-all duration-300",
-                                            selected ? "scale-110" : "opacity-90 group-hover:opacity-100"
+                                            "transition-all",
+                                            selected ? "scale-105" : "opacity-70 group-hover/list-item:opacity-100"
                                         )}
                                     />
                                 )}
-                                <Text weight="bold" variant="detail" color="primary" className="line-clamp-1 group-hover:opacity-100 transition-opacity opacity-90">
+                                <Text
+                                    weight={selected ? "bold" : "medium"}
+                                    variant="detail"
+                                    color={selected ? "primary" : "primary"}
+                                    className="truncate flex-1"
+                                >
                                     {collection.name}
                                 </Text>
                             </Flex>
 
                             <Flex gap="md" align="center" className="shrink-0">
-                                <Flex gap="xs" align="center" title="問題数">
-                                    <Book size={14} strokeWidth={2.5} className="text-brand-primary" />
-                                    <Text variant="xs" weight="bold" color="primary">{collection.questionCount || 0}問</Text>
+                                <Flex gap="xs" align="center" className="opacity-70">
+                                    <Book size={12} className="text-brand-primary" />
+                                    <Text variant="xs" color="secondary">{collection.questionCount || 0}</Text>
                                 </Flex>
+                                
+                                {/* List mode actions (Edit/Delete) in compact view */}
+                                {!hideExtras && isOwner && (
+                                    <Flex gap="xs" className="opacity-0 group-hover/list-item:opacity-100 transition-opacity ml-2">
+                                        {onEdit && (
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="p-1 h-auto"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    onEdit(collection.id);
+                                                }}
+                                            >
+                                                <Edit size={14} className="text-brand-primary" />
+                                            </Button>
+                                        )}
+                                    </Flex>
+                                )}
                             </Flex>
                         </Flex>
                     ) : (
@@ -309,14 +384,15 @@ export function CollectionCard({
                                         color="primary"
                                         rounded="full"
                                         className="p-2 h-auto"
+                                        disabled={!isOnline}
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
                                             router.push(`/collections/${collection.id}/ranking`);
                                         }}
-                                        title="ランキングを見る"
+                                        title={isOnline ? "ランキングを見る" : "オフライン中はランキングを表示できません"}
                                     >
-                                        <Trophy size={18} strokeWidth={2.5} />
+                                        {isOnline ? <Trophy size={18} strokeWidth={2.5} /> : <WifiOff size={18} />}
                                     </Button>
                                 </Flex>
                             </Flex>

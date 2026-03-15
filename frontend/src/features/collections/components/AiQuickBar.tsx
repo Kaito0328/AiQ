@@ -1,5 +1,6 @@
 "use client";
 
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 import React, { useState, useRef, useCallback } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
 import { Stack } from '@/src/design/primitives/Stack';
@@ -21,7 +22,8 @@ import {
     X,
     ChevronDown,
     ChevronUp,
-    Upload
+    Upload,
+    WifiOff
 } from 'lucide-react';
 import { useAiGeneration } from '../hooks/useAiGeneration';
 import { useToast } from '@/src/shared/contexts/ToastContext';
@@ -47,6 +49,7 @@ export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickB
     const [isDragging, setIsDragging] = useState(false);
 
     const { showToast } = useToast();
+    const { isOnline } = useNetworkStatus();
     const { generate, status, message, reset } = useAiGeneration(collectionId);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,14 +131,16 @@ export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickB
                     <Stack gap="sm" className="flex-1 w-full">
                         <View className="relative">
                             <Input
-                                placeholder={isDragging ? "ここにPDFをドロップ" : "AIへの指示（例：中学レベルの英単語...）"}
+                                placeholder={!isOnline ? "オフライン中はAI機能を利用できません" : (isDragging ? "ここにPDFをドロップ" : "AIへの指示（例：中学レベルの英単語...）")}
                                 value={prompt}
                                 onChange={(e) => setPrompt(e.target.value)}
-                                disabled={isProcessing}
+                                disabled={isProcessing || !isOnline}
                                 className="pr-10 h-11 text-sm sm:h-12 sm:text-base border-brand-primary/10 focus:border-brand-primary/30"
                             />
                             <View className="absolute right-3 top-1/2 -translate-y-1/2">
-                                {isProcessing ? (
+                                {!isOnline ? (
+                                    <WifiOff size={18} className="text-amber-500" />
+                                ) : isProcessing ? (
                                     <Loader2 size={18} className="text-brand-primary animate-spin" />
                                 ) : (
                                     <Sparkles size={18} className={cn("text-brand-primary/30", prompt && "text-brand-primary animate-pulse")} />

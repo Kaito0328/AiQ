@@ -62,9 +62,10 @@ const buttonVariants = cva(
 
             // Ghost variants
             { variant: 'ghost', color: 'primary', className: 'text-brand-primary hover:bg-brand-primary/10' },
-            { variant: 'ghost', color: 'secondary', className: 'text-brand-secondary hover:bg-brand-secondary/10' },
+            { variant: 'ghost', color: 'secondary', className: 'text-slate-500 dark:text-slate-300 hover:bg-slate-500/10' },
             { variant: 'ghost', color: 'danger', className: 'text-brand-danger hover:bg-brand-danger/10' },
             { variant: 'ghost', color: 'success', className: 'text-brand-success hover:bg-brand-success/10' },
+            { variant: 'ghost', color: 'heart', className: 'text-brand-heart hover:bg-brand-heart/10' },
             { variant: 'ghost', color: 'warning', className: 'text-brand-warning hover:bg-brand-warning/10' },
             { variant: 'ghost', color: 'info', className: 'text-brand-info hover:bg-brand-info/10' },
 

@@ -30,8 +30,8 @@ impl QuestionService {
             req.correct_answers,
             req.answer_rubis.unwrap_or_default(),
             req.distractors.unwrap_or_default(),
-            req.preferred_mode.unwrap_or_else(|| "default".to_string()),
-            req.recommended_mode.unwrap_or_else(|| "recall".to_string()),
+            req.chip_answer,
+            req.is_selection_only.unwrap_or(false),
             req.description_text,
         )
         .await
@@ -76,8 +76,8 @@ impl QuestionService {
             req.correct_answers,
             req.answer_rubis.unwrap_or_default(),
             req.distractors.unwrap_or_default(),
-            req.preferred_mode.unwrap_or_else(|| "default".to_string()),
-            req.recommended_mode.unwrap_or_else(|| "recall".to_string()),
+            req.chip_answer,
+            req.is_selection_only.unwrap_or(false),
             req.description_text,
         )
         .await

@@ -31,6 +31,7 @@ interface QuizOptionsModalProps {
     hideMatchConfig?: boolean;
     hideLimit?: boolean;
     readOnly?: boolean;
+    isOffline?: boolean;
 }
 
 export function QuizOptionsModal({
@@ -55,6 +56,7 @@ export function QuizOptionsModal({
     hideLimit = false,
     onStart,
     readOnly = false,
+    isOffline = false,
 }: QuizOptionsModalProps) {
     return (
         <Modal
@@ -80,7 +82,7 @@ export function QuizOptionsModal({
                                 loading={isLoading}
                                 className="px-8 gap-2"
                             >
-                                {onStart ? 'クイズ開始' : '適用する'}
+                                適用する
                             </Button>
                         </>
                     )}
@@ -106,6 +108,7 @@ export function QuizOptionsModal({
                     hideMatchConfig={hideMatchConfig}
                     hideLimit={hideLimit}
                     readOnly={readOnly}
+                    isOffline={isOffline}
                 />
             </View>
         </Modal>

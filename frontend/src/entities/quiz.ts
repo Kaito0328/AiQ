@@ -5,9 +5,7 @@ import { Question } from './question';
 // ==========================================
 
 export type QuizMode = 'text' | 'fourChoice' | 'chips' | 'fuzzy';
-export type PreferredQuestionMode = QuizMode | 'default';
 export type DefaultCollectionMode = QuizMode | 'omakase';
-export type RecommendedMode = 'choice' | 'recall' | QuizMode;
 
 export interface CasualQuiz {
     id: string;

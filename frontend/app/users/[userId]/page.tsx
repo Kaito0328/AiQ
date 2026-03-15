@@ -12,11 +12,11 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { UserHeader } from '@/src/features/users/components/UserHeader';
 import { UserContentTabs } from '@/src/features/users/components/UserContentTabs';
 import { useProfile } from '@/src/features/users/hooks/useProfile';
-import { Plus, LayoutGrid, List } from 'lucide-react';
+import { Plus, LayoutGrid, List, WifiOff } from 'lucide-react';
 import { cn } from '@/src/shared/utils/cn';
+import { OfflinePlaceholder } from '@/src/shared/components/Navigation/OfflinePlaceholder';
 
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 
 import { Collection, CollectionSet } from '@/src/entities/collection';
 import { CollectionCreateForm } from '@/src/features/collections/components/CollectionCreateForm';
@@ -36,9 +36,9 @@ export default function UserPage() {
     const { user } = useAuth();
     const userId = params.userId as string;
 
-    const { profile, loading: profileLoading, error: profileError } = useProfile(userId);
-    const { collections } = useUserCollections(userId);
-    const { collectionSets, refresh: refreshSets } = useUserCollectionSets(userId);
+    const { profile, loading: profileLoading, error: profileError, isOffline, refresh: refreshProfile } = useProfile(userId);
+    const { collections, loading: collectionsLoading, refresh: refreshCollections } = useUserCollections(userId);
+    const { collectionSets, loading: setsLoading, refresh: refreshSets } = useUserCollectionSets(userId);
 
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showCreateSetForm, setShowCreateSetForm] = useState(false);
@@ -109,6 +109,20 @@ export default function UserPage() {
         );
     }
 
+    if (isOffline && !profile) {
+        return (
+            <div className="min-h-screen bg-surface-muted pt-6">
+                <Container className="max-w-4xl">
+                    <OfflinePlaceholder 
+                        title="ユーザー情報はオフラインです"
+                        message="このユーザーのプロフィールを表示するにはオンラインである必要があります。自分のプロフィールはキャッシュされている場合があります。"
+                        onRetry={refreshProfile}
+                    />
+                </Container>
+            </div>
+        );
+    }
+
     if (profileError || !profile) {
         return (
             <Container className="py-20 text-center">
@@ -118,9 +132,8 @@ export default function UserPage() {
     }
 
     return (
-        <div className="min-h-screen bg-surface-muted transition-all duration-300">
-            <BackButton />
-            <Container className="pt-20 pb-12">
+        <div className="min-h-screen bg-surface-muted pb-12 transition-all duration-300">
+            <Container className="w-full max-w-4xl pt-6">
                 <Stack gap="xl">
                     <UserHeader profile={profile} />
 

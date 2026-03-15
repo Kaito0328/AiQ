@@ -105,32 +105,34 @@ export function CollectionSetCard({
                                     return (
                                         <View
                                             key={c.id}
-                                            padding="sm"
+                                            padding="xs"
                                             rounded="sm"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 onToggleCollection?.(c.id, c.name, c.questionCount);
                                             }}
                                             className={cn(
-                                                "group/item transition-colors",
+                                                "group/item transition-colors px-2 py-1.5",
                                                 isSelected
-                                                    ? "bg-brand-primary/10 border border-brand-primary/20"
-                                                    : "hover:bg-brand-primary/5"
+                                                    ? "bg-brand-primary/10 border-transparent"
+                                                    : "hover:bg-brand-primary/5 border-transparent"
                                             )}
                                         >
-                                            <Flex align="center" justify="between">
-                                                <Stack gap="none">
-                                                    <Text variant="xs" weight="bold">{c.name}</Text>
-                                                    <Text variant="xs" color="secondary" className="opacity-60">{c.questionCount || 0} 問</Text>
-                                                </Stack>
-                                                <Checkbox
-                                                    checked={isSelected}
-                                                    readOnly
-                                                    className={cn(
-                                                        "transition-all shadow-sm",
-                                                        isSelected && "scale-110"
-                                                    )}
-                                                />
+                                            <Flex align="center" justify="between" gap="sm">
+                                                <Flex align="center" gap="sm" className="flex-1 min-w-0">
+                                                    <Checkbox
+                                                        checked={isSelected}
+                                                        readOnly
+                                                        className={cn(
+                                                            "transition-all shadow-sm",
+                                                            isSelected ? "scale-105" : "opacity-70 group-hover/item:opacity-100"
+                                                        )}
+                                                    />
+                                                    <Text variant="xs" weight={isSelected ? "bold" : "medium"} className="truncate">
+                                                        {c.name}
+                                                    </Text>
+                                                </Flex>
+                                                <Text variant="xs" color="secondary" className="opacity-60 shrink-0">{c.questionCount || 0}</Text>
                                             </Flex>
                                         </View>
                                     );

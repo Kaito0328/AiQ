@@ -7,7 +7,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { cn } from '@/src/shared/utils/cn';
-import { X, User, LogOut, Heart, Settings, MessageSquare, History, LogIn, FileText } from 'lucide-react';
+import { X, User, LogOut, Heart, Settings, MessageSquare, History, LogIn, FileText, Cloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/src/shared/auth/useAuth';
 
@@ -89,6 +89,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                                     <MenuLink icon={<Heart size={20} />} label="お気に入り" onClick={() => handleNavigate(`/users/${user?.id}/favorites`)} />
                                     <MenuLink icon={<MessageSquare size={20} />} label="修正依頼の管理" onClick={() => handleNavigate('/edit-requests')} />
                                     <MenuLink icon={<History size={20} />} label="中断したクイズ" onClick={() => handleNavigate('/quiz/resume')} />
+                                    <MenuLink icon={<Cloud size={20} />} label="同期ステータス" onClick={() => handleNavigate('/settings/sync')} />
                                     <MenuLink icon={<Settings size={20} />} label="設定" onClick={() => handleNavigate('/settings')} />
                                     <MenuLink icon={<FileText size={20} />} label="クレジット" onClick={() => handleNavigate('/credits')} />
                                 </Stack>

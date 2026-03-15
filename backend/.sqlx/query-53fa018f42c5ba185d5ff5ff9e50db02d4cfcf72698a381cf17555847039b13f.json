@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.answer_rubis, er.distractors, er.description_text, er.reason_id, er.status, er.created_at,\n       q.question_text as original_question_text, q.correct_answers as original_correct_answers, er.original_answer_rubis, er.original_distractors, q.description_text as original_description_text,\n       c.name as collection_name\nFROM edit_requests er\nJOIN questions q ON er.question_id = q.id\nJOIN collections c ON q.collection_id = c.id\nJOIN users u ON er.requester_id = u.id\nWHERE c.user_id = $1 AND er.status = 'pending'\nORDER BY er.created_at DESC\n",
+  "query": "WITH updated AS (\n    UPDATE edit_requests SET status = $1 WHERE id = $2 RETURNING *\n)\nSELECT i.id, i.question_id, i.requester_id, u.username as requester_name, i.question_text, i.correct_answers, i.answer_rubis, i.distractors, i.chip_answer, i.is_selection_only, i.description_text, i.reason_id, i.status, i.created_at,\n       q.question_text as original_question_text, q.correct_answers as original_correct_answers, i.original_answer_rubis, i.original_distractors, i.original_chip_answer, i.original_is_selection_only, q.description_text as original_description_text,\n       c.name as collection_name\nFROM updated i\nJOIN users u ON i.requester_id = u.id\nJOIN questions q ON i.question_id = q.id\nJOIN collections c ON q.collection_id = c.id\n",
   "describe": {
     "columns": [
       {
@@ -45,57 +45,78 @@
       },
       {
         "ordinal": 8,
-        "name": "description_text",
+        "name": "chip_answer",
         "type_info": "Text"
       },
       {
         "ordinal": 9,
-        "name": "reason_id",
-        "type_info": "Int4"
+        "name": "is_selection_only",
+        "type_info": "Bool"
       },
       {
         "ordinal": 10,
-        "name": "status",
+        "name": "description_text",
         "type_info": "Text"
       },
       {
         "ordinal": 11,
-        "name": "created_at",
-        "type_info": "Timestamptz"
+        "name": "reason_id",
+        "type_info": "Int4"
       },
       {
         "ordinal": 12,
-        "name": "original_question_text",
+        "name": "status",
         "type_info": "Text"
       },
       {
         "ordinal": 13,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "original_question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 15,
         "name": "original_correct_answers",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 14,
+        "ordinal": 16,
         "name": "original_answer_rubis",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 15,
+        "ordinal": 17,
         "name": "original_distractors",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 16,
+        "ordinal": 18,
+        "name": "original_chip_answer",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 19,
+        "name": "original_is_selection_only",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 20,
         "name": "original_description_text",
         "type_info": "Text"
       },
       {
-        "ordinal": 17,
+        "ordinal": 21,
         "name": "collection_name",
         "type_info": "Varchar"
       }
     ],
     "parameters": {
       "Left": [
+        "Text",
         "Uuid"
       ]
     },
@@ -110,6 +131,8 @@
       false,
       true,
       false,
+      true,
+      false,
       false,
       false,
       false,
@@ -117,8 +140,10 @@
       false,
       false,
       true,
+      false,
+      true,
       false
     ]
   },
-  "hash": "4e0612d5fb6afcc5b848733efc37c2b446256583bb52ea69a9496d0b1003c205"
+  "hash": "53fa018f42c5ba185d5ff5ff9e50db02d4cfcf72698a381cf17555847039b13f"
 }

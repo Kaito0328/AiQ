@@ -48,7 +48,8 @@ impl MatchService {
                 correct_answers: q.correct_answers,
                 answer_rubis: q.answer_rubis,
                 distractors: q.distractors,
-                recommended_mode: q.recommended_mode,
+                chip_answer: q.chip_answer,
+                is_selection_only: q.is_selection_only,
             })
             .collect();
 

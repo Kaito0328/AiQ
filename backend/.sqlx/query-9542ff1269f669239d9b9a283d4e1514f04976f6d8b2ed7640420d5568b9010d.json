@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            UPDATE questions SET\n                question_text = $1::text,\n                correct_answers = $2::text[],\n                answer_rubis = $3::text[],\n                distractors = $4::text[],\n                preferred_mode = $5::text,\n                recommended_mode = $6::text,\n                description_text = $7::text,\n                updated_at = NOW()\n            WHERE id = $8::uuid\n            RETURNING id, collection_id, question_text, correct_answers as \"correct_answers: Vec<String>\", answer_rubis as \"answer_rubis: Vec<String>\", distractors as \"distractors: Vec<String>\", preferred_mode, recommended_mode, description_text, created_at, updated_at\n            ",
+  "query": "\n            INSERT INTO questions (id, collection_id, question_text, correct_answers, answer_rubis, distractors, chip_answer, is_selection_only, description_text, created_at, updated_at)\n            VALUES (gen_random_uuid(), $1::uuid, $2::text, $3::text[], $4::text[], $5::text[], $6::text, $7::boolean, $8::text, NOW(), NOW())\n            RETURNING id, collection_id, question_text, correct_answers as \"correct_answers: Vec<String>\", answer_rubis as \"answer_rubis: Vec<String>\", distractors as \"distractors: Vec<String>\", chip_answer, is_selection_only, description_text, created_at, updated_at\n            ",
   "describe": {
     "columns": [
       {
@@ -35,13 +35,13 @@
       },
       {
         "ordinal": 6,
-        "name": "preferred_mode",
-        "type_info": "Varchar"
+        "name": "chip_answer",
+        "type_info": "Text"
       },
       {
         "ordinal": 7,
-        "name": "recommended_mode",
-        "type_info": "Varchar"
+        "name": "is_selection_only",
+        "type_info": "Bool"
       },
       {
         "ordinal": 8,
@@ -61,14 +61,14 @@
     ],
     "parameters": {
       "Left": [
+        "Uuid",
         "Text",
         "TextArray",
         "TextArray",
         "TextArray",
         "Text",
-        "Text",
-        "Text",
-        "Uuid"
+        "Bool",
+        "Text"
       ]
     },
     "nullable": [
@@ -78,12 +78,12 @@
       false,
       false,
       false,
-      false,
+      true,
       false,
       true,
       false,
       false
     ]
   },
-  "hash": "cab937d1ea8f3cbc33351a549b4cf2c964022365aa1a518d64185f3875b773d4"
+  "hash": "9542ff1269f669239d9b9a283d4e1514f04976f6d8b2ed7640420d5568b9010d"
 }

@@ -122,18 +122,6 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
 
     return (
         <Stack gap="lg" className="w-full max-w-5xl mx-auto pb-80 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
-            {/* Simple Floating Exit Button */}
-            <View className="fixed top-4 left-4 z-[150]">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onLeave}
-                    className="text-secondary hover:text-brand-danger gap-1.5 bg-surface-base/60 backdrop-blur-md rounded-full px-3 py-1 shadow-sm border border-surface-muted"
-                >
-                    <Icon name="back" size={14} />
-                    <Text variant="xs" weight="bold">退室</Text>
-                </Button>
-            </View>
 
             <View className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-4">
                 {/* 参加情報のカード */}
@@ -349,7 +337,6 @@ export function BattleLobby({ room, onStart, isHost, onUpdateConfig, maxBuzzes, 
                             readOnly={!isHost}
                             onStart={() => {
                                 onResetMatch(selectedCollections.map(c => c.id), filterNode, sorts, limit, preferredMode, dummyCharCount);
-                                onStart(); // Send StartMatch message
                                 setIsSettingsOpen(false);
                             }}
                         />

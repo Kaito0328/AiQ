@@ -11,11 +11,13 @@ import { Tabs, TabItem } from '@/src/design/baseComponents/Tabs';
 import { Input } from '@/src/design/baseComponents/Input';
 import { Select } from '@/src/design/baseComponents/Select';
 import { UserCard } from '@/src/features/users/components/UserCard';
-import { User } from '@/src/entities/user';
+import { Search, Filter, WifiOff } from 'lucide-react';
 import { getUsers } from '@/src/features/auth/api';
 import { getFollowers, getFollowees } from '@/src/features/follow/api';
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { Search, Filter } from 'lucide-react';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { db } from '@/src/shared/db/db';
+import { User } from '@/src/entities/user';
 
 interface UserListTabsProps {
     onUserClick?: (user: User) => void;
@@ -23,6 +25,7 @@ interface UserListTabsProps {
 
 export function UserListTabs({ onUserClick }: UserListTabsProps) {
     const { user: currentUser, isAuthenticated } = useAuth();
+    const { isOnline } = useNetworkStatus();
     const [allUsers, setAllUsers] = useState<User[]>([]);
     const [followers, setFollowers] = useState<User[]>([]);
     const [followees, setFollowees] = useState<User[]>([]);
@@ -40,11 +43,24 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
         const fetchAll = async () => {
             setLoadingAll(true);
             try {
-                const users = await getUsers({
-                    q: searchQuery || undefined,
-                    sort: sortBy === 'newest' ? 'created_at' : 'followers'
-                });
-                setAllUsers(users);
+                if (isOnline) {
+                    const users = await getUsers({
+                        q: searchQuery || undefined,
+                        sort: sortBy === 'newest' ? 'created_at' : 'followers'
+                    });
+                    setAllUsers(users);
+                } else {
+                    // オフライン時はキャッシュされたプロフィールを表示
+                    let users = await db.profiles.toArray();
+                    if (searchQuery) {
+                        const q = searchQuery.toLowerCase();
+                        users = users.filter(u => 
+                            u.username.toLowerCase().includes(q) || 
+                            (u.displayName && u.displayName.toLowerCase().includes(q))
+                        );
+                    }
+                    setAllUsers(users);
+                }
             } catch (err) {
                 logger.error('ユーザー一覧の取得に失敗しました', err);
             } finally {

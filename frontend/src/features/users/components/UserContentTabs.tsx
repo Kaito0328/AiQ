@@ -52,8 +52,8 @@ export function UserContentTabs({
     hideExtras = false,
     displayMode = 'list'
 }: UserContentTabsProps) {
-    const { collections, loading: collectionsLoading } = useUserCollections(userId);
-    const { collectionSets, loading: setsLoading } = useUserCollectionSets(userId);
+    const { collections, loading: collectionsLoading, isOffline: isCollectionsOffline } = useUserCollections(userId);
+    const { collectionSets, loading: setsLoading, isOffline: isSetsOffline } = useUserCollectionSets(userId);
 
     const items: TabItem[] = [
         {
@@ -64,9 +64,14 @@ export function UserContentTabs({
                     <Stack gap="lg">
                         {(collectionActions || collections.length > 0) && (
                             <Flex justify="between" align="center">
-                                <Text variant="detail" color="secondary" weight="bold">
-                                    {collections.length} 個のコレクション
-                                </Text>
+                                <Flex gap="xs" align="center">
+                                    <Text variant="detail" color="secondary" weight="bold">
+                                        {collections.length} 個のコレクション
+                                    </Text>
+                                    {isCollectionsOffline && (
+                                        <Text variant="xs" color="secondary" className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full font-bold">Offline</Text>
+                                    )}
+                                </Flex>
                                 {collectionActions}
                             </Flex>
                         )}
@@ -79,12 +84,19 @@ export function UserContentTabs({
                             </View>
                         ) : collections.length === 0 ? (
                             <View padding="xl">
-                                <Text color="secondary" align="center" variant="xs">
-                                    コレクションがありません
-                                </Text>
+                                <Stack gap="sm" align="center">
+                                    <Text color="secondary" align="center" variant="xs">
+                                        {isCollectionsOffline ? "オフラインで利用可能なコレクションがありません。" : "コレクションがありません"}
+                                    </Text>
+                                    {isCollectionsOffline && (
+                                        <Text variant="xs" color="secondary" align="center">
+                                            問題詳細ページから「オフライン保存」すると、ここに表示されます。
+                                        </Text>
+                                    )}
+                                </Stack>
                             </View>
                         ) : displayMode === 'list' ? (
-                            <Stack gap="sm">
+                            <Stack gap="none" className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5">
                                 {collections.map(c => (
                                     <CollectionCard
                                         key={c.id}

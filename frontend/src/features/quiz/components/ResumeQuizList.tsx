@@ -68,12 +68,6 @@ export function ResumeQuizList() {
 
     return (
         <Stack gap="lg">
-            <SectionHeader
-                icon={History}
-                title="学習を再開する"
-                description={`中断したクイズが ${quizzes.length} 件あります`}
-            />
-
             <Grid cols={{ sm: 1, md: 2 }} gap="md">
                 {quizzes.map((quiz) => {
                     const progress = Math.round((quiz.answeredQuestionIds.length / quiz.totalQuestions) * 100);

@@ -36,6 +36,18 @@ export const logger = {
      * エラーログ（本番環境でも出力に含めるが、将来的に外部サービス送信などに拡張可能）
      */
     error: (...args: any[]) => {
+        // マニュアルオフラインモード時の503エラーはエラーログとして出力しない（意図的な動作のため）
+        const isManualOfflineError = args.some(arg => 
+            arg && typeof arg === 'object' && 
+            (arg.status === 503 || arg.message?.includes('Manual offline'))
+        );
+        
+        if (isManualOfflineError) {
+            if (!isProduction) {
+                console.info('Offline intercept:', ...args);
+            }
+            return;
+        }
         console.error(...args);
     },
 

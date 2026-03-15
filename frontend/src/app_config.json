@@ -23,7 +23,7 @@
         "timeline_pagination_default": 20
     },
     "security": {
-        "jwt_exp_hours": 24,
+        "jwt_exp_hours": 0,
         "rate_limit_per_minute": 60
     }
 }

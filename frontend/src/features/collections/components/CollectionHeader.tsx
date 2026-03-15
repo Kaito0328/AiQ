@@ -20,6 +20,9 @@ import { AiGenerationModal } from './AiGenerationModal';
 import { PdfGenerationModal } from './PdfGenerationModal';
 import { exportCsv } from '../api';
 import { useToast } from '@/src/shared/contexts/ToastContext';
+import { useCollectionOffline } from '../hooks/useCollectionOffline';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { CloudDownload, CheckCircle2, Loader2, Trash2, WifiOff } from 'lucide-react';
 
 interface CollectionHeaderProps {
     collection: Collection;
@@ -42,6 +45,15 @@ export function CollectionHeader({
 }: CollectionHeaderProps) {
     const { isAuthenticated } = useAuth();
     const { showToast } = useToast();
+    const { isOnline } = useNetworkStatus();
+
+    const { 
+        isOfflineAvailable, 
+        isSyncing, 
+        downloadCollection, 
+        removeOffline 
+    } = useCollectionOffline(collection);
+
     const [isFavorited, setIsFavorited] = useState(collection.isFavorited || false);
     const [favCount, setFavCount] = useState(collection.favoriteCount || 0);
     const [loading, setLoading] = useState(false);
@@ -96,53 +108,24 @@ export function CollectionHeader({
                 <Flex justify="between" align="start" className="flex-wrap gap-4">
                     <Stack gap="sm" className="flex-1">
                         <Flex gap="sm" align="center">
-                            <BookOpen size={24} className="text-brand-primary" />
-                            <Text variant="h2" weight="bold">{collection.name}</Text>
+                            <BookOpen size={24} className="text-brand-primary shrink-0" />
+                            <Text variant="h2" weight="bold" className="leading-tight">{collection.name}</Text>
                         </Flex>
-                        <Flex gap="sm" align="center">
+                        <Flex gap="sm" align="center" className="flex-wrap">
                             {collection.isOfficial && (
                                 <Badge variant="primary">Official</Badge>
                             )}
-                            {isOwner && (
-                                <View className={cn(
-                                    "p-1.5 rounded-full shadow-sm flex items-center justify-center border transition-colors",
-                                    collection.isOpen
-                                        ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
-                                        : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20"
-                                )} title={collection.isOpen ? "公開中" : "非公開"}>
-                                    {collection.isOpen ? (
-                                        <Unlock size={14} strokeWidth={2.5} />
-                                    ) : (
-                                        <Lock size={14} strokeWidth={2.5} />
-                                    )}
-                                </View>
-                            )}
-                            {collection.userRank && (
-                                <Badge variant="warning" className="border-amber-500/30 bg-amber-500/5 text-amber-700">
-                                    <Flex gap="xs" align="center">
-                                        <Trophy size={12} className="text-amber-500" />
-                                        現在の順位: {collection.userRank}位
-                                    </Flex>
-                                </Badge>
+                            {collection.authorName && (
+                                <Text variant="xs" color="secondary">
+                                    作成者: {collection.authorName}
+                                </Text>
                             )}
                         </Flex>
                     </Stack>
 
                     <Flex gap="sm" align="center">
-                        {onStartRankingQuiz && (
-                            <Button
-                                variant="outline"
-                                color="primary"
-                                size="sm"
-                                onClick={onStartRankingQuiz}
-                                className="p-2 h-auto shadow-sm rounded-full"
-                                title="ランキングクイズ"
-                            >
-                                <Trophy size={18} strokeWidth={2.5} />
-                            </Button>
-                        )}
                         {isOwner && onEdit && (
-                            <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5">
+                            <Button variant="outline" size="sm" onClick={onEdit} disabled={!isOnline} className="gap-1.5 rounded-xl border-surface-muted" title={isOnline ? "編集" : "オフライン中は利用できません"}>
                                 <Edit size={16} />
                                 編集
                             </Button>
@@ -150,55 +133,142 @@ export function CollectionHeader({
                     </Flex>
                 </Flex>
 
+                {isOwner && (
+                    <Flex gap="sm" align="center" className="justify-end border-t border-surface-muted/30 pt-4 -mt-2">
+                        {!isOnline && (
+                            <Flex align="center" gap="xs" className="mr-auto text-amber-600">
+                                <WifiOff size={14} />
+                                <Text variant="xs" weight="bold">オフライン中は制限されます</Text>
+                            </Flex>
+                        )}
+                        <Text variant="xs" color="secondary" className={cn("mr-auto opacity-60", !isOnline && "hidden")}>データ操作:</Text>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onImportCsv}
+                            disabled={!isOnline}
+                            className="h-8 px-2 text-secondary hover:text-primary transition-colors"
+                            title={isOnline ? "インポート" : "オフライン中は利用できません"}
+                        >
+                            <FileUp size={14} className="mr-1.5" />
+                            <Text variant="xs" weight="bold">インポート</Text>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onExportCsv}
+                            disabled={!isOnline}
+                            className="h-8 px-2 text-secondary hover:text-primary transition-colors"
+                            title={isOnline ? "エクスポート" : "オフライン中は利用できません"}
+                        >
+                            <Download size={14} className="mr-1.5" />
+                            <Text variant="xs" weight="bold">エクスポート</Text>
+                        </Button>
+                    </Flex>
+                )}
+
                 {collection.descriptionText && (
-                    <View className="border-t border-surface-muted/50 pt-4">
-                        <Text variant="detail" color="secondary" className="leading-relaxed">
+                    <View className="border-t border-surface-muted/30 pt-4">
+                        <Text variant="detail" color="secondary" className="leading-relaxed opacity-90">
                             {collection.descriptionText}
                         </Text>
                     </View>
                 )}
 
-                <Flex justify="between" align="end" className="border-t border-surface-muted/50 pt-4">
-                    <Flex gap="lg">
-                        <Flex gap="xs" align="center" className="text-foreground/60">
-                            <BookOpen size={16} />
-                            <Text variant="xs" weight="bold">{questionCount} 問</Text>
-                        </Flex>
-                        <Flex gap="xs" align="center" className="text-foreground/60">
-                            <Heart size={16} />
-                            <Text variant="xs" weight="bold">{favCount} お気に入り</Text>
-                        </Flex>
-                        {collection.authorName && (
-                            <Text variant="xs" color="secondary" className="hidden sm:block">
-                                作成者: {collection.authorName}
-                            </Text>
-                        )}
+                <Flex align="center" gap="sm" className="border-t border-surface-muted/50 pt-4 flex-wrap gap-y-3">
+                    <Flex gap="xs" align="center" className="bg-surface-muted/40 px-2 py-1 rounded-lg">
+                        <BookOpen size={14} className="text-brand-primary" />
+                        <Text variant="xs" weight="bold">{questionCount} 問</Text>
                     </Flex>
-
+                    
+                    <Flex gap="xs" align="center" className="bg-surface-muted/40 px-2 py-1 rounded-lg">
+                        <Heart size={14} className="text-brand-heart" />
+                        <Text variant="xs" weight="bold">{favCount}</Text>
+                    </Flex>
+                    
                     {isOwner && (
-                        <Flex gap="sm">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={onImportCsv}
-                                className="h-8 shadow-sm px-2 sm:px-3"
-                                title="インポート"
-                            >
-                                <FileUp size={14} className="sm:mr-1.5" />
-                                <Text variant="xs" weight="bold" className="hidden sm:inline">インポート</Text>
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={onExportCsv}
-                                className="h-8 shadow-sm px-2 sm:px-3"
-                                title="エクスポート"
-                            >
-                                <Download size={14} className="sm:mr-1.5" />
-                                <Text variant="xs" weight="bold" className="hidden sm:inline">エクスポート</Text>
-                            </Button>
+                        <View className={cn(
+                            "p-1 rounded-lg flex items-center justify-center border transition-colors",
+                            collection.isOpen
+                                ? "bg-emerald-500/5 text-emerald-600 border-emerald-500/10"
+                                : "bg-amber-500/5 text-amber-600 border-amber-500/10"
+                        )}>
+                            {collection.isOpen ? (
+                                <Flex gap="xs" align="center" className="px-1.5">
+                                    <Unlock size={12} strokeWidth={2.5} />
+                                    <Text variant="xs" weight="bold">公開中</Text>
+                                </Flex>
+                            ) : (
+                                <Flex gap="xs" align="center" className="px-1.5">
+                                    <Lock size={12} strokeWidth={2.5} />
+                                    <Text variant="xs" weight="bold">非公開</Text>
+                                </Flex>
+                            )}
+                        </View>
+                    )}
+
+                    {onStartRankingQuiz && (
+                        <Button
+                            variant="soft"
+                            color="primary"
+                            size="sm"
+                            onClick={onStartRankingQuiz}
+                            disabled={!isOnline}
+                            className="h-7 gap-1.5 px-3 rounded-lg"
+                            title={isOnline ? "ランキングを表示" : "ランキングクイズはオフラインではプレイできません"}
+                        >
+                            <Trophy size={14} strokeWidth={2.5} />
+                            <Text variant="xs" weight="bold">{isOnline ? 'ランキング' : 'オンライン専用'}</Text>
+                        </Button>
+                    )}
+                    
+                    {collection.userRank && (
+                        <Flex gap="xs" align="center" className="bg-amber-500/10 text-amber-700 px-3 py-1 rounded-lg border border-amber-500/20">
+                            <Trophy size={12} className="text-amber-500" />
+                            <Text variant="xs" weight="bold">{collection.userRank}位</Text>
                         </Flex>
                     )}
+
+                    <View className="ml-auto flex items-center gap-2">
+                        {/* オフライン保存ボタン */}
+                        <Button
+                            variant="ghost"
+                            color={isOfflineAvailable ? "success" : "secondary"}
+                            size="sm"
+                            onClick={isOfflineAvailable ? removeOffline : downloadCollection}
+                            disabled={isSyncing}
+                            className={cn(
+                                "rounded-lg px-3 transition-all h-8",
+                                isOfflineAvailable && "bg-brand-success/10"
+                            )}
+                            title={isOfflineAvailable ? "オフライン保存済み (クリックで削除)" : "オフライン保存"}
+                        >
+                            {isSyncing ? (
+                                <Loader2 size={16} className="mr-1.5 animate-spin" />
+                            ) : isOfflineAvailable ? (
+                                <CheckCircle2 size={16} className="mr-1.5" />
+                            ) : (
+                                <CloudDownload size={16} className="mr-1.5" />
+                            )}
+                            <Text variant="xs" weight="bold" color="inherit">
+                                {isSyncing ? '保存中...' : isOfflineAvailable ? 'オフライン保存済み' : 'オフライン保存'}
+                            </Text>
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            color={isFavorited ? "heart" : "secondary"}
+                            size="sm"
+                            onClick={handleFavoriteToggle}
+                            className={cn(
+                                "rounded-lg px-3 transition-all h-8",
+                                isFavorited && "bg-brand-heart/10"
+                            )}
+                        >
+                            <Heart size={16} className={cn("mr-1.5", isFavorited && "fill-current")} />
+                            <Text variant="xs" weight="bold" color="inherit">{isFavorited ? 'お気に入り済み' : 'お気に入り'}</Text>
+                        </Button>
+                    </View>
                 </Flex>
             </Stack >
         </Card >

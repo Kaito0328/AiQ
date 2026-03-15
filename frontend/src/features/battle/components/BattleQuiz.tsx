@@ -109,18 +109,12 @@ export function BattleQuiz({
         // Always start from the requested mode (prevents stale activeMode from previous question)
         let targetMode = preferredMode;
 
-        // 1. Omakase (Auto) Logic
-        if (targetMode === 'omakase') {
-            const rec = question.recommended_mode;
-            if (rec === 'fourChoice' || rec === 'choice') {
-                targetMode = 'fourChoice';
-            } else if (rec === 'text' || rec === 'recall') {
-                targetMode = 'text';
-            } else if (rec === 'chips') {
-                targetMode = 'chips';
-            } else {
-                targetMode = 'chips';
-            }
+        // 0. Force 4-choice if question is selection-only
+        if (question.is_selection_only) {
+            targetMode = 'fourChoice';
+        } else if (targetMode === 'omakase') {
+            // Default for non-selection-only questions in omakase mode
+            targetMode = 'chips';
         }
 
         // 2. Compatibility Checks & Fallbacks
@@ -130,12 +124,13 @@ export function BattleQuiz({
             targetMode = 'text';
         }
 
-        // Chips fallback: requires either non-empty rubis OR non-empty correct_answers
+        // Chips fallback: needs chip_answer (or fallback sources for legacy)
         if (targetMode === 'chips') {
+            const hasChip = !!question.chip_answer;
             const hasRubis = question.answer_rubis && question.answer_rubis.some(r => r.trim().length > 0);
             const hasAnswers = question.correct_answers && question.correct_answers.some(a => a.trim().length > 0);
 
-            if (!hasRubis && !hasAnswers) {
+            if (!hasChip && !hasRubis && !hasAnswers) {
                 targetMode = 'text';
             }
         }
@@ -145,7 +140,7 @@ export function BattleQuiz({
         const didFallback = targetMode !== preferredMode && preferredMode !== 'omakase';
         setShowFallback(didFallback);
         if (didFallback) {
-            const timer = setTimeout(() => setShowFallback(false), 3000);
+            const timer = setTimeout(() => setShowFallback(false), 5000);
             return () => clearTimeout(timer);
         }
     }, [question, preferredMode]);
@@ -448,8 +443,7 @@ export function BattleQuiz({
                         answerRubis: question.answer_rubis,
                         distractors: question.distractors,
                         descriptionText: question.description_text,
-                        preferredMode: 'chips',
-                        recommendedMode: 'chips'
+                        isSelectionOnly: question.is_selection_only
                     }}
                     onClose={() => setIsEditing(false)}
                     onDirectUpdate={(updates) => {
@@ -495,8 +489,7 @@ export function BattleQuiz({
                                     </View>
                                 );
                             } else if (activeMode === 'chips') {
-                                const hasValidRubis = question.answer_rubis && question.answer_rubis.some(r => r.trim().length > 0);
-                                const chipsSource = hasValidRubis ? question.answer_rubis! : (question.correct_answers || []);
+                                const chipsSource = question.chip_answer ? [question.chip_answer] : (question.answer_rubis && question.answer_rubis.some(r => r.trim().length > 0)) ? question.answer_rubis! : (question.correct_answers || []);
                                 const hasChipsSource = chipsSource.some(s => s.trim().length > 0);
 
                                 if (!hasChipsSource) {
@@ -534,25 +527,30 @@ export function BattleQuiz({
                                                 />
                                             </View>
                                             <CharacterPoolInput
-                                                rubis={question.answer_rubis || []}
+                                                rubis={question.chip_answer ? [question.chip_answer] : (question.answer_rubis || [])}
                                                 answers={question.correct_answers || []}
                                                 currentInput={answer || ""}
                                                 onInput={(char) => {
                                                     const newAnswer = answer + char;
                                                     const hasKanji = (text: string) => /[\u4E00-\u9FAF]/.test(text);
                                                     let tgt = "";
-                                                    const ansList = question.correct_answers || [];
-                                                    const rbiList = question.answer_rubis || [];
-                                                    for (let i = 0; i < ansList.length; i++) {
-                                                        const r = rbiList[i]?.trim();
-                                                        const a = ansList[i]?.trim();
-                                                        if (r && r.length > 0) {
-                                                            tgt = r.replace(/\s/g, "");
-                                                            break;
-                                                        }
-                                                        if (a && a.length > 0 && !hasKanji(a)) {
-                                                            tgt = a.replace(/\s/g, "");
-                                                            break;
+                                                    
+                                                    if (question.chip_answer) {
+                                                        tgt = question.chip_answer.replace(/\s/g, "");
+                                                    } else {
+                                                        const ansList = question.correct_answers || [];
+                                                        const rbiList = question.answer_rubis || [];
+                                                        for (let i = 0; i < ansList.length; i++) {
+                                                            const r = rbiList[i]?.trim();
+                                                            const a = ansList[i]?.trim();
+                                                            if (r && r.length > 0) {
+                                                                tgt = r.replace(/\s/g, "");
+                                                                break;
+                                                            }
+                                                            if (a && a.length > 0 && !hasKanji(a)) {
+                                                                tgt = a.replace(/\s/g, "");
+                                                                break;
+                                                            }
                                                         }
                                                     }
                                                     onPartialInput(newAnswer);

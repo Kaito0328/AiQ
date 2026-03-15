@@ -29,6 +29,10 @@ import { exportCsv } from '@/src/features/collections/api';
 import { FileUp, Download } from 'lucide-react';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
+import { ArrowUp, ArrowDown, Gamepad2, WifiOff } from 'lucide-react';
+import { ApiError } from '@/src/shared/api/error';
+import { getOfflineCollection, getOfflineQuestions, syncCollectionToOffline } from '@/src/shared/api/offlineApi';
+import { OfflinePlaceholder } from '@/src/shared/components/Navigation/OfflinePlaceholder';
 
 export default function CollectionDetailPage() {
     const params = useParams();
@@ -51,16 +55,33 @@ export default function CollectionDetailPage() {
     const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
 
+    const [isOffline, setIsOffline] = useState(false);
+
     useEffect(() => {
         const fetchData = async () => {
+            setIsOffline(false);
             try {
                 const data = await getCollection(collectionId);
                 setCollection(data);
                 const qList = await getCollectionQuestions(collectionId);
                 setQuestions(qList);
                 setIsOwner(!!(user && user.id === data.userId));
+                // 自動キャッシュを保存
+                syncCollectionToOffline(data, qList, false).catch(err => logger.error('Auto-cache failed', err));
             } catch (err) {
-                logger.error('Failed to fetch collection details', err);
+                if (err instanceof ApiError && (err.status === 503 || err.status === 0)) {
+                    setIsOffline(true);
+                    // オフラインキャッシュから取得を試みる
+                    const offlineData = await getOfflineCollection(collectionId);
+                    if (offlineData) {
+                        setCollection(offlineData);
+                        const offlineQs = await getOfflineQuestions(collectionId);
+                        setQuestions(offlineQs);
+                        setIsOwner(!!(user && user.id === offlineData.userId));
+                    }
+                } else {
+                    logger.error('Failed to fetch collection details', err);
+                }
             } finally {
                 setLoading(false);
             }
@@ -115,10 +136,18 @@ export default function CollectionDetailPage() {
 
     if (!collection) {
         return (
-            <View className="min-h-screen bg-surface-muted pt-20">
-                <BackButton />
-                <Container className="py-20 text-center">
-                    <Text color="danger">コレクションが見つかりません</Text>
+            <View className="min-h-screen bg-surface-muted pt-6">
+                <Container className="max-w-4xl">
+                    {isOffline ? (
+                        <OfflinePlaceholder 
+                            title="コレクションはオフラインです"
+                            message="このコレクションはまだオフライン保存されていません。一度オンラインで詳細を開いて保存してください。"
+                        />
+                    ) : (
+                        <View className="py-20 text-center">
+                            <Text color="danger">コレクションが見つかりません</Text>
+                        </View>
+                    )}
                 </Container>
             </View>
         );
@@ -126,8 +155,7 @@ export default function CollectionDetailPage() {
 
     return (
         <View className="min-h-screen bg-surface-muted">
-            <BackButton />
-            <Container className="pt-20 pb-12">
+            <Container className="pt-6 pb-12">
                 <Stack gap="xl">
                     <CollectionHeader
                         collection={collection}
@@ -166,6 +194,47 @@ export default function CollectionDetailPage() {
                     />
                 </Stack>
             </Container>
+
+            {/* Floating Scroll Buttons */}
+            <View className="fixed bottom-24 right-4 sm:right-8 z-40 flex flex-col gap-2">
+                <Button
+                    variant="solid"
+                    color="primary"
+                    className="p-3 h-auto rounded-full shadow-brand-lg active:scale-90 transition-transform"
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    title="一番上へ"
+                >
+                    <ArrowUp size={20} className="text-white" strokeWidth={3} />
+                </Button>
+                <Button
+                    variant="solid"
+                    color="primary"
+                    className="p-3 h-auto rounded-full shadow-brand-lg active:scale-90 transition-transform"
+                    onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })}
+                    title="一番下へ"
+                >
+                    <ArrowDown size={20} className="text-white" strokeWidth={3} />
+                </Button>
+            </View>
+
+            {/* Bottom Fixed Quiz Action */}
+            <View className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-surface-muted via-surface-muted/95 to-transparent z-[30]">
+                <Container>
+                    <Button
+                        variant="solid"
+                        color="primary"
+                        rounded="full"
+                        size="lg"
+                        className="w-full py-4 shadow-brand-lg group active:scale-[0.98] transition-all"
+                        onClick={() => router.push(`/quiz/start?collectionId=${collectionId}`)}
+                    >
+                        <Flex gap="sm" align="center">
+                            <Gamepad2 size={24} className="group-hover:rotate-12 transition-transform" />
+                            <Text variant="detail" weight="bold">このコレクションでクイズを開始</Text>
+                        </Flex>
+                    </Button>
+                </Container>
+            </View>
 
             {showCollectionModal && collection && (
                 <CollectionEditModal

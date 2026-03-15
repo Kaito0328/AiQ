@@ -21,6 +21,8 @@ impl EditRequestService {
             req.correct_answers,
             req.answer_rubis,
             req.distractors,
+            req.chip_answer,
+            req.is_selection_only,
             req.description_text,
             req.reason_id,
         )
@@ -91,6 +93,8 @@ impl EditRequestService {
             correct_answers: er.correct_answers,
             answer_rubis: er.answer_rubis,
             distractors: er.distractors,
+            chip_answer: er.chip_answer,
+            is_selection_only: er.is_selection_only,
             description_text: er.description_text,
             reason_id: er.reason_id,
             status: er.status,
@@ -99,6 +103,8 @@ impl EditRequestService {
             original_correct_answers: er.original_correct_answers,
             original_answer_rubis: er.original_answer_rubis,
             original_distractors: er.original_distractors,
+            original_chip_answer: er.original_chip_answer,
+            original_is_selection_only: er.original_is_selection_only,
             original_description_text: er.original_description_text,
             collection_name: er.collection_name,
         }
