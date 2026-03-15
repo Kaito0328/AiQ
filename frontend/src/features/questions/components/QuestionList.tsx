@@ -11,10 +11,13 @@ import { View } from '@/src/design/primitives/View';
 import { Input } from '@/src/design/baseComponents/Input';
 import { TextArea } from '@/src/design/baseComponents/TextArea';
 import { Question } from '@/src/entities/question';
-import { Eye, EyeOff, Trash2, Edit, Plus, Sparkles, FileUp, Save, X, RotateCcw, Settings, MessageSquare, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Trash2, Edit, Plus, Sparkles, FileUp, Save, X, RotateCcw, Settings, MessageSquare, Loader2, WifiOff, Cloud, AlertTriangle } from 'lucide-react';
+import { useSyncStatus } from '@/src/shared/hooks/useSyncStatus';
 import { deleteQuestion, batchQuestions, completeQuestions } from '@/src/features/questions/api';
+import { useQuestionMutations } from '../hooks/useQuestionMutations';
 import { cn } from '@/src/shared/utils/cn';
 import { useToast } from '@/src/shared/contexts/ToastContext';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 import { AiQuickBar } from '@/src/features/collections/components/AiQuickBar';
 import { EditRequestModal } from './EditRequestModal';
 import { AiSettingsModal } from './AiSettingsModal';
@@ -57,9 +60,11 @@ export function QuestionList({
     onImportCsv,
     onSuccess,
     onOpenAdvanced,
-    collectionId,
+    collectionId: propCollectionId,
 }: QuestionListProps) {
     const { showToast } = useToast();
+    const { isOnline } = useNetworkStatus();
+    const { batchQuestions: doBatchQuestions, deleteQuestion: doDeleteQuestion } = useQuestionMutations();
     const [visibleAnswers, setVisibleAnswers] = useState<Set<string>>(new Set());
     const [allVisible, setAllVisible] = useState(false);
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -95,7 +100,7 @@ export function QuestionList({
     const handleBatchSave = async () => {
         setIsSaving(true);
         try {
-            const collectionId = questions[0]?.collectionId || (window.location.pathname.split('/').pop() as string);
+            const collectionId = questions[0]?.collectionId || propCollectionId || (window.location.pathname.split('/').pop() as string);
             const upsertItems = drafts.map(d => ({
                 id: d.isNew ? undefined : d.id,
                 questionText: d.questionText,
@@ -105,7 +110,7 @@ export function QuestionList({
                 descriptionText: d.descriptionText || null,
             }));
 
-            await batchQuestions(collectionId, { upsertItems, deleteIds: deletedIds });
+            await doBatchQuestions(collectionId, { upsertItems, deleteIds: deletedIds });
             showToast({ message: '一括保存が完了しました', variant: 'success' });
             onToggleEditMode();
             onSuccess();
@@ -284,7 +289,7 @@ export function QuestionList({
         if (!confirm('この問題を削除してもよろしいですか？')) return;
         setDeletingId(questionId);
         try {
-            await deleteQuestion(questionId);
+            await doDeleteQuestion(questionId);
             onQuestionDeleted(questionId);
         } catch (err) {
             logger.error('問題の削除に失敗しました', err);
@@ -308,10 +313,11 @@ export function QuestionList({
                             onClick={() => setIsAiSettingsModalOpen(true)}
                             className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5 h-8 flex-1 sm:flex-none"
                             loading={isAutoFilling}
-                            disabled={isSaving}
+                            disabled={isSaving || !isOnline}
+                            title={!isOnline ? "オフライン中は利用できません" : ""}
                         >
-                            <Sparkles size={14} />
-                            <Text variant="xs" weight="bold">AIで補完</Text>
+                            {isOnline ? <Sparkles size={14} /> : <WifiOff size={14} />}
+                            <Text variant="xs" weight="bold">{isOnline ? "AIで補完" : "オフライン"}</Text>
                         </Button>
                         <Button
                             variant="ghost"
@@ -534,9 +540,9 @@ export function QuestionList({
                 </Flex>
             </Flex>
 
-            {isOwner && !isEditMode && collectionId && (
+            {isOwner && !isEditMode && propCollectionId && (
                 <AiQuickBar
-                    collectionId={collectionId}
+                    collectionId={propCollectionId}
                     onSuccess={onSuccess}
                     onOpenAdvanced={onOpenAdvanced}
                 />
@@ -593,130 +599,20 @@ export function QuestionList({
                 </Card>
             ) : (
                 <Stack gap="md">
-                    {questions.map((question, index) => {
-                        const isVisible = visibleAnswers.has(question.id);
-                        const isDeleting = deletingId === question.id;
-
-                        return (
-                            <Card
-                                key={question.id}
-                                padding="md"
-                                border="base"
-                                className={cn(
-                                    "transition-all",
-                                    isDeleting && "opacity-50"
-                                )}
-                            >
-                                <Stack gap="md">
-                                    <Flex justify="between" align="start">
-                                        <Flex gap="sm" align="start" className="flex-1">
-                                            <Text
-                                                variant="xs"
-                                                weight="bold"
-                                                className="bg-brand-primary text-white rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5"
-                                            >
-                                                {index + 1}
-                                            </Text>
-                                            <Text weight="medium" className="flex-1">
-                                                {question.questionText}
-                                            </Text>
-                                        </Flex>
-
-                                        <Flex gap="xs" className="shrink-0 ml-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => toggleAnswer(question.id)}
-                                                className="p-1.5 h-auto text-foreground/50"
-                                                title={isVisible ? '答えを隠す' : '答えを表示'}
-                                            >
-                                                {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                                            </Button>
-                                            {!isOwner && (
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => setSelectedQuestion(question)}
-                                                    className="p-1.5 h-auto text-brand-primary"
-                                                    title="修正を提案"
-                                                >
-                                                    <MessageSquare size={16} />
-                                                </Button>
-                                            )}
-                                            {isOwner && (
-                                                <>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => onEditQuestion(question)}
-                                                        className="p-1.5 h-auto text-brand-primary"
-                                                        title="編集"
-                                                    >
-                                                        <Edit size={16} />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleDelete(question.id)}
-                                                        className="p-1.5 h-auto text-brand-danger"
-                                                        title="削除"
-                                                        disabled={isDeleting}
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </Flex>
-                                    </Flex>
-
-                                    {isVisible && (
-                                        <View className="border-t border-surface-muted-border pt-3">
-                                            <Stack gap="xs">
-                                                <Flex gap="sm" align="start">
-                                                    <Text variant="xs" weight="bold" color="primary" className="shrink-0">
-                                                        答え:
-                                                    </Text>
-                                                    <Text variant="detail" weight="bold" color="primary">
-                                                        {(question.correctAnswers || []).join(' / ')}
-                                                    </Text>
-                                                </Flex>
-                                                {question.answerRubis && question.answerRubis.length > 0 && question.answerRubis.some(r => r && r.trim() !== "") && (
-                                                    <Flex gap="sm" align="start">
-                                                        <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
-                                                            読み:
-                                                        </Text>
-                                                        <Text variant="xs" color="secondary">
-                                                            {question.answerRubis.join(" / ")}
-                                                        </Text>
-                                                    </Flex>
-                                                )}
-                                                {question.distractors && question.distractors.length > 0 && (
-                                                    <Flex gap="sm" align="start">
-                                                        <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
-                                                            選択肢:
-                                                        </Text>
-                                                        <Text variant="xs" color="secondary">
-                                                            {[question.correctAnswers[0], ...question.distractors].join(' / ')}
-                                                        </Text>
-                                                    </Flex>
-                                                )}
-                                                {question.descriptionText && (
-                                                    <Flex gap="sm" align="start">
-                                                        <Text variant="xs" color="secondary" className="shrink-0">
-                                                            解説:
-                                                        </Text>
-                                                        <Text variant="xs" color="secondary" className="leading-relaxed">
-                                                            {question.descriptionText}
-                                                        </Text>
-                                                    </Flex>
-                                                )}
-                                            </Stack>
-                                        </View>
-                                    )}
-                                </Stack>
-                            </Card>
-                        );
-                    })}
+                    {questions.map((question, index) => (
+                        <QuestionListItem
+                            key={question.id}
+                            question={question}
+                            index={index}
+                            isOwner={isOwner}
+                            isVisible={visibleAnswers.has(question.id)}
+                            isDeleting={deletingId === question.id}
+                            onToggleVisible={() => toggleAnswer(question.id)}
+                            onEdit={() => onEditQuestion(question)}
+                            onDelete={() => handleDelete(question.id)}
+                            onSuggestEdit={() => setSelectedQuestion(question)}
+                        />
+                    ))}
                 </Stack>
             )}
 
@@ -727,5 +623,200 @@ export function QuestionList({
                 />
             )}
         </Stack>
+    );
+}
+
+// Sub-component for individual question items to allow hook usage per item
+function QuestionListItem({
+    question,
+    index,
+    isOwner,
+    isVisible,
+    isDeleting,
+    onToggleVisible,
+    onEdit,
+    onDelete,
+    onSuggestEdit,
+}: {
+    question: Question;
+    index: number;
+    isOwner: boolean;
+    isVisible: boolean;
+    isDeleting: boolean;
+    onToggleVisible: () => void;
+    onEdit: () => void;
+    onDelete: () => void;
+    onSuggestEdit: () => void;
+}) {
+    const { isPending, hasError, error, actionId } = useSyncStatus(question.id);
+    const { syncManager } = require('@/src/shared/api/SyncManager');
+
+    return (
+        <Card
+            padding="md"
+            border={hasError ? 'danger' : (isPending ? 'warning' : 'base')}
+            className={cn(
+                "transition-all relative overflow-hidden",
+                isDeleting && "opacity-50",
+                isPending && !hasError && "border-dashed border-amber-400/60",
+                hasError && "border-red-500/60 shadow-red-100/10"
+            )}
+        >
+            {/* Sync Status Header */}
+            {(isPending || hasError) && (
+                <View className="absolute top-0 left-0 right-0 h-1 bg-transparent pointer-events-none">
+                     <View className={cn(
+                        "h-full transition-all duration-1000",
+                        hasError ? "bg-red-500/50" : "bg-amber-400/50 animate-pulse"
+                     )} />
+                </View>
+            )}
+
+            <Stack gap="md">
+                <Flex justify="between" align="start">
+                    <Flex gap="sm" align="start" className="flex-1">
+                        <View className="relative">
+                            <Text
+                                variant="xs"
+                                weight="bold"
+                                className={cn(
+                                    "rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+                                    hasError ? "bg-red-500 text-white" : "bg-brand-primary text-white"
+                                )}
+                            >
+                                {index + 1}
+                            </Text>
+                            {isPending && !hasError && (
+                                <View className="absolute -top-1 -right-1 bg-amber-100 rounded-full p-0.5 text-amber-600 border border-white">
+                                    <Cloud size={10} className="animate-bounce-subtle" />
+                                </View>
+                            )}
+                            {hasError && (
+                                <View className="absolute -top-1 -right-1 bg-red-100 rounded-full p-0.5 text-red-600 border border-white">
+                                    <AlertTriangle size={10} />
+                                </View>
+                            )}
+                        </View>
+                        <Text weight="medium" className="flex-1">
+                            {question.questionText}
+                        </Text>
+                    </Flex>
+
+                    <Flex gap="xs" className="shrink-0 ml-2">
+                        {hasError && actionId && (
+                             <Flex gap="xs" className="mr-2 border-r pr-2 border-surface-muted-border">
+                                <Button 
+                                    size="sm" variant="solid" color="primary" className="h-7 px-2 text-[10px] py-0"
+                                    onClick={() => syncManager.retryAction(actionId)}
+                                >
+                                    再試行
+                                </Button>
+                                <Button 
+                                    size="sm" variant="ghost" className="h-7 px-2 text-[10px] py-0 text-secondary"
+                                    onClick={() => syncManager.discardAction(actionId)}
+                                >
+                                    破棄
+                                </Button>
+                            </Flex>
+                        )}
+
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onToggleVisible}
+                            className="p-1.5 h-auto text-foreground/50"
+                            title={isVisible ? '答えを隠す' : '答えを表示'}
+                        >
+                            {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </Button>
+                        {!isOwner && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={onSuggestEdit}
+                                className="p-1.5 h-auto text-brand-primary"
+                                title="修正を提案"
+                            >
+                                <MessageSquare size={16} />
+                            </Button>
+                        )}
+                        {isOwner && (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onEdit}
+                                    className="p-1.5 h-auto text-brand-primary"
+                                    title="編集"
+                                >
+                                    <Edit size={16} />
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={onDelete}
+                                    className="p-1.5 h-auto text-brand-danger"
+                                    title="削除"
+                                    disabled={isDeleting}
+                                >
+                                    <Trash2 size={16} />
+                                </Button>
+                            </>
+                        )}
+                    </Flex>
+                </Flex>
+
+                {isVisible && (
+                    <View className="border-t border-surface-muted-border pt-3">
+                        <Stack gap="xs">
+                            {hasError && (
+                                <View className="mb-2 p-2 bg-red-50 dark:bg-red-500/10 rounded border border-red-100 dark:border-red-500/20">
+                                    <Text variant="xs" color="danger" weight="bold">同期エラー:</Text>
+                                    <Text variant="xs" className="text-red-700 dark:text-red-300">{error}</Text>
+                                </View>
+                            )}
+                            <Flex gap="sm" align="start">
+                                <Text variant="xs" weight="bold" color="primary" className="shrink-0">
+                                    答え:
+                                </Text>
+                                <Text variant="detail" weight="bold" color="primary">
+                                    {(question.correctAnswers || []).join(' / ')}
+                                </Text>
+                            </Flex>
+                            {question.answerRubis && question.answerRubis.length > 0 && question.answerRubis.some(r => r && r.trim() !== "") && (
+                                <Flex gap="sm" align="start">
+                                    <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
+                                        読み:
+                                    </Text>
+                                    <Text variant="xs" color="secondary">
+                                        {question.answerRubis.join(" / ")}
+                                    </Text>
+                                </Flex>
+                            )}
+                            {question.distractors && question.distractors.length > 0 && (
+                                <Flex gap="sm" align="start">
+                                    <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
+                                        選択肢:
+                                    </Text>
+                                    <Text variant="xs" color="secondary">
+                                        {[question.correctAnswers[0], ...question.distractors].join(' / ')}
+                                    </Text>
+                                </Flex>
+                            )}
+                            {question.descriptionText && (
+                                <Flex gap="sm" align="start">
+                                    <Text variant="xs" color="secondary" className="shrink-0">
+                                        解説:
+                                    </Text>
+                                    <Text variant="xs" color="secondary" className="leading-relaxed">
+                                        {question.descriptionText}
+                                    </Text>
+                                </Flex>
+                            )}
+                        </Stack>
+                    </View>
+                )}
+            </Stack>
+        </Card>
     );
 }

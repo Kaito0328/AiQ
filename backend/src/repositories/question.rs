@@ -13,24 +13,24 @@ impl QuestionRepository {
         correct_answers: Vec<String>,
         answer_rubis: Vec<String>,
         distractors: Vec<String>,
-        preferred_mode: String,
-        recommended_mode: String,
+        chip_answer: Option<String>,
+        is_selection_only: bool,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
         let question = sqlx::query_as!(
             Question,
             r#"
-            INSERT INTO questions (id, collection_id, question_text, correct_answers, answer_rubis, distractors, preferred_mode, recommended_mode, description_text, created_at, updated_at)
-            VALUES (gen_random_uuid(), $1::uuid, $2::text, $3::text[], $4::text[], $5::text[], $6::text, $7::text, $8::text, NOW(), NOW())
-            RETURNING id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            INSERT INTO questions (id, collection_id, question_text, correct_answers, answer_rubis, distractors, chip_answer, is_selection_only, description_text, created_at, updated_at)
+            VALUES (gen_random_uuid(), $1::uuid, $2::text, $3::text[], $4::text[], $5::text[], $6::text, $7::boolean, $8::text, NOW(), NOW())
+            RETURNING id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", chip_answer, is_selection_only, description_text, created_at, updated_at
             "#,
             collection_id,
             question_text,
             &correct_answers,
             &answer_rubis,
             &distractors,
-            preferred_mode,
-            recommended_mode,
+            chip_answer,
+            is_selection_only,
             description_text
         )
         .fetch_one(pool)
@@ -43,7 +43,7 @@ impl QuestionRepository {
         let question = sqlx::query_as!(
             Question,
             r#"
-            SELECT id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            SELECT id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", chip_answer, is_selection_only, description_text, created_at, updated_at
             FROM questions
             WHERE id = $1::uuid
             "#,
@@ -62,7 +62,7 @@ impl QuestionRepository {
         let questions = sqlx::query_as!(
             Question,
             r#"
-            SELECT id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            SELECT id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", chip_answer, is_selection_only, description_text, created_at, updated_at
             FROM questions
             WHERE collection_id = $1::uuid
             ORDER BY created_at ASC, id ASC
@@ -82,8 +82,8 @@ impl QuestionRepository {
         correct_answers: Vec<String>,
         answer_rubis: Vec<String>,
         distractors: Vec<String>,
-        preferred_mode: String,
-        recommended_mode: String,
+        chip_answer: Option<String>,
+        is_selection_only: bool,
         description_text: Option<String>,
     ) -> Result<Question, sqlx::Error> {
         let question = sqlx::query_as!(
@@ -94,19 +94,19 @@ impl QuestionRepository {
                 correct_answers = $2::text[],
                 answer_rubis = $3::text[],
                 distractors = $4::text[],
-                preferred_mode = $5::text,
-                recommended_mode = $6::text,
+                chip_answer = $5::text,
+                is_selection_only = $6::boolean,
                 description_text = $7::text,
                 updated_at = NOW()
             WHERE id = $8::uuid
-            RETURNING id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", preferred_mode, recommended_mode, description_text, created_at, updated_at
+            RETURNING id, collection_id, question_text, correct_answers as "correct_answers: Vec<String>", answer_rubis as "answer_rubis: Vec<String>", distractors as "distractors: Vec<String>", chip_answer, is_selection_only, description_text, created_at, updated_at
             "#,
             question_text,
             &correct_answers,
             &answer_rubis,
             &distractors,
-            preferred_mode,
-            recommended_mode,
+            chip_answer,
+            is_selection_only,
             description_text,
             question_id
         )
@@ -149,9 +149,8 @@ impl QuestionRepository {
                 &correct_answers as &[String],
                 &answer_rubis as &[String],
                 &distractors as &[String],
-                item.preferred_mode.unwrap_or_else(|| "default".to_string()),
-                item.recommended_mode
-                    .unwrap_or_else(|| "recall".to_string()),
+                item.chip_answer,
+                item.is_selection_only.unwrap_or(false),
                 item.description_text
             )
             .fetch_one(pool)
@@ -185,7 +184,6 @@ impl QuestionRepository {
         filter_node: Option<&FilterNode>,
         sorts: &[crate::dtos::quiz_dto::SortCondition],
     ) -> Result<Vec<Question>, sqlx::Error> {
-        tracing::debug!("find_filtered_questions: collections={:?}, user={:?}, sorts={:?}", collection_ids, user_id_opt, sorts);
         if collection_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -196,13 +194,12 @@ impl QuestionRepository {
                    q.correct_answers, 
                    q.answer_rubis, 
                    q.distractors, 
-                   q.preferred_mode, q.recommended_mode, q.description_text, 
+                   q.chip_answer, q.is_selection_only, q.description_text, 
                    q.created_at, q.updated_at
             FROM questions q
             "#,
         );
 
-        // We always need user_question_stats if there's a filter OR if there's a sort that requires stats
         let needs_stats = filter_node.is_some() || sorts.iter().any(|s| s.key == "WRONG" || s.key == "ACCURACY");
         
         if user_id_opt.is_some() && needs_stats {
@@ -220,7 +217,6 @@ impl QuestionRepository {
             builder.push(") ");
         }
 
-        // --- SORTS ---
         if !sorts.is_empty() {
             let mut order_clauses = Vec::new();
 
@@ -228,13 +224,10 @@ impl QuestionRepository {
                 let dir = if sort.direction.as_deref() == Some("DESC") { "DESC" } else { "ASC" };
                 match sort.key.as_str() {
                     "WRONG" => {
-                        // Sort by wrong_count. COALESCE to treat null (no record) as 0.
                         let clause = format!("COALESCE(uqs.wrong_count, 0) {}", dir);
                         order_clauses.push(clause);
                     }
                     "ACCURACY" => {
-                        // Accuracy = correct_count / (correct_count + wrong_count).
-                        // If no attempts (division by 0), treat as 0 accuracy.
                         let clause = format!(
                             "CASE 
                                 WHEN COALESCE(uqs.correct_count, 0) + COALESCE(uqs.wrong_count, 0) = 0 THEN 0.0 
@@ -260,10 +253,6 @@ impl QuestionRepository {
             }
         }
 
-        let sql = builder.sql();
-        tracing::debug!("Executing SQL: {}", sql);
-        tracing::debug!("BINDING collection_ids: {:?}", collection_ids);
-        
         let query = builder.build_query_as::<Question>();
         query.fetch_all(pool).await
     }

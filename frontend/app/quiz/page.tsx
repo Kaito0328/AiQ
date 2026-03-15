@@ -18,6 +18,7 @@ import { useAuth } from '@/src/shared/auth/useAuth';
 import { useAiqScorer } from '@/src/features/quiz/hooks/useAiqScorer';
 
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
+import { X, ArrowRight } from 'lucide-react';
 
 export default function QuizPage() {
     const router = useRouter();
@@ -54,9 +55,26 @@ export default function QuizPage() {
                 setQuestions(qs);
             } else {
                 // Casual Quiz
-                setQuestions(data.questions || []);
+                const qs = data.questions || [];
+                setQuestions(qs);
                 setQuiz(data.quiz || null);
                 setIsRetry(!!data.isRetry);
+
+                // Initialize progress from saved state
+                if (data.quiz && data.quiz.answeredQuestionIds) {
+                    const answeredCount = data.quiz.answeredQuestionIds.length;
+                    
+                    // If resuming, currentIndex should point to the next question
+                    // If all are answered, it will be handled by the score screen redirect logic in render
+                    if (answeredCount > 0 && answeredCount < qs.length) {
+                        setCurrentIndex(answeredCount);
+                    }
+
+                    // Restore user answers for the summary if available
+                    if (data.answers) {
+                        setUserAnswers(data.answers);
+                    }
+                }
             }
         }
     }, []);
@@ -204,6 +222,23 @@ export default function QuizPage() {
             setFuzzyScore(null);
         }
     }, [currentIndex, questions, userAnswers, router]);
+    
+    // Keyboard support for "Next" button
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Only trigger if we are showing the result (isCorrect is not null)
+            // and not currently in an input field (to avoid conflicting with text input)
+            if (isCorrect !== null && (e.key === 'Enter' || e.key === ' ')) {
+                // If focus is on a button, let the default click happen
+                if (document.activeElement?.tagName === 'BUTTON') return;
+                
+                e.preventDefault();
+                handleNext();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isCorrect, handleNext]);
 
     if (isSubmitting) {
         return (
@@ -233,10 +268,54 @@ export default function QuizPage() {
 
     return (
         <div className="h-[100dvh] flex flex-col bg-surface-muted overflow-y-auto overflow-x-hidden">
-            <div className="absolute top-4 left-4 z-50">
-                <BackButton />
+            <div className="sticky top-0 left-0 right-0 z-50 bg-surface-muted/90 backdrop-blur-md border-b border-surface-muted/50 overflow-hidden">
+                <div className="p-4 flex justify-between items-center relative">
+                    <Button
+                        variant="ghost"
+                        onClick={() => {
+                            if (confirm('クイズを中断してホームに戻りますか？')) {
+                                router.push('/home');
+                            }
+                        }}
+                        className="gap-2 text-brand-danger hover:bg-brand-danger/5 active:scale-95 transition-all z-10"
+                        size="sm"
+                    >
+                        <X size={18} />
+                        <Text variant="body" weight="bold">中断</Text>
+                    </Button>
+
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <Text variant="body" weight="bold" className="text-secondary">
+                            {currentIndex + 1} <span className="mx-1 opacity-40">/</span> {questions.length}
+                        </Text>
+                    </div>
+
+                    <div className="z-10 min-w-[80px] flex justify-end">
+                        {isCorrect !== null && (
+                            <Button
+                                variant="solid"
+                                color="primary"
+                                size="sm"
+                                onClick={handleNext}
+                                className="gap-2 shadow-brand-sm group active:scale-95 transition-all"
+                            >
+                                <span className="font-bold">
+                                    {currentIndex + 1 === questions.length ? '終了' : '次へ'}
+                                </span>
+                                <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+                            </Button>
+                        )}
+                    </div>
+                </div>
+                {/* Progress Bar */}
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-surface-muted overflow-hidden">
+                    <div
+                        className="h-full bg-brand-primary transition-all duration-500 ease-out"
+                        style={{ width: `${((currentIndex + (isCorrect !== null ? 1 : 0)) / questions.length) * 100}%` }}
+                    />
+                </div>
             </div>
-            <View className="flex-1 flex items-center justify-center px-4 py-2 mt-12">
+            <View className="flex-1 flex items-center justify-center px-4 py-2">
                 {isCorrect !== null ? (
                     <Result
                         isCorrect={isCorrect}
@@ -255,7 +334,7 @@ export default function QuizPage() {
                         question={currentQuestion}
                         questionNumber={currentIndex + 1}
                         totalQuestions={questions.length}
-                        preferredMode={quiz?.preferredMode === 'fuzzy' ? 'text' : quiz?.preferredMode}
+                        preferredMode={rankingQuizId ? 'fourChoice' : (quiz?.preferredMode === 'fuzzy' ? 'text' : quiz?.preferredMode)}
                         dummyCharCount={quiz?.dummyCharCount}
                         onSubmitAnswer={handleAnswer}
                     />

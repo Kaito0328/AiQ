@@ -1,37 +1,30 @@
 "use client";
-
-import React from 'react';
 import { Stack } from '@/src/design/primitives/Stack';
 import { Text } from '@/src/design/baseComponents/Text';
-import { ResumeQuizList } from '@/src/features/quiz/components/ResumeQuizList';
 import { View } from '@/src/design/primitives/View';
-import { BackButton } from '@/src/shared/components/Navigation/BackButton';
+import { Container } from '@/src/design/primitives/Container';
+import { ResumeQuizList } from '@/src/features/quiz/components/ResumeQuizList';
 import { History } from 'lucide-react';
-import { Flex } from '@/src/design/primitives/Flex';
+import { SectionHeader } from '@/src/shared/components/SectionHeader';
 
 export default function ResumeQuizPage() {
     return (
-        <View className="min-h-screen bg-surface-muted/30 pb-20">
-            <View className="max-w-4xl mx-auto px-4 pt-8">
+        <View className="min-h-screen bg-surface-muted pb-20">
+            <Container className="max-w-4xl pt-6">
                 <Stack gap="xl">
-                    <Stack gap="xs">
-                        <BackButton />
-                        <Flex align="center" gap="sm">
-                            <History className="text-brand-primary" size={28} />
-                            <Text variant="h1" weight="bold" className="tracking-tight">
-                                学習を再開する
-                            </Text>
-                        </Flex>
-                        <Text color="secondary">
-                            中断したクイズの続きから学習を再開できます。
-                        </Text>
+                    <Stack gap="md">
+                        <SectionHeader
+                            icon={History}
+                            title="学習を再開する"
+                            description="中断したクイズの続きから学習を再開できます。"
+                        />
                     </Stack>
 
-                    <Card className="bg-transparent border-none shadow-none">
+                    <View>
                         <ResumeQuizList />
-                    </Card>
+                    </View>
                 </Stack>
-            </View>
+            </Container>
         </View>
     );
 }

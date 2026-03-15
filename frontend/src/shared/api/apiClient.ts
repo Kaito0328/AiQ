@@ -2,14 +2,24 @@ import { ApiError, ErrorCodeType } from './error';
 
 export const getApiBaseUrl = () => {
     const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
-    if (typeof window !== 'undefined' && (envUrl.includes('localhost') || envUrl.includes('127.0.0.1'))) {
-        try {
-            const urlObj = new URL(envUrl);
-            return `http://${window.location.hostname}:${urlObj.port}`;
-        } catch {
-            return `http://${window.location.hostname}:8080`;
+    
+    // Only attempt dynamic host resolution on the client side
+    if (typeof window !== 'undefined') {
+        const isDefaultLocal = envUrl.includes('localhost') || envUrl.includes('127.0.0.1');
+        const currentHost = window.location.hostname;
+        
+        // If we are accessing via an IP or custom domain, but the config points to localhost,
+        // we should try to use the current host instead.
+        if (isDefaultLocal && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+            try {
+                const urlObj = new URL(envUrl);
+                return `http://${currentHost}:${urlObj.port || '8080'}`;
+            } catch {
+                return `http://${currentHost}:8080`;
+            }
         }
     }
+    
     return envUrl;
 };
 const API_BASE_URL = getApiBaseUrl();
@@ -44,11 +54,27 @@ export async function apiClient<T>(
         }
     }
 
+    // タイムアウト設定 (デフォルト30秒)
+    const timeout = 30000;
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    // 手動オフラインモードのチェック
+    if (typeof window !== 'undefined' && localStorage.getItem('aiq_manual_offline') === 'true') {
+        clearTimeout(timeoutId);
+        throw new ApiError(503, {
+            code: ErrorCodeType.UNKNOWN_ERROR,
+            message: 'Manual offline mode is enabled',
+        });
+    }
+
     try {
         const response = await fetch(url, {
             ...rest,
             headers,
+            signal: controller.signal,
         });
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -78,8 +104,17 @@ export async function apiClient<T>(
 
         return JSON.parse(text);
     } catch (error) {
+        clearTimeout(timeoutId);
         if (error instanceof ApiError) {
             throw error;
+        }
+
+        // タイムアウト特有のエラーハンドリング
+        if (error instanceof Error && error.name === 'AbortError') {
+            throw new ApiError(408, {
+                code: ErrorCodeType.TIMEOUT,
+                message: 'Request timed out. The server may be starting up.',
+            });
         }
 
         // ネットワークエラー等

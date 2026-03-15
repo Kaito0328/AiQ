@@ -55,7 +55,7 @@ export function Tabs({
             <Flex
                 gap={variant === 'pill' ? 'xs' : 'none'}
                 className={cn(
-                    'mb-4 overflow-x-auto no-scrollbar',
+                    'mb-4 overflow-x-auto overflow-y-hidden no-scrollbar',
                     variant === 'line' && 'border-b border-slate-200 dark:border-slate-800',
                     fitted && 'w-full',
                     headerClassName

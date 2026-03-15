@@ -190,3 +190,9 @@ pub async fn update_profile(
         Err(e) => Err(e.into()),
     }
 }
+pub async fn delete_user(pool: &PgPool, user_id: Uuid) -> Result<()> {
+    sqlx::query!("DELETE FROM users WHERE id = $1", user_id)
+        .execute(pool)
+        .await?;
+    Ok(())
+}

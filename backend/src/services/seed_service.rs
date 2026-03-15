@@ -150,8 +150,8 @@ pub async fn seed_data(pool: &PgPool) {
                                         correct_answers: item.correct_answers.unwrap_or_default(),
                                         answer_rubis: item.answer_rubis,
                                         distractors: item.distractors,
-                                        preferred_mode: None,
-                                        recommended_mode: None,
+                                        chip_answer: item.chip_answer,
+                                        is_selection_only: item.is_selection_only,
                                         description_text: item.description_text,
                                     };
                                     let _ = QuestionService::create_question(
@@ -316,11 +316,15 @@ pub async fn seed_data(pool: &PgPool) {
                     coll_name
                 ).fetch_optional(pool).await {
                     let _ = sqlx::query!(
-                        "INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, reason_id, status) VALUES ($1, $2, $3, $4, 1, 'pending')",
+                        "INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, answer_rubis, distractors, chip_answer, is_selection_only, reason_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1, 'pending')",
                         question.id,
                         official.id,
                         req_text,
-                        &vec!["修正済みの内容が入ります".to_string()]
+                        &vec!["修正済みの内容が入ります".to_string()],
+                        &vec![] as &Vec<String>,
+                        &vec![] as &Vec<String>,
+                        None::<String>,
+                        false
                     ).execute(pool).await;
                 }
             }

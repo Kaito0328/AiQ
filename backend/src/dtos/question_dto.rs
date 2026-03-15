@@ -7,8 +7,8 @@ pub struct CreateQuestionRequest {
     pub correct_answers: Vec<String>,
     pub answer_rubis: Option<Vec<String>>,
     pub distractors: Option<Vec<String>>,
-    pub preferred_mode: Option<String>,
-    pub recommended_mode: Option<String>,
+    pub chip_answer: Option<String>,
+    pub is_selection_only: Option<bool>,
     pub description_text: Option<String>,
 }
 
@@ -19,8 +19,8 @@ pub struct UpdateQuestionRequest {
     pub correct_answers: Vec<String>,
     pub answer_rubis: Option<Vec<String>>,
     pub distractors: Option<Vec<String>>,
-    pub preferred_mode: Option<String>,
-    pub recommended_mode: Option<String>,
+    pub chip_answer: Option<String>,
+    pub is_selection_only: Option<bool>,
     pub description_text: Option<String>,
 }
 
@@ -32,8 +32,8 @@ pub struct UpsertQuestionItem {
     pub correct_answers: Option<Vec<String>>,
     pub answer_rubis: Option<Vec<String>>,
     pub distractors: Option<Vec<String>>,
-    pub preferred_mode: Option<String>,
-    pub recommended_mode: Option<String>,
+    pub chip_answer: Option<String>,
+    pub is_selection_only: Option<bool>,
     pub description_text: Option<String>,
 }
 

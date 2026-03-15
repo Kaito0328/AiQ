@@ -3,19 +3,19 @@
 @variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* Refined Neutrals (Tinted with Sky) */
-  --color-slate-50: #f8fafc;
-  --color-slate-900: #0f172a;
-  --color-slate-950: #020617;
+  /* Refined Neutrals (Neutral Gray) */
+  --color-slate-50: #fafafa;
+  --color-slate-900: #171717;
+  --color-slate-950: #0a0a0a;
 
   --background: var(--color-slate-50);
-  --foreground: #0f172a;
+  --foreground: #171717;
 
   /* Brand Colors */
   --color-primary: #0369a1;
   --color-primary-hover: #075985;
-  --color-secondary: #f1f5f9;
-  --color-secondary-hover: #e2e8f0;
+  --color-secondary: #f5f5f5;
+  --color-secondary-hover: #e5e5e5;
   --color-danger: #ef4444;
   --color-danger-hover: #dc2626;
   --color-success: #10b981;
@@ -29,9 +29,9 @@
 
   /* Surface Colors - Light Mode */
   --color-surface-base: var(--color-slate-50);
-  --color-surface-muted: #f1f5f9;
-  --color-surface-card: #c7d6ffef;
-  --color-surface-card-hover: #f8fafc;
+  --color-surface-muted: #f5f5f5;
+  --color-surface-card: #ebf6ff;
+  --color-surface-card-hover: #ffffff;
 }
 
 .dark {
@@ -135,6 +135,19 @@ body {
   .range-slider {
     pointer-events: none;
   }
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none !important; /* IE and Edge */
+  scrollbar-width: none !important; /* Firefox */
 }
 
 .range-slider::-webkit-slider-thumb {

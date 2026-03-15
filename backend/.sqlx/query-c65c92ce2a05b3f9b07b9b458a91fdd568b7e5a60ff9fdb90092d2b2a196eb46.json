@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.answer_rubis, er.distractors, er.description_text, er.reason_id, er.status, er.created_at,\n       q.question_text as original_question_text, q.correct_answers as original_correct_answers, er.original_answer_rubis, er.original_distractors, q.description_text as original_description_text,\n       c.name as collection_name\nFROM edit_requests er\nJOIN questions q ON er.question_id = q.id\nJOIN collections c ON q.collection_id = c.id\nJOIN users u ON er.requester_id = u.id\nWHERE er.id = $1\n",
+  "query": "SELECT er.id, er.question_id, er.requester_id, u.username as requester_name, er.question_text, er.correct_answers, er.answer_rubis, er.distractors, er.chip_answer, er.is_selection_only, er.description_text, er.reason_id, er.status, er.created_at,\n       q.question_text as original_question_text, q.correct_answers as original_correct_answers, er.original_answer_rubis, er.original_distractors, er.original_chip_answer, er.original_is_selection_only, q.description_text as original_description_text,\n       c.name as collection_name\nFROM edit_requests er\nJOIN questions q ON er.question_id = q.id\nJOIN collections c ON q.collection_id = c.id\nJOIN users u ON er.requester_id = u.id\nWHERE q.collection_id = $1\nORDER BY er.created_at DESC\n",
   "describe": {
     "columns": [
       {
@@ -45,51 +45,71 @@
       },
       {
         "ordinal": 8,
-        "name": "description_text",
+        "name": "chip_answer",
         "type_info": "Text"
       },
       {
         "ordinal": 9,
-        "name": "reason_id",
-        "type_info": "Int4"
+        "name": "is_selection_only",
+        "type_info": "Bool"
       },
       {
         "ordinal": 10,
-        "name": "status",
+        "name": "description_text",
         "type_info": "Text"
       },
       {
         "ordinal": 11,
-        "name": "created_at",
-        "type_info": "Timestamptz"
+        "name": "reason_id",
+        "type_info": "Int4"
       },
       {
         "ordinal": 12,
-        "name": "original_question_text",
+        "name": "status",
         "type_info": "Text"
       },
       {
         "ordinal": 13,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "original_question_text",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 15,
         "name": "original_correct_answers",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 14,
+        "ordinal": 16,
         "name": "original_answer_rubis",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 15,
+        "ordinal": 17,
         "name": "original_distractors",
         "type_info": "TextArray"
       },
       {
-        "ordinal": 16,
+        "ordinal": 18,
+        "name": "original_chip_answer",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 19,
+        "name": "original_is_selection_only",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 20,
         "name": "original_description_text",
         "type_info": "Text"
       },
       {
-        "ordinal": 17,
+        "ordinal": 21,
         "name": "collection_name",
         "type_info": "Varchar"
       }
@@ -110,6 +130,8 @@
       false,
       true,
       false,
+      true,
+      false,
       false,
       false,
       false,
@@ -117,8 +139,10 @@
       false,
       false,
       true,
+      false,
+      true,
       false
     ]
   },
-  "hash": "3075a26e9a7ba25204ce630419fc9760edf0051cc8da8470458d745218fe0b02"
+  "hash": "c65c92ce2a05b3f9b07b9b458a91fdd568b7e5a60ff9fdb90092d2b2a196eb46"
 }

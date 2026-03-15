@@ -46,11 +46,10 @@ export default function BattleLobbyPage() {
 
     return (
         <View className="min-h-screen bg-surface-muted/30 pb-20">
-            <View className="max-w-4xl mx-auto px-4 pt-8">
+            <View className="max-w-4xl mx-auto px-4 pt-4">
                 <Stack gap="xl">
                     <Flex justify="between" align="end">
                         <Stack gap="xs">
-                            <BackButton />
                             <Flex align="center" gap="sm">
                                 <Swords className="text-brand-primary" size={28} />
                                 <Text variant="h1" weight="bold" className="tracking-tight">

@@ -14,6 +14,7 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { AlertCircle, Zap } from 'lucide-react';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 import { Stack } from '@/src/design/primitives/Stack';
+import { cn } from '@/src/shared/utils/cn';
 
 function BattlePageContent() {
     const params = useParams();
@@ -44,6 +45,7 @@ function BattlePageContent() {
         roundSummaries,
         error,
         isConnected,
+        isReconnecting,
         startMatch,
         buzz,
         submitAnswer,
@@ -61,16 +63,29 @@ function BattlePageContent() {
         return user.id.toLowerCase() === room.host_id.toLowerCase();
     }, [user, room]);
 
+    React.useEffect(() => {
+        if (room?.status === 'Playing') {
+            document.body.setAttribute('data-battle-playing', 'true');
+        } else {
+            document.body.removeAttribute('data-battle-playing');
+        }
+        return () => {
+            document.body.removeAttribute('data-battle-playing');
+        };
+    }, [room?.status]);
+
     // Show loading while connecting, even if there's a transient error
     if (!isConnected || !room) {
         return (
             <div className="container mx-auto py-12 px-4">
                 <Flex direction="column" align="center" justify="center" className="min-h-[50vh] gap-4">
                     <Spinner size="lg" />
-                    <Text color="secondary" weight="bold">サーバーに接続中...</Text>
+                    <Text color="secondary" weight="bold">
+                        {isReconnecting ? '再接続中...' : 'サーバーに接続中...'}
+                    </Text>
                     {error && (
-                        <Text variant="xs" color="danger" className="animate-pulse">
-                            接続エラーが発生しています：{error}
+                        <Text variant="xs" color="danger" className="animate-pulse text-center max-w-sm">
+                            {error}
                         </Text>
                     )}
                 </Flex>
@@ -81,7 +96,6 @@ function BattlePageContent() {
     if (error) {
         return (
             <div className="container mx-auto py-12 px-4">
-                <BackButton />
                 <Flex direction="column" align="center" justify="center" className="min-h-[50vh] text-center gap-4">
                     <View className="p-4 rounded-full bg-brand-danger/10 text-brand-danger">
                         <AlertCircle size={48} />
@@ -92,8 +106,14 @@ function BattlePageContent() {
             </div>
         );
     }
+
+    const isPlaying = room.status === 'Playing';
+
     return (
-        <div className="h-[100dvh] overflow-hidden bg-surface-muted/30 flex flex-col">
+        <div className={cn(
+            "overflow-hidden bg-surface-muted/30 flex flex-col transition-all duration-300",
+            isPlaying ? "h-[100dvh]" : "h-[calc(100dvh-4rem)]"
+        )}>
             <div className="flex-1 flex flex-col overflow-y-auto w-full max-w-5xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
                 {room.status === 'Waiting' && (
                     <BattleLobby
@@ -134,6 +154,7 @@ function BattlePageContent() {
 
                 {room.status === 'Playing' && !isPreparing && questions.length > 0 && currentQuestionIndex >= 0 && currentQuestionIndex < questions.length && (
                     <BattleQuiz
+                        key={questions[currentQuestionIndex].id}
                         question={questions[currentQuestionIndex]}
                         buzzedUserId={buzzedUserId}
                         buzzerQueue={buzzerQueue}

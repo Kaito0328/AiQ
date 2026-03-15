@@ -9,7 +9,15 @@ use axum::{
     response::IntoResponse,
 };
 use futures::{sink::SinkExt, stream::StreamExt};
+use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
+
+fn get_now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as u64
+}
 
 #[derive(serde::Deserialize)]
 pub struct WsQuery {
@@ -72,6 +80,7 @@ async fn handle_socket(
     let join_msg = WsServerMessage::Joined {
         user_id,
         username: username.clone(),
+        server_now_ms: get_now_ms(),
     };
     let _ = sender
         .send(Message::Text(

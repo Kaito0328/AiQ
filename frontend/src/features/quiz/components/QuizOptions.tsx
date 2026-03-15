@@ -6,7 +6,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { View } from '@/src/design/primitives/View';
-import { Settings2, Shuffle, ArrowDownUp, Hash, BookOpen, Plus, Clock, Award, Zap, X } from 'lucide-react';
+import { Settings2, Shuffle, ArrowDownUp, Hash, BookOpen, Plus, Clock, Award, Zap, X, WifiOff } from 'lucide-react';
 import { Range as BaseRange } from '@/src/design/baseComponents/Range';
 import {
     FilterType,
@@ -42,6 +42,7 @@ interface QuizOptionsProps {
     hideMatchConfig?: boolean;
     hideLimit?: boolean;
     readOnly?: boolean;
+    isOffline?: boolean;
 }
 
 export function QuizOptions({
@@ -63,6 +64,7 @@ export function QuizOptions({
     hideMatchConfig = false,
     hideLimit = false,
     readOnly = false,
+    isOffline = false,
 }: QuizOptionsProps) {
 
     const toggleSort = (key: SortKey) => {
@@ -143,9 +145,10 @@ export function QuizOptions({
                             align="center"
                             className={cn(
                                 "mt-1 p-2.5 rounded-lg bg-surface-muted/40 border border-surface-muted",
-                                readOnly ? "cursor-default" : "cursor-pointer"
+                                readOnly ? "cursor-default" : "cursor-pointer",
+                                isOffline && "opacity-50 pointer-events-none"
                             )}
-                            onClick={readOnly ? undefined : () => onModeChange(preferredMode === 'fuzzy' ? 'text' : 'fuzzy')}
+                            onClick={readOnly || isOffline ? undefined : () => onModeChange(preferredMode === 'fuzzy' ? 'text' : 'fuzzy')}
                         >
                             {/* Toggle pill */}
                             <View className={cn(
@@ -161,9 +164,11 @@ export function QuizOptions({
                             <Stack gap="none">
                                 <Text variant="xs" weight="bold">大体正解AIモード</Text>
                                 <Text variant="xs" color="secondary">
-                                    {preferredMode === 'fuzzy'
-                                        ? '初回のみモデル（約90MB）をクイズ開始時にダウンロードします。'
-                                        : '略称やひらがな入力などのゆれをAIが許容して正解にします。'}
+                                    {isOffline 
+                                        ? 'オフライン中は利用できません。'
+                                        : preferredMode === 'fuzzy'
+                                            ? '初回のみモデル（約90MB）をクイズ開始時にダウンロードします。'
+                                            : '略称やひらがな入力などのゆれをAIが許容して正解にします。'}
                                 </Text>
                             </Stack>
                         </Flex>
@@ -235,8 +240,17 @@ export function QuizOptions({
                 <Flex gap="xs" align="center">
                     <Shuffle size={16} className="text-foreground/60" />
                     <Text variant="detail" weight="bold">フィルター</Text>
+                    {isOffline && <WifiOff size={14} className="text-amber-500 ml-1" />}
                 </Flex>
-                <FilterBuilder node={filterNode} onChange={onFilterNodeChange} readOnly={readOnly} />
+                {isOffline ? (
+                    <View className="p-3 bg-amber-500/5 border border-amber-500/10 rounded-lg">
+                        <Text variant="xs" color="secondary">
+                            オフライン中はフィルタを使用できません。すべての問題から出題されます。
+                        </Text>
+                    </View>
+                ) : (
+                    <FilterBuilder node={filterNode} onChange={onFilterNodeChange} readOnly={readOnly} />
+                )}
             </Stack>
 
             {/* ソート */}
@@ -245,6 +259,7 @@ export function QuizOptions({
                     <Flex gap="xs" align="center">
                         <ArrowDownUp size={16} className="text-foreground/60" />
                         <Text variant="detail" weight="bold">ソート</Text>
+                        {isOffline && <WifiOff size={14} className="text-amber-500 ml-1" />}
                     </Flex>
                     {(() => {
                         const isRandom = sorts.some(s => s.key === SortKey.RANDOM);
@@ -287,8 +302,9 @@ export function QuizOptions({
                                     color={isActive ? "primary" : undefined}
                                     size="sm"
                                     onClick={() => toggleSort(_key)}
-                                    disabled={readOnly}
+                                    disabled={readOnly || isOffline}
                                     className={isActive ? "pr-8" : ""}
+                                    title={isOffline ? "オフライン中は利用できません" : ""}
                                 >
                                     {label}
                                     {isActive && activeSort?.direction && (
@@ -307,6 +323,9 @@ export function QuizOptions({
                                     >
                                         <X size={12} />
                                     </View>
+                                )}
+                                {isActive && isOffline && !readOnly && (
+                                    <View className="absolute inset-0 bg-white/10 rounded-brand-md pointer-events-none" />
                                 )}
                             </Flex>
                         );

@@ -123,3 +123,7 @@ pub async fn update_user_profile(
 
     Ok(updated_user)
 }
+pub async fn delete_user(pool: &PgPool, user_id: Uuid) -> Result<()> {
+    crate::repositories::user::delete_user(pool, user_id).await?;
+    Ok(())
+}

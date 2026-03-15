@@ -8,7 +8,7 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { View } from '@/src/design/primitives/View';
-import { Send, AlertCircle } from 'lucide-react';
+import { Send, AlertCircle, Zap } from 'lucide-react';
 import { Question } from '@/src/entities/question';
 import { FourChoiceInput } from './inputs/FourChoiceInput';
 import { CharacterPoolInput } from './inputs/CharacterPoolInput';
@@ -24,58 +24,36 @@ interface QuizFormProps {
     dummyCharCount?: number;
 }
 
-export function QuizForm({ question, questionNumber, totalQuestions, onSubmitAnswer, preferredMode = 'text', dummyCharCount = AppConfig.quiz.default_dummy_char_count }: QuizFormProps) {
+export function QuizForm({ question, questionNumber, totalQuestions, onSubmitAnswer, preferredMode = 'fourChoice', dummyCharCount = AppConfig.quiz.default_dummy_char_count }: QuizFormProps) {
     const [answer, setAnswer] = useState('');
     const [activeMode, setActiveMode] = useState<string>(preferredMode);
     const [showFallback, setShowFallback] = useState(false);
 
-    // Mode fallback and Omakase logic
+    // Mode fallback logic
     useEffect(() => {
         // 1. Initial mode choice
-        let targetMode = (question.preferredMode && question.preferredMode !== 'default')
-            ? (question.preferredMode as string)
-            : preferredMode;
+        let targetMode = question.isSelectionOnly ? 'fourChoice' : preferredMode;
 
-        // 2. Omakase (Auto) Logic
-        if (targetMode === 'omakase') {
-            const rec = question.recommendedMode;
-            if (rec === 'fourChoice' || rec === 'choice') {
-                targetMode = 'fourChoice';
-            } else if (rec === 'text' || rec === 'recall') {
-                targetMode = 'text';
-            } else if (rec === 'chips') {
-                targetMode = 'chips';
-            } else {
-                // Default: Try chips first (will fallback to text if incompatible)
-                targetMode = 'chips';
-            }
-        }
-
-        // 3. Compatibility Checks & Fallbacks
+        // 2. Compatibility Checks & Fallbacks
 
         // 4-choice fallback: needs distractors
         if (targetMode === 'fourChoice' && (!question.distractors || question.distractors.length === 0)) {
+            // If it was forced by isSelectionOnly but has no distractors, this is a data error, 
+            // but we fallback to text to keep it playable.
             targetMode = 'text';
         }
 
-        // Chips fallback: needs compatible answer (has rubi or no kanji)
-        if (targetMode === 'chips') {
-            const isSimpleText = (text: string) => !/[一-龠々]/.test(text);
-            const hasRubis = question.answerRubis && question.answerRubis.length > 0;
-            const hasSimpleAnswers = question.correctAnswers && question.correctAnswers.some(isSimpleText);
-
-            // 漢字に読みがない場合はテキスト入力に切り替え
-            if (!hasRubis && !hasSimpleAnswers) {
-                targetMode = 'text';
-            }
+        // Chips fallback: needs chipAnswer
+        if (targetMode === 'chips' && !question.chipAnswer) {
+            targetMode = 'text';
         }
 
         if (targetMode !== activeMode) {
-            // If the user's PRECISE request (not omakase) failed, show fallback warning
-            const isManualFailure = preferredMode !== 'omakase' && targetMode !== preferredMode && question.preferredMode === 'default';
-            const isQuestionFailure = question.preferredMode !== 'default' && targetMode !== question.preferredMode;
+            // Show fallback warning if the mode was changed from what was requested (either via prop or isSelectionOnly)
+            const isForcedFailure = question.isSelectionOnly && targetMode !== 'fourChoice';
+            const isPreferenceFailure = !question.isSelectionOnly && targetMode !== preferredMode;
 
-            if (isManualFailure || isQuestionFailure) {
+            if (isForcedFailure || isPreferenceFailure) {
                 setShowFallback(true);
                 const timer = setTimeout(() => setShowFallback(false), 3000);
                 setActiveMode(targetMode);
@@ -96,28 +74,15 @@ export function QuizForm({ question, questionNumber, totalQuestions, onSubmitAns
     return (
         <Card className="border border-gray-300 w-full max-w-2xl mx-auto flex flex-col max-h-full overflow-hidden">
             <Stack gap="md" className="flex-1 overflow-y-auto p-4 sm:p-6">
-                {/* Progress */}
-                <Flex justify="between" align="center" className="shrink-0">
-                    <Text variant="xs" color="secondary" weight="bold">
-                        問題 {questionNumber} / {totalQuestions}
-                    </Text>
-                    <View
-                        className="h-2 flex-1 mx-4 bg-surface-muted rounded-full overflow-hidden"
-                    >
-                        <View
-                            className="h-full bg-brand-primary rounded-full transition-all duration-500"
-                            style={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
-                        />
-                    </View>
-                </Flex>
-
                 {/* Question */}
-                <View className="py-4 sm:py-8 text-center relative shrink-0">
+                <View className="py-2 text-center relative shrink-0">
                     {/* Fallback Notification */}
                     {showFallback && (
-                        <View className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-brand-primary text-white text-[10px] font-bold rounded-full shadow-lg flex items-center gap-2 animate-in slide-in-from-top-4 z-10">
-                            <AlertCircle size={12} />
-                            モード未対応のためテキスト入力に切り替えました
+                        <View className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-full shadow-xl flex items-center gap-2 animate-in slide-in-from-top-4 z-50 whitespace-nowrap border-2 border-white/20">
+                            <Zap size={14} fill="white" />
+                            {question.isSelectionOnly 
+                                ? "この問題は4択のみ有効です。4択でお答えください。" 
+                                : "モード未対応のため、最適な回答方式に切り替えました"}
                         </View>
                     )}
                     <Text variant="h3" weight="bold" className="leading-tight sm:leading-relaxed text-lg sm:text-2xl">
@@ -150,7 +115,7 @@ export function QuizForm({ question, questionNumber, totalQuestions, onSubmitAns
                             </View>
 
                             <CharacterPoolInput
-                                rubis={question.answerRubis}
+                                rubis={question.chipAnswer ? [question.chipAnswer] : []}
                                 answers={question.correctAnswers}
                                 currentInput={answer}
                                 decoyCount={dummyCharCount}

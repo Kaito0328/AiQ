@@ -104,6 +104,17 @@ impl MatchWsService {
                 Self::handle_update_match_config(&state.match_state, room_id, user_id, config)
                     .await;
             }
+            WsClientMessage::Ping => {
+                Self::handle_ping(&state.match_state, room_id, user_id).await;
+            }
+        }
+    }
+
+    async fn handle_ping(state: &SharedMatchState, room_id: Uuid, _user_id: Uuid) {
+        let rooms = state.read().await;
+        if let Some(room) = rooms.get(&room_id) {
+            let msg = WsServerMessage::Pong;
+            let _ = room.tx.send(serde_json::to_string(&msg).unwrap());
         }
     }
 
@@ -731,7 +742,8 @@ impl MatchWsService {
                 correct_answers: q.correct_answers,
                 answer_rubis: q.answer_rubis,
                 distractors: q.distractors,
-                recommended_mode: q.recommended_mode,
+                chip_answer: q.chip_answer,
+                is_selection_only: q.is_selection_only,
             })
             .collect();
 

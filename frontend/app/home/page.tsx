@@ -10,6 +10,7 @@ import { Text } from "@/src/design/baseComponents/Text";
 import { Button } from "@/src/design/baseComponents/Button";
 import { useRecentCollections } from "@/src/features/collections/hooks/useCollections";
 import { CollectionCard } from "@/src/features/collections/components/CollectionCard";
+import { AiUsageDisplay } from "@/src/features/collections/components/AiUsageDisplay";
 import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { useAuth } from "@/src/shared/auth/useAuth";
 import Link from "next/link";
@@ -28,11 +29,16 @@ import {
   History,
   Users,
   Swords,
+  WifiOff,
+  Cloud,
+  ChevronRight,
 } from "lucide-react";
 import { BattleJoinModal } from "@/src/features/battle/components/BattleJoinModal";
 import { useState } from "react";
 import { cn } from "@/src/shared/utils/cn";
 import { useRouter } from "next/navigation";
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '@/src/shared/db/db';
 import { createMatchRoom } from "@/src/features/battle/api";
 import { MatchActionCard } from "@/src/features/battle/components/MatchActionCard";
 
@@ -48,6 +54,13 @@ function HomeContent() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
   const currentTab = searchParams.get('tab') || 'dashboard';
+
+  const { collections, loading, isOffline } = useRecentCollections();
+
+  const pendingCount = useLiveQuery(
+    () => db.pendingActions.where('status').equals('pending').count(),
+    []
+  ) || 0;
 
   const handleCreateRoom = async () => {
     setIsCreatingRoom(true);
@@ -89,6 +102,37 @@ function HomeContent() {
           </Flex>
         </Card>
       )}
+      {isOffline && (
+        <View className="bg-amber-500/10 p-4 rounded-lg border border-amber-500/20 mb-4">
+          <Flex align="center" gap="sm">
+            <WifiOff size={18} className="text-amber-500" />
+            <Text variant="body" color="secondary">
+              オフラインモードです。キャッシュ済みのコンテンツのみを表示しています。
+            </Text>
+          </Flex>
+        </View>
+      )}
+
+      {pendingCount > 0 && (
+        <Card border="primary" bg="card" className="border-brand-primary/30 mb-4 overflow-hidden relative">
+          <Link href="/settings/sync">
+            <Flex justify="between" align="center" gap="md">
+              <Flex gap="md" align="center">
+                <View className="p-2 bg-brand-primary/10 rounded-full text-brand-primary">
+                  <Cloud size={20} />
+                </View>
+                <Stack gap="none">
+                  <Text weight="bold">未同期のアクションがあります</Text>
+                  <Text variant="xs" color="secondary">
+                    {pendingCount}件の操作が送信待ちです。タップして確認。
+                  </Text>
+                </Stack>
+              </Flex>
+              <ChevronRight size={20} className="text-brand-primary/50" />
+            </Flex>
+          </Link>
+        </Card>
+      )}
       <Stack gap="lg">
         <SectionHeader
           icon={LayoutGrid}
@@ -97,6 +141,12 @@ function HomeContent() {
         />
         <NavCards />
       </Stack>
+
+      {user && !isOffline && (
+        <Stack gap="lg">
+          <AiUsageDisplay />
+        </Stack>
+      )}
 
       {user && (
         <Stack gap="lg">
@@ -132,18 +182,19 @@ function HomeContent() {
       <Grid cols={{ sm: 1, md: 2 }} gap="md">
         <MatchActionCard
           title="ルームを作成"
-          description={user ? "ルームを新規作成して友達を招待します" : "ログインが必要です"}
+          description={isOffline ? "オフラインでは利用できません" : (user ? "ルームを新規作成して友達を招待します" : "ログインが必要です")}
           icon={<Plus size={32} />}
           onClick={handleCreateRoom}
           isLoading={isCreatingRoom}
-          disabled={!user}
+          disabled={!user || isOffline}
         />
 
         <MatchActionCard
           title="ルームに参加"
-          description="公開ルーム一覧から対戦に参加します"
+          description={isOffline ? "オフラインでは利用できません" : "公開ルーム一覧から対戦に参加します"}
           icon={<LogIn size={32} />}
           onClick={() => router.push('/battle/lobby')}
+          disabled={isOffline}
         />
       </Grid>
       <BattleJoinModal isOpen={showJoin} onClose={() => setShowJoin(false)} />

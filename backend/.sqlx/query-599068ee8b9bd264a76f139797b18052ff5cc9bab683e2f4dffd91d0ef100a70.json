@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT id, collection_id, question_text, correct_answers as \"correct_answers: Vec<String>\", answer_rubis as \"answer_rubis: Vec<String>\", distractors as \"distractors: Vec<String>\", preferred_mode, recommended_mode, description_text, created_at, updated_at\n            FROM questions\n            WHERE id = $1::uuid\n            ",
+  "query": "\n            SELECT id, collection_id, question_text, correct_answers as \"correct_answers: Vec<String>\", answer_rubis as \"answer_rubis: Vec<String>\", distractors as \"distractors: Vec<String>\", chip_answer, is_selection_only, description_text, created_at, updated_at\n            FROM questions\n            WHERE id = $1::uuid\n            ",
   "describe": {
     "columns": [
       {
@@ -35,13 +35,13 @@
       },
       {
         "ordinal": 6,
-        "name": "preferred_mode",
-        "type_info": "Varchar"
+        "name": "chip_answer",
+        "type_info": "Text"
       },
       {
         "ordinal": 7,
-        "name": "recommended_mode",
-        "type_info": "Varchar"
+        "name": "is_selection_only",
+        "type_info": "Bool"
       },
       {
         "ordinal": 8,
@@ -71,12 +71,12 @@
       false,
       false,
       false,
-      false,
+      true,
       false,
       true,
       false,
       false
     ]
   },
-  "hash": "3f30796b926420a3c946589608ec1db43d637ad69de44fe6d8362e936ec2bcaa"
+  "hash": "599068ee8b9bd264a76f139797b18052ff5cc9bab683e2f4dffd91d0ef100a70"
 }

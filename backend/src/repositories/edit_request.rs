@@ -13,6 +13,8 @@ impl EditRequestRepository {
         correct_answers: Vec<String>,
         answer_rubis: Vec<String>,
         distractors: Vec<String>,
+        chip_answer: Option<String>,
+        is_selection_only: bool,
         description_text: Option<String>,
         reason_id: i32,
     ) -> Result<EditRequest, sqlx::Error> {
@@ -25,6 +27,8 @@ impl EditRequestRepository {
             &correct_answers,
             &answer_rubis,
             &distractors,
+            chip_answer,
+            is_selection_only,
             description_text,
             reason_id
         )

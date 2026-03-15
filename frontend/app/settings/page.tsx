@@ -12,7 +12,7 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { updateProfile } from '@/src/features/auth/api';
+import { updateProfile, deleteAccount } from '@/src/features/auth/api';
 import { User as UserIcon, Lock, Camera, CheckCircle2, AlertCircle } from 'lucide-react';
 import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 import AppConfig from '@/src/app_config';
@@ -44,9 +44,9 @@ export default function SettingsPage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // 1MB limit check
-        if (file.size > 1024 * 1024) {
-            setMessage({ type: 'danger', text: '画像サイズは1MB以下にしてください' });
+        // 5MB limit check
+        if (file.size > 5 * 1024 * 1024) {
+            setMessage({ type: 'danger', text: '画像サイズは5MB以下にしてください' });
             return;
         }
 
@@ -91,7 +91,6 @@ export default function SettingsPage() {
         <View className="min-h-screen bg-surface-muted py-6 sm:py-12">
             <Container>
                 <Stack gap="lg" className="max-w-2xl mx-auto">
-                    <BackButton />
                     <Text variant="h2" weight="bold">設定</Text>
 
                     {/* Profile Section */}
@@ -152,7 +151,7 @@ export default function SettingsPage() {
                                                     </Button>
                                                 )}
                                             </Flex>
-                                            <Text variant="xs" color="secondary">JPEG, PNG（最大1MB）</Text>
+                                             <Text variant="xs" color="secondary">JPEG, PNG（最大5MB）</Text>
                                         </Stack>
                                     </Flex>
 
@@ -213,13 +212,37 @@ export default function SettingsPage() {
 
                     {/* Security Section */}
                     <View className="px-4">
-                        <button
-                            type="button"
-                            onClick={() => router.push('/settings/password')}
-                            className="text-brand-primary hover:underline font-medium text-sm transition-all"
-                        >
-                            パスワードを変更する
-                        </button>
+                        <Stack gap="md">
+                            <button
+                                type="button"
+                                onClick={() => router.push('/settings/password')}
+                                className="text-brand-primary hover:underline font-medium text-sm transition-all w-fit"
+                            >
+                                パスワードを変更する
+                            </button>
+                            <View className="pt-4 border-t border-brand-danger/20">
+                                <Button
+                                    variant="ghost"
+                                    color="danger"
+                                    size="sm"
+                                    onClick={async () => {
+                                        if (window.confirm('本当にアカウントを削除しますか？この操作は取り消せません。')) {
+                                            try {
+                                                await deleteAccount();
+                                                alert('アカウントを削除しました');
+                                                router.push('/');
+                                            } catch (err) {
+                                                logger.error('Failed to delete account', err);
+                                                alert('アカウントの削除に失敗しました');
+                                            }
+                                        }
+                                    }}
+                                    className="w-fit"
+                                >
+                                    アカウントを削除する
+                                </Button>
+                            </View>
+                        </Stack>
                     </View>
                 </Stack>
             </Container>

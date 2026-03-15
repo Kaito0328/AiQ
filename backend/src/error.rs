@@ -25,6 +25,7 @@ pub enum AppError {
     BadRequest(String),
     CannotFollowSelf,
     CannotUnfollowSelf,
+    AiLimitExceeded(String),
 }
 
 pub type Result<T> = std::result::Result<T, AppError>;
@@ -43,6 +44,7 @@ impl std::fmt::Display for AppError {
             AppError::BadRequest(msg) => write!(f, "BadRequest: {}", msg),
             AppError::CannotFollowSelf => write!(f, "CannotFollowSelf"),
             AppError::CannotUnfollowSelf => write!(f, "CannotUnfollowSelf"),
+            AppError::AiLimitExceeded(msg) => write!(f, "AiLimitExceeded: {}", msg),
         }
     }
 }
@@ -92,6 +94,11 @@ impl IntoResponse for AppError {
                 StatusCode::BAD_REQUEST,
                 "CANNOT_UNFOLLOW_SELF",
                 "自分自身のフォローを解除することはできません".to_string(),
+            ),
+            AppError::AiLimitExceeded(msg) => (
+                StatusCode::TOO_MANY_REQUESTS,
+                "AI_LIMIT_EXCEEDED",
+                msg,
             ),
         };
 

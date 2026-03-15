@@ -34,8 +34,10 @@ export function ResumeQuizSummary() {
                     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
                 );
                 setQuizzes(sorted);
-            } catch (err) {
-                logger.error('Failed to fetch resumable quizzes', err);
+            } catch (err: any) {
+                if (err?.status !== 503) {
+                    logger.error('Failed to fetch resumable quizzes', err);
+                }
             } finally {
                 setLoading(false);
             }

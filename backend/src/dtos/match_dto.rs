@@ -42,7 +42,8 @@ pub struct MatchQuestionDto {
     pub correct_answers: Vec<String>,
     pub answer_rubis: Vec<String>,
     pub distractors: Vec<String>,
-    pub recommended_mode: String,
+    pub chip_answer: Option<String>,
+    pub is_selection_only: bool,
 }
 
 impl From<MatchQuestion> for MatchQuestionDto {
@@ -54,7 +55,8 @@ impl From<MatchQuestion> for MatchQuestionDto {
             correct_answers: q.correct_answers,
             answer_rubis: q.answer_rubis,
             distractors: q.distractors,
-            recommended_mode: q.recommended_mode,
+            chip_answer: q.chip_answer,
+            is_selection_only: q.is_selection_only,
         }
     }
 }

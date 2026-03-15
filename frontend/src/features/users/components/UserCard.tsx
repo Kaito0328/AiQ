@@ -10,7 +10,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Badge } from '@/src/design/baseComponents/Badge';
 import { User } from '@/src/entities/user';
-import { UserCircle, Users } from 'lucide-react';
+import { UserCircle, Users, Library } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserCardProps {
@@ -60,10 +60,16 @@ export function UserCard({ user, onClick }: UserCardProps) {
                     </Stack>
                 </Flex>
 
-                {/* Follower count on the right */}
-                <Flex gap="xs" align="center" className="shrink-0 pl-2 opacity-60">
-                    <Users size={14} />
-                    <Text variant="xs" weight="bold">{user.followerCount || 0}</Text>
+                {/* Stats on the right */}
+                <Flex gap="sm" align="center" className="shrink-0 pl-2 opacity-60">
+                    <Flex gap="xs" align="center">
+                        <Users size={14} />
+                        <Text variant="xs" weight="bold">{user.followerCount || 0}</Text>
+                    </Flex>
+                    <Flex gap="xs" align="center">
+                        <Library size={14} />
+                        <Text variant="xs" weight="bold">{user.collectionCount || 0}</Text>
+                    </Flex>
                 </Flex>
             </Flex>
         </Card>

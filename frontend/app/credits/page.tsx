@@ -7,25 +7,14 @@ import { Stack } from '@/src/design/primitives/Stack';
 import { Container } from '@/src/design/primitives/Container';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
-import { ArrowLeft } from 'lucide-react';
 
 export default function CreditsPage() {
     const router = useRouter();
 
     return (
         <View bg="base" className="min-h-screen pb-20">
-            <Container className="pt-8 px-6">
+            <Container className="pt-4 px-6">
                 <Stack gap="xl">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => router.back()}
-                        className="w-fit -ml-2 text-secondary hover:text-foreground"
-                    >
-                        <ArrowLeft size={20} className="mr-2" />
-                        戻る
-                    </Button>
-
                     <Stack gap="md">
                         <Text variant="h1" weight="bold" color="primary">Credits</Text>
                         <Text variant="body" color="secondary">

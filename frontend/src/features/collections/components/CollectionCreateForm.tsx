@@ -1,6 +1,4 @@
 "use client"
-import { logger } from '@/src/shared/utils/logger';
-
 import React, { useState } from 'react';
 import { Card } from '@/src/design/baseComponents/Card';
 import { Stack } from '@/src/design/primitives/Stack';
@@ -10,7 +8,7 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
 import { X, FolderPlus } from 'lucide-react';
 import { Select } from '@/src/design/baseComponents/Select';
-import { createCollection } from '@/src/features/collections/api';
+import { useCollectionMutations } from '../hooks/useCollectionMutations';
 import { Collection } from '@/src/entities/collection';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { TextArea } from '@/src/design/baseComponents/TextArea';
@@ -25,9 +23,10 @@ interface CollectionCreateFormProps {
 }
 
 export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFormProps) {
+    const { createCollection } = useCollectionMutations();
     const [name, setName] = useState('');
     const [descriptionText, setDescriptionText] = useState('');
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
     const [defaultMode, setDefaultMode] = useState<any>('omakase');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -41,15 +40,14 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
         setLoading(true);
         setError(null);
         try {
-            const created = await createCollection({
+            const collection = await createCollection({
                 name: name.trim(),
                 descriptionText: descriptionText.trim() || undefined,
                 isOpen,
                 defaultMode
             });
-            onCreated(created);
+            onCreated(collection);
         } catch (err) {
-            logger.error('コレクション作成に失敗', err);
             setError('作成に失敗しました');
         } finally {
             setLoading(false);
@@ -60,21 +58,20 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
         <Modal
             isOpen={true}
             onClose={onCancel}
-            title="新しいコレクション"
+            title="新規コレクション作成"
             size="md"
-            centerTitle={true}
             footer={
-                <Flex gap="sm" justify="center">
-                    <Button variant="outline" type="button" onClick={onCancel}>
+                <Flex gap="sm" justify="end" className="w-full">
+                    <Button variant="ghost" type="button" onClick={onCancel}>
                         キャンセル
                     </Button>
-                    <Button variant="solid" color="primary" onClick={handleSubmit} disabled={loading}>
+                    <Button variant="solid" color="primary" type="button" onClick={handleSubmit} disabled={loading}>
                         {loading ? '作成中...' : '作成'}
                     </Button>
                 </Flex>
             }
         >
-            <form onSubmit={handleSubmit} className="py-4">
+            <form onSubmit={handleSubmit} className="py-2">
                 <Stack gap="lg">
                     <Stack gap="md">
                         <FormField label="コレクション名 *" required>
@@ -87,7 +84,7 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
                             />
                         </FormField>
 
-                        <FormField label="説明（任意）">
+                        <FormField label="説明">
                             <TextArea
                                 value={descriptionText}
                                 onChange={(e) => setDescriptionText(e.target.value)}
@@ -101,7 +98,10 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
                                 checked={isOpen}
                                 onChange={() => setIsOpen(!isOpen)}
                             />
-                            <Text variant="xs" weight="medium">公開する</Text>
+                            <Stack gap="none">
+                                <Text variant="xs" weight="bold">公開する</Text>
+                                <Text variant="xs" color="secondary" className="opacity-70">このコレクションを他のユーザーからも見えるようにします</Text>
+                            </Stack>
                         </View>
 
                         <FormField

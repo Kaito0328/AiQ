@@ -4,6 +4,7 @@ import React from 'react';
 import { Stack } from '@/src/design/primitives/Stack';
 import { View } from '@/src/design/primitives/View';
 import { Button } from '@/src/design/baseComponents/Button';
+import { Text } from '@/src/design/baseComponents/Text';
 import { useMemo } from 'react';
 
 export const shuffleArray = <T,>(array: T[]): T[] => {
@@ -36,10 +37,14 @@ export const FourChoiceInput = ({ correctAnswers, distractors, onInput, disabled
                         key={`${choice}-${i}`}
                         variant="outline"
                         disabled={disabled}
-                        className="h-16 text-lg font-bold bg-surface-base hover:bg-brand-primary/10 hover:border-brand-primary active:scale-95 transition-all rounded-xl shadow-sm border-2"
+                        className="h-16 text-lg font-bold bg-surface-base hover:bg-brand-primary/10 hover:border-brand-primary active:scale-95 transition-all rounded-xl shadow-sm border-2 overflow-hidden flex items-center justify-center"
                         onClick={() => onInput(choice)}
                     >
-                        {choice}
+                        <View className="w-full px-2 overflow-x-auto scrollbar-none">
+                            <Text variant="body" weight="bold" className="whitespace-nowrap text-center block w-full">
+                                {choice}
+                            </Text>
+                        </View>
                     </Button>
                 ))}
             </View>

@@ -35,8 +35,9 @@ import { ToastProvider } from "@/src/shared/contexts/ToastContext";
 import { AuthProvider } from "@/src/shared/auth/useAuth";
 import { AudioProvider } from "@/src/shared/contexts/AudioContext";
 import { Header } from "@/src/shared/components/Header/Header";
-
 import { BottomNav } from "@/src/shared/components/Navigation/BottomNav";
+import { NetworkStatusProvider } from "@/src/shared/contexts/NetworkStatusContext";
+import { PwaUpdater } from "@/src/shared/components/Navigation/PwaUpdater";
 
 export default function RootLayout({
   children,
@@ -49,17 +50,20 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <AuthProvider>
-            <AudioProvider>
-              <ToastProvider>
-                <Header />
-                <main className="pb-16 sm:pb-0">
-                  {children}
-                </main>
-                <BottomNav />
-              </ToastProvider>
-            </AudioProvider>
-          </AuthProvider>
+          <NetworkStatusProvider>
+            <AuthProvider>
+              <AudioProvider>
+                <ToastProvider>
+                  <PwaUpdater />
+                  <Header />
+                  <main className="pb-16 sm:pb-0">
+                    {children}
+                  </main>
+                  <BottomNav />
+                </ToastProvider>
+              </AudioProvider>
+            </AuthProvider>
+          </NetworkStatusProvider>
         </ThemeProvider>
       </body>
     </html>

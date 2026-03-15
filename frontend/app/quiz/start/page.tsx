@@ -10,7 +10,6 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { CollectionBrowser } from '@/src/features/collections/components/CollectionBrowser';
 import { FixedSelectionTray } from '@/src/features/collections/components/FixedSelectionTray';
 import { startCasualQuiz } from '@/src/features/quiz/api';
-import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 import { FilterCondition, SortCondition, QuizMode, FilterType, SortKey, FilterNode } from '@/src/entities/quiz';
 import { QuizOptionsModal } from '@/src/features/quiz/components/QuizOptionsModal';
 import { Flex } from '@/src/design/primitives/Flex';
@@ -18,18 +17,42 @@ import { Library, ChevronLeft } from 'lucide-react';
 import { Button } from '@/src/design/baseComponents/Button';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
 import { useAiqScorer } from '@/src/features/quiz/hooks/useAiqScorer';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+import { getCollection } from '@/src/features/collections/api';
+import { Spinner } from '@/src/design/baseComponents/Spinner';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
-export default function QuizStartPage() {
+function QuizStartContent() {
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const { isOnline } = useNetworkStatus();
     const [selectedCollections, setSelectedCollections] = useState<{ id: string, name: string, questionCount: number }[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Initial pre-selection from query params
+    useEffect(() => {
+        const preselectedId = searchParams.get('collectionId');
+        if (preselectedId && selectedCollections.length === 0) {
+            const fetchPreselected = async () => {
+                try {
+                    const c = await getCollection(preselectedId);
+                    setSelectedCollections([{ id: c.id, name: c.name, questionCount: c.questionCount || 0 }]);
+                    setLimit(c.questionCount || 30);
+                } catch (err) {
+                    logger.error('Failed to fetch preselected collection', err);
+                }
+            };
+            fetchPreselected();
+        }
+    }, [searchParams]);
 
     // Quiz options state
     const [filterNode, setFilterNode] = useState<FilterNode | undefined>(undefined);
     const [sorts, setSorts] = useState<SortCondition[]>([{ key: SortKey.RANDOM }]);
     const [limit, setLimit] = useState(30);
     const [isManualLimit, setIsManualLimit] = useState(false);
-    const [preferredMode, setPreferredMode] = useState<QuizMode>('text');
+    const [preferredMode, setPreferredMode] = useState<QuizMode>('fourChoice');
     const [dummyCharCount, setDummyCharCount] = useState(6);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -103,17 +126,7 @@ export default function QuizStartPage() {
 
     return (
         <View className="min-h-screen bg-surface-muted pb-72">
-            <Container className="pt-6 sm:pt-8 w-full max-w-4xl">
-                <Flex align="center" justify="between" className="mb-6">
-                    <Button
-                        variant="ghost"
-                        onClick={() => router.back()}
-                        className="gap-1 px-2 text-secondary hover:text-primary active:scale-95 transition-all"
-                    >
-                        <ChevronLeft size={20} strokeWidth={3} />
-                        <Text variant="body" weight="bold">戻る</Text>
-                    </Button>
-                </Flex>
+            <Container className="pt-4 w-full max-w-4xl">
 
                 <Stack gap="xl">
                     <Stack gap="lg" className="px-1">
@@ -184,6 +197,7 @@ export default function QuizStartPage() {
                 onDummyCountChange={setDummyCharCount}
                 onStart={handleStartQuiz}
                 hideLimit={true}
+                isOffline={!isOnline}
             />
 
             {/* セットに追加モーダル */}
@@ -198,5 +212,17 @@ export default function QuizStartPage() {
                 />
             )}
         </View>
+    );
+}
+
+export default function QuizStartPage() {
+    return (
+        <Suspense fallback={
+            <View className="min-h-screen bg-surface-muted py-20 flex justify-center">
+                <Spinner size="lg" />
+            </View>
+        }>
+            <QuizStartContent />
+        </Suspense>
     );
 }

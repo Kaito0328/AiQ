@@ -11,6 +11,7 @@ use crate::error::AppError;
 use crate::repositories::collection::CollectionRepository;
 use crate::repositories::question::QuestionRepository;
 use crate::repositories::ranking_quiz_repository::RankingQuizRepository;
+use crate::models::question::Question;
 
 pub struct RankingQuizService;
 
@@ -289,7 +290,7 @@ impl RankingQuizService {
         let mut next_question_dto = None;
         if !is_completed {
             let next_q_id = quiz.question_ids[next_index];
-            let next_q = QuestionRepository::find_by_id(pool, next_q_id)
+            let next_q: Question = QuestionRepository::find_by_id(pool, next_q_id)
                 .await
                 .map_err(|_| AppError::InternalServerError("Next question not found".into()))?;
 

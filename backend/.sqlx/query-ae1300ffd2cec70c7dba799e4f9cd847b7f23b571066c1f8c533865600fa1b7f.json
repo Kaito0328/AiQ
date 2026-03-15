@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        INSERT INTO user_ai_limits (user_id, units_used, last_reset_at)\n        VALUES ($1, $2, $3)\n        ON CONFLICT (user_id) DO UPDATE\n        SET units_used = EXCLUDED.units_used,\n            last_reset_at = EXCLUDED.last_reset_at\n        ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Float4",
+        "Timestamptz"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ae1300ffd2cec70c7dba799e4f9cd847b7f23b571066c1f8c533865600fa1b7f"
+}

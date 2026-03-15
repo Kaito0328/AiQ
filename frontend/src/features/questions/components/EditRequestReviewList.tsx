@@ -15,6 +15,8 @@ import { Check, X, ArrowRight, MessageSquare, AlertCircle, Trash2, Edit2, Save }
 import { getEditRequests, getMyPendingRequests, updateEditRequestStatus, updateQuestion } from '../api';
 import { useToast } from '@/src/shared/contexts/ToastContext';
 import { cn } from '@/src/shared/utils/cn';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { ApiError } from '@/src/shared/api/error';
 
 interface EditRequestReviewListProps {
     collectionId?: string;
@@ -36,6 +38,7 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
     const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
     const [editData, setEditData] = useState<any>(null);
     const { showToast } = useToast();
+    const { isOnline } = useNetworkStatus();
 
     const fetchRequests = async () => {
         setLoading(true);
@@ -52,7 +55,11 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
             setRequests(data);
         } catch (error) {
             logger.error('Failed to fetch requests', error);
-            showToast({ message: 'リクエストの取得に失敗しました', variant: 'danger' });
+            // オフライン（503/0）の場合はトーストを表示しない
+            const isOfflineError = error instanceof ApiError && (error.status === 503 || error.status === 0);
+            if (!isOfflineError) {
+                showToast({ message: 'リクエストの取得に失敗しました', variant: 'danger' });
+            }
         } finally {
             setLoading(false);
         }

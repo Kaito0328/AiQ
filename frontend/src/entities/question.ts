@@ -1,22 +1,23 @@
-import { PreferredQuestionMode, RecommendedMode } from './quiz';
+
 
 export interface Question {
     id: string;
     questionText: string;
     correctAnswers: string[];
     answerRubis?: string[];
+    chipAnswer?: string;
     distractors?: string[];
     descriptionText?: string;
     collectionId: string;
-    preferredMode: PreferredQuestionMode;
-    recommendedMode: RecommendedMode;
+    isSelectionOnly: boolean;
 }
 
 export interface QuestionInput {
     questionText: string;
     correctAnswers: string[];
     answerRubis?: string[];
+    chipAnswer?: string;
     distractors?: string[];
     descriptionText?: string;
-    preferredMode?: PreferredQuestionMode;
+    isSelectionOnly?: boolean;
 }

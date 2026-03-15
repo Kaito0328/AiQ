@@ -1,3 +1,4 @@
+pub mod ai_limit_service;
 pub mod ai_service;
 pub mod collection_service;
 pub mod collection_set_service;

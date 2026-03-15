@@ -86,14 +86,6 @@ export function AiSettingsModal({
                         />
                     </FormField>
 
-                    <FormField label="解答の形式">
-                        <Input
-                            value={answerFormat}
-                            onChange={(e) => setAnswerFormat(e.target.value)}
-                            placeholder="例: 英語、西暦、人物名など"
-                        />
-                    </FormField>
-
                     <FormField label="解説の言語">
                         <Select
                             value={explanationLanguage}

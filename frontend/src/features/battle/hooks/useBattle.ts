@@ -48,6 +48,12 @@ export function useBattle(roomId: string, joinToken: string) {
 
     const socketRef = useRef<WebSocket | null>(null);
     const questionsRef = useRef<MatchQuestion[]>([]);
+    const [serverOffset, setServerOffset] = useState(0);
+    const serverOffsetRef = useRef(0);
+    const [reconnectCount, setReconnectCount] = useState(0);
+    const [isReconnecting, setIsReconnecting] = useState(false);
+    const reconnectTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const heartbeatTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         questionsRef.current = questions;
@@ -59,10 +65,20 @@ export function useBattle(roomId: string, joinToken: string) {
         }
     }, []);
 
-    useEffect(() => {
+    const selfIdRef = useRef<string | null>(null);
+    const reconnectCountRef = useRef(0);
+
+    const connect = useCallback(() => {
         if (!roomId) return;
 
-        // Helper for UUID fallback (non-secure contexts)
+        // Cleanup existing
+        if (socketRef.current) {
+            socketRef.current.onclose = null; // Prevent retry loop on intentional close
+            socketRef.current.onerror = null;
+            socketRef.current.close();
+            socketRef.current = null;
+        }
+
         const generateUUID = () => {
             if (typeof crypto !== 'undefined' && crypto.randomUUID) {
                 return crypto.randomUUID();
@@ -74,7 +90,6 @@ export function useBattle(roomId: string, joinToken: string) {
             });
         };
 
-        // Guest ID logic: use localStorage for persistence
         let guestId = typeof window !== 'undefined' ? localStorage.getItem('guest_id') : null;
         if (!guestId) {
             guestId = generateUUID();
@@ -86,22 +101,49 @@ export function useBattle(roomId: string, joinToken: string) {
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         const guestQuery = !token ? `&guest_id=${guestId}` : '';
         const url = `${getMatchWsUrl(roomId)}?${token ? `token=${token}` : ''}${guestQuery}`;
+        
+        logger.log('[DEBUG] Connecting to WS:', url);
         const ws = new WebSocket(url);
         socketRef.current = ws;
 
         ws.onopen = () => {
+            logger.log('[DEBUG] WS Open');
             setIsConnected(true);
+            setIsReconnecting(false);
+            reconnectCountRef.current = 0;
+            setReconnectCount(0);
             setError(null);
-            sendMessage({ type: 'JoinRoom', room_id: roomId, join_token: joinToken });
+            
+            // Send JoinRoom via raw socket to avoid dependency on sendMessage in this scope
+            ws.send(JSON.stringify({ type: 'JoinRoom', room_id: roomId, join_token: joinToken }));
+
+            // Start heartbeat
+            if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+            heartbeatTimerRef.current = setInterval(() => {
+                if (ws.readyState === WebSocket.OPEN) {
+                    ws.send(JSON.stringify({ type: 'Ping' }));
+                }
+            }, 30000);
         };
 
         ws.onmessage = (event) => {
-            logger.log('[DEBUG] WS Message received:', event.data);
             try {
                 const data: WsServerMessage = JSON.parse(event.data);
-                logger.log('[DEBUG] Parsed WS Data:', data);
-
                 switch (data.type) {
+                    case 'Pong':
+                        // Heartbeat successful
+                        break;
+
+                    case 'Joined':
+                        setSelfId(data.user_id);
+                        selfIdRef.current = data.user_id;
+                        setSelfUsername(data.username);
+                        const offset = data.server_now_ms - Date.now();
+                        setServerOffset(offset);
+                        serverOffsetRef.current = offset;
+                        logger.log('[DEBUG] Server time offset calculated:', offset);
+                        break;
+
                     case 'RoomStateUpdate':
                         setRoom({
                             room_id: roomId,
@@ -120,37 +162,30 @@ export function useBattle(roomId: string, joinToken: string) {
                         if (data.dummy_char_count) setDummyCharCount(data.dummy_char_count);
 
                         if (data.active_buzzers) {
-                            setActiveBuzzers(data.active_buzzers);
+                            // Adjust for offset: client_time = server_time - offset
+                            const adjusted: Record<string, number> = {};
+                            Object.entries(data.active_buzzers).forEach(([k, v]) => {
+                                adjusted[k.toLowerCase()] = v - serverOffsetRef.current;
+                            });
+                            setActiveBuzzers(adjusted);
                         }
                         break;
 
                     case 'MatchStarted':
-                        // Set mode BEFORE questions so BattleQuiz's mode-fallback effect
-                        // sees the correct preferredMode when questions trigger re-renders
                         if (data.preferred_mode) setPreferredMode(data.preferred_mode);
                         if (data.dummy_char_count) setDummyCharCount(data.dummy_char_count);
                         setConfig(data.config);
-                        setRoom(prev => {
-                            if (prev) return {
-                                ...prev,
-                                status: 'Playing',
-                                preferred_mode: data.preferred_mode,
-                                dummy_char_count: data.dummy_char_count,
-                                config: data.config
-                            };
-                            return {
-                                room_id: roomId,
-                                host_id: '',
-                                status: 'Playing',
-                                players: [],
-                                visibility: 'private',
-                                preferred_mode: data.preferred_mode,
-                                dummy_char_count: data.dummy_char_count,
-                                buzzer_queue: [],
-                                config: data.config
-                            };
-                        });
-                        // Set questions last so child effects see the correct mode
+                        setRoom(prev => ({
+                            room_id: roomId,
+                            host_id: prev?.host_id || '',
+                            status: 'Playing' as RoomStatus,
+                            players: prev?.players || [],
+                            visibility: prev?.visibility || 'private',
+                            preferred_mode: data.preferred_mode,
+                            dummy_char_count: data.dummy_char_count,
+                            buzzer_queue: [],
+                            config: data.config
+                        }));
                         setQuestions(data.questions);
                         setCurrentQuestionIndex(-1);
                         setBuzzedUserId(null);
@@ -172,11 +207,11 @@ export function useBattle(roomId: string, joinToken: string) {
                         setSubmittedUserIds([]);
                         setIsPreparing(false);
                         setLastRoundResult(null);
-                        setExpiresAtMs(data.expires_at_ms);
+                        // Correct for offset
+                        setExpiresAtMs(data.expires_at_ms - serverOffsetRef.current);
                         setPartialAnswers({});
                         setActiveBuzzers({});
 
-                        // Initialize summary for this round
                         const q = questionsRef.current[data.question_index];
                         if (q) {
                             setRoundSummaries(prev => [
@@ -184,7 +219,7 @@ export function useBattle(roomId: string, joinToken: string) {
                                 {
                                     questionId: q.id,
                                     questionText: q.question_text,
-                                    correctAnswer: '', // Will be filled in RoundResult
+                                    correctAnswer: '',
                                     correctCount: 0
                                 }
                             ]);
@@ -233,15 +268,13 @@ export function useBattle(roomId: string, joinToken: string) {
                         if (!data.is_correct) {
                             setBuzzedUserId(null);
                         }
-                        // Local optimization: remove ourselves from active buzzers if we submitted
-                        if (data.user_id.toLowerCase() === selfId?.toLowerCase()) {
+                        if (data.user_id.toLowerCase() === selfIdRef.current?.toLowerCase()) {
                             setActiveBuzzers(prev => {
                                 const next = { ...prev };
                                 delete next[data.user_id.toLowerCase()];
                                 return next;
                             });
                         }
-                        // Clear answer result after 3 seconds
                         setTimeout(() => setAnswerResult(null), 3000);
                         break;
 
@@ -250,8 +283,6 @@ export function useBattle(roomId: string, joinToken: string) {
                             correct_answer: data.correct_answer,
                             scores: data.scores
                         });
-
-                        // Update correct answer for the current summary
                         setRoundSummaries(prev => {
                             const lastIndex = prev.length - 1;
                             if (lastIndex >= 0) {
@@ -275,11 +306,6 @@ export function useBattle(roomId: string, joinToken: string) {
                         setActiveBuzzers({});
                         break;
 
-                    case 'Joined':
-                        setSelfId(data.user_id);
-                        setSelfUsername(data.username);
-                        break;
-
                     case 'RoomConfigUpdated':
                         setMaxBuzzes(data.max_buzzes);
                         break;
@@ -289,7 +315,6 @@ export function useBattle(roomId: string, joinToken: string) {
                         break;
 
                     case 'Error':
-                        logger.error('[DEBUG] WS Error message:', data.message);
                         setError(data.message);
                         break;
                 }
@@ -304,12 +329,39 @@ export function useBattle(roomId: string, joinToken: string) {
 
         ws.onclose = () => {
             setIsConnected(false);
+            if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
+            
+            // Reconnection logic
+            if (reconnectCountRef.current < 5) {
+                setIsReconnecting(true);
+                const delay = Math.min(1000 * Math.pow(2, reconnectCountRef.current), 10000);
+                logger.log(`[DEBUG] WS Closed. Reconnecting in ${delay}ms... (Attempt ${reconnectCountRef.current + 1})`);
+                reconnectTimerRef.current = setTimeout(() => {
+                    reconnectCountRef.current += 1;
+                    setReconnectCount(reconnectCountRef.current);
+                    connect();
+                }, delay);
+            } else {
+                setError('サーバーとの接続が切れました。ホーム画面に戻ります。');
+                setTimeout(() => {
+                    window.location.href = '/home';
+                }, 3000);
+            }
         };
+    }, [roomId, joinToken]); // connect only depends on critical identifiers
 
+    useEffect(() => {
+        connect();
         return () => {
-            ws.close();
+            if (socketRef.current) {
+                socketRef.current.onclose = null;
+                socketRef.current.onerror = null;
+                socketRef.current.close();
+            }
+            if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+            if (heartbeatTimerRef.current) clearInterval(heartbeatTimerRef.current);
         };
-    }, [roomId, joinToken, sendMessage]);
+    }, [connect]);
 
     const startMatch = useCallback(() => sendMessage({ type: 'StartMatch' }), [sendMessage]);
     const buzz = useCallback(() => sendMessage({ type: 'Buzz' }), [sendMessage]);
@@ -361,6 +413,7 @@ export function useBattle(roomId: string, joinToken: string) {
         roundSummaries,
         error,
         isConnected,
+        isReconnecting,
         startMatch,
         buzz,
         submitAnswer,

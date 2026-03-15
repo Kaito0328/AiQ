@@ -28,8 +28,10 @@ export function EditRequestNotification() {
             try {
                 const data = await getMyPendingRequests();
                 setRequests(data);
-            } catch (err) {
-                logger.error('Failed to fetch pending requests', err);
+            } catch (err: any) {
+                if (err?.status !== 503) {
+                    logger.error('Failed to fetch pending requests', err);
+                }
             } finally {
                 setLoading(false);
             }

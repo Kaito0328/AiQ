@@ -2,22 +2,20 @@
 import { logger } from '@/src/shared/utils/logger';
 
 import React, { useState } from 'react';
-import { Card } from '@/src/design/baseComponents/Card';
-import { Stack } from '@/src/design/primitives/Stack';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Input } from '@/src/design/baseComponents/Input';
-import { X, Edit3 } from 'lucide-react';
 import { Select } from '@/src/design/baseComponents/Select';
-import { updateCollection } from '@/src/features/collections/api';
 import { Collection } from '@/src/entities/collection';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { TextArea } from '@/src/design/baseComponents/TextArea';
 import { FormField } from '@/src/design/baseComponents/FormField';
 import { View } from '@/src/design/primitives/View';
 import { Modal } from '@/src/design/baseComponents/Modal';
+import { Stack } from '@/src/design/primitives/Stack';
 import AppConfig from '@/src/app_config';
+import { useCollectionMutations } from '../hooks/useCollectionMutations';
 
 interface CollectionEditModalProps {
     collection: Collection;
@@ -26,6 +24,7 @@ interface CollectionEditModalProps {
 }
 
 export function CollectionEditModal({ collection, onUpdated, onCancel }: CollectionEditModalProps) {
+    const { updateCollection: doUpdateCollection } = useCollectionMutations();
     const [name, setName] = useState(collection.name);
     const [descriptionText, setDescriptionText] = useState(collection.descriptionText || '');
     const [isOpen, setIsOpen] = useState(collection.isOpen);
@@ -42,7 +41,7 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
         setLoading(true);
         setError(null);
         try {
-            const updated = await updateCollection(collection.id, {
+            const updated = await doUpdateCollection(collection.id, {
                 name: name.trim(),
                 descriptionText: descriptionText.trim() || undefined,
                 isOpen,

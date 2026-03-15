@@ -8,15 +8,29 @@ pub struct AiService;
 
 impl AiService {
     pub async fn generate_questions(
+        pool: &sqlx::PgPool,
+        user_id: uuid::Uuid,
         prompt: &str,
         count: i32,
         pdf_data: Option<&str>,
+        pdf_page_count: Option<i32>,
         question_format: Option<&str>,
         answer_format: Option<&str>,
         example_question: Option<&str>,
         example_answer: Option<&str>,
         explanation_language: Option<&str>,
     ) -> Result<Vec<GeneratedQuestion>, AppError> {
+        // ユニット消費の計算
+        let mut units = 1.0; // 基本コスト
+        units += count as f32 * 0.2; // 問題数コスト
+        if pdf_data.is_some() {
+            units += pdf_page_count.unwrap_or(1) as f32 * 0.5; // PDFページコスト
+        }
+
+        // 制限チェック
+        crate::services::ai_limit_service::AiLimitService::check_and_consume(pool, user_id, units)
+            .await?;
+
         let api_key = env::var("GEMINI_API_KEY")
             .map_err(|_| AppError::InternalServerError("GEMINI_API_KEY must be set".to_string()))?;
 
@@ -59,14 +73,16 @@ impl AiService {
            - 同義語、略称、表記揺れを【積極的に】複数含めてください（例：[\"沖縄\", \"沖縄県\"], [\"AI\", \"人工知能\"], [\"PC\", \"パーソナルコンピュータ\"]）。\n\
         3. \"answerRubis\": 読み（ひらがな/カタカナ）。\n\
            - 漢字を含む解答に対してのみ、その読みのかなを生成してください。\n\
-           - アルファベットや記号（例：CPU）が含まれる場合は、ユーザーの利便性のためにそれらをそのまま残しつつ、漢字部分のみを読みかなに変換した文字列にすることを推奨します（例：'CPU（ちゅうおうしょりそうち）' や 'ちゅうおうしょりそうち' など）。\n\
            - 漢字を一切含まない場合は空文字 (\"\")。\n\
-        4. \"distractors\": 誤答を正確に 3 つ。正解とは明確に異なる一貫した難易度のものを作成してください。\n\
-        5. \"recommendedMode\": クイズの性質に基づいた推奨解答形式（\"fourChoice\", \"chips\", \"text\"）。\n\
-           - \"fourChoice\": 解答が一意に定まりにくい問題（英文の穴埋め等）や、選択肢があることで正解が特定できるような一般的な問題に適しています。**解答の選択肢（distractors）が重要な場合はこれを優先してください。**\n\
-           - \"chips\": 穴埋め問題（短文）や、一文字ずつ選んで解答させるパズル形式に適しています。解答が固有名詞などの「想起」を主とする場合はこれまたは \"text\" を選んでください。\n\
-           - \"text\": 答えが一意に定まり、直接的な想起を促すべき問題（単語の翻訳、短い事実確認など）に適しています。\n\
-        6. \"descriptionText\": 解説。\n\
+        4. \"chipAnswer\": チップ形式（ボタン選択式）の解答に使用する短いラベル。\n\
+           - 漢字を一切含まず、数字、ひらがな、カタカナ、アルファベットのみで構成してください。\n\
+           - 解答（correctAnswers[0]）に漢字が含まれる場合、その漢字部分のみを読みかなに変換してください。漢字以外（数字、英単語、記号等）は【そのまま】維持してください。\n\
+           - 例：'3600秒' -> '360びょう'（または3600）, 'CPU（中央演算処理装置）' -> 'CPU', '織田信長' -> 'おだのぶなが'。\n\
+        5. \"distractors\": 誤答を正確に 3 つ。正解とは明確に異なる一貫した難易度のものを作成してください。\n\
+        6. \"isSelectionOnly\": 4択問題としてのみ成立するかどうかのフラグ（true/false）。\n\
+           - 「ふさわしくないものはどれ？」「誤っているものはどれ？」といった、選択肢がないと成立しない問題、あるいは選択肢から推測させるのが適切な問題の場合は true にしてください。\n\
+           - それ以外（直接的な想起が可能な固有名詞や事実など）は false にしてください。\n\
+        7. \"descriptionText\": 解説。\n\
            - [MANDATORY] Explanation Language が指定されている場合はその言語で作成してください。\n\
            - 指定がない場合は、学習テーマや問題文、正解の言語から最も適切な解説言語を推測してください（例：テーマが「英単語」で問題が英単語なら解説は日本語、テーマが「世界史」で内容が日本語なら解説も日本語、など）。\n\n\
         ## 徹底禁止事項:\n\
@@ -117,11 +133,12 @@ impl AiService {
                             "questionText": { "type": "string" },
                             "correctAnswers": { "type": "array", "items": { "type": "string" } },
                             "answerRubis": { "type": "array", "items": { "type": "string" } },
+                            "chipAnswer": { "type": "string" },
                             "distractors": { "type": "array", "items": { "type": "string" } },
-                            "recommendedMode": { "type": "string" },
+                            "isSelectionOnly": { "type": "boolean" },
                             "descriptionText": { "type": "string" }
                         },
-                        "required": ["questionText", "correctAnswers", "answerRubis", "distractors", "recommendedMode"]
+                        "required": ["questionText", "correctAnswers", "answerRubis", "chipAnswer", "distractors", "isSelectionOnly"]
                     }
                 }
             }
@@ -172,12 +189,21 @@ impl AiService {
     }
 
     pub async fn complete_questions(
+        pool: &sqlx::PgPool,
+        user_id: uuid::Uuid,
         items: Vec<crate::dtos::ai_dto::PartialQuestion>,
         complete_description: bool,
         question_format: Option<String>,
         answer_format: Option<String>,
         explanation_language: Option<String>,
     ) -> Result<Vec<GeneratedQuestion>, AppError> {
+        // ユニット消費の計算
+        let units = 1.0 + (items.len() as f32 * 0.1); // 補完は基本コスト + 件数*0.1
+
+        // 制限チェック
+        crate::services::ai_limit_service::AiLimitService::check_and_consume(pool, user_id, units)
+            .await?;
+
         let api_key = env::var("GEMINI_API_KEY")
             .map_err(|_| AppError::InternalServerError("GEMINI_API_KEY must be set".to_string()))?;
 
@@ -214,9 +240,9 @@ impl AiService {
             2. 指定された [MANDATORY] の形式を厳守してください。\n\
             3. {}\n\
             4. \"questionText\" を補完する場合、説明文やヒントを含めず、指定された形式（単語・文章等）のみを出力してください。\n\
-            5. \"correctAnswers\" を補完する場合、**最も一般的・標準的な解答を先頭に配置**し、複数のバリエーションを積極的に含めてください。\"answerRubis\"（漢字の読みかな。アルファベット等は保持推奨）と \"distractors\" (3つ) も必ず生成してください。\n\
-            6. \"recommendedMode\" (fourChoice, chips, text) も補完してください。\n\
-            6. 解説 (\"descriptionText\") を作成する場合、[MANDATORY] Explanation Language があればそれに従い、なければ学習テーマや問題・正解の言語から最適な解説言語を推測してください。\n\n\
+            5. \"correctAnswers\" を補完する場合、**最も一般的・標準的な解答を先頭に配置**し、複数のバリエーションを積極的に含めてください。\"answerRubis\"（漢字の読みかな）、\"chipAnswer\"（漢字を含まない短いラベル。数字や英語は保持）、\"distractors\" (3つ) も必ず生成してください。\n\
+            6. \"isSelectionOnly\" (boolean) も補完してください。「どれ？」を含む問題などは true にしてください。\n\
+            7. 解説 (\"descriptionText\") を作成する場合、[MANDATORY] Explanation Language があればそれに従い、なければ学習テーマや問題・正解の言語から最適な解説言語を推測してください。\n\n\
             ## 徹底禁止事項:\n\
             - 出力は生の JSON のみとしてください。",
             items_count,
@@ -254,11 +280,12 @@ impl AiService {
                             "questionText": { "type": "string" },
                             "correctAnswers": { "type": "array", "items": { "type": "string" } },
                             "answerRubis": { "type": "array", "items": { "type": "string" } },
+                            "chipAnswer": { "type": "string" },
                             "distractors": { "type": "array", "items": { "type": "string" } },
-                            "recommendedMode": { "type": "string" },
+                            "isSelectionOnly": { "type": "boolean" },
                             "descriptionText": { "type": "string" }
                         },
-                        "required": ["id", "questionText", "correctAnswers", "answerRubis", "distractors", "recommendedMode"]
+                        "required": ["id", "questionText", "correctAnswers", "answerRubis", "chipAnswer", "distractors", "isSelectionOnly"]
                     }
                 }
             }

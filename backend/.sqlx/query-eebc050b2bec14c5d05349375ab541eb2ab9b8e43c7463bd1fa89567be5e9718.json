@@ -1,0 +1,34 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT user_id, units_used, last_reset_at\n        FROM user_ai_limits\n        WHERE user_id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "units_used",
+        "type_info": "Float4"
+      },
+      {
+        "ordinal": 2,
+        "name": "last_reset_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "eebc050b2bec14c5d05349375ab541eb2ab9b8e43c7463bd1fa89567be5e9718"
+}

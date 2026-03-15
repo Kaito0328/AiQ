@@ -55,12 +55,20 @@ function FilterNodeEditor({ node, onChange, isRoot = false, readOnly = false }: 
                                 type="number"
                                 min={1}
                                 max={99}
-                                value={cond.value || 1}
+                                value={cond.value === undefined || cond.value === null ? '' : cond.value}
                                 readOnly={readOnly}
                                 onChange={(e) => {
                                     if (readOnly) return;
-                                    let val = parseInt(e.target.value);
-                                    if (isNaN(val) || val < 1) val = 1;
+                                    const valStr = e.target.value;
+                                    if (valStr === '') {
+                                        onChange({
+                                            operator: 'CONDITION',
+                                            condition: { type: FilterType.WRONG_COUNT, value: undefined as any }
+                                        });
+                                        return;
+                                    }
+                                    let val = parseInt(valStr);
+                                    if (isNaN(val)) return;
                                     onChange({
                                         operator: 'CONDITION',
                                         condition: { type: FilterType.WRONG_COUNT, value: val }

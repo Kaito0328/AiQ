@@ -1,5 +1,6 @@
 "use client"
 import { logger } from '@/src/shared/utils/logger';
+import { getApiBaseUrl } from '@/src/shared/api/apiClient';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 
@@ -41,7 +42,7 @@ export function useAiGeneration(collectionId: string) {
         setMessage('AI生成を開始しています...');
         setGeneratedQuestions([]);
 
-        const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        const apiBaseUrl = getApiBaseUrl();
         const wsBaseUrl = apiBaseUrl.replace(/^http/, 'ws');
         const token = localStorage.getItem('token');
 

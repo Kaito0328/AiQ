@@ -1,0 +1,21 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO edit_requests (question_id, requester_id, question_text, correct_answers, answer_rubis, distractors, chip_answer, is_selection_only, reason_id, status) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1, 'pending')",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "TextArray",
+        "TextArray",
+        "TextArray",
+        "Text",
+        "Bool"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "60e536e239a003ae6671392f31ea3f9dec6e85b30d377b0208aa9ca6d28964b9"
+}

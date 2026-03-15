@@ -12,8 +12,12 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { ChevronLeft, LayoutGrid, List } from 'lucide-react';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { getOfficialUser } from '@/src/features/auth/api';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
 import { cn } from '@/src/shared/utils/cn';
+import { ApiError } from '@/src/shared/api/error';
+import { getAllOfflineCollections, saveOfflineProfile } from '@/src/shared/api/offlineApi';
+import { db } from '@/src/shared/db/db';
 
 interface CollectionBrowserProps {
     selectedIds: string[];
@@ -31,6 +35,7 @@ export function CollectionBrowser({
     initialTab = 'my-collections'
 }: CollectionBrowserProps) {
     const { user } = useAuth();
+    const { isOnline } = useNetworkStatus();
     const [source, setSource] = useState<SourceType>(initialTab);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const [browsingUserId, setBrowsingUserId] = useState<string | null>(null);
@@ -38,17 +43,56 @@ export function CollectionBrowser({
     const [officialUserId, setOfficialUserId] = useState<string | null>(null);
     const [loadingOfficial, setLoadingOfficial] = useState(true);
 
+    const [cachedUsers, setCachedUsers] = useState<{ id: string, name: string }[]>([]);
+
     useEffect(() => {
+        const cachedOfficialId = localStorage.getItem('aiq_official_user_id');
+        if (cachedOfficialId) {
+            setOfficialUserId(cachedOfficialId);
+        }
+
+        if (!isOnline) {
+            setLoadingOfficial(false);
+            // オフライン時はキャッシュされたコレクションからユーザーを抽出
+            getAllOfflineCollections(false).then(async cols => {
+                const usersMap = new Map<string, string>();
+                cols.forEach(c => {
+                    if (c.userId && c.authorName) {
+                        usersMap.set(c.userId, c.authorName);
+                    }
+                });
+
+                // 公式ユーザーIDがまだ不明な場合、DBから探す
+                if (!cachedOfficialId) {
+                    const profiles = await db.profiles.toArray();
+                    const official = profiles.find(p => p.isOfficial);
+                    if (official) {
+                        setOfficialUserId(official.id);
+                        localStorage.setItem('aiq_official_user_id', official.id);
+                    }
+                }
+
+                const users = Array.from(usersMap.entries())
+                    .map(([id, name]) => ({ id, name }))
+                    .filter(u => u.id !== user?.id && u.id !== (cachedOfficialId || officialUserId));
+                setCachedUsers(users);
+            });
+            return;
+        }
         getOfficialUser()
             .then(u => {
                 setOfficialUserId(u.id);
+                localStorage.setItem('aiq_official_user_id', u.id);
+                saveOfflineProfile(u).catch(e => logger.error('Failed to cache official profile', e));
                 setLoadingOfficial(false);
             })
             .catch(err => {
-                logger.error('Failed to fetch official user', err);
+                if (!(err instanceof ApiError && err.status === 503)) {
+                    logger.error('Failed to fetch official user', err);
+                }
                 setLoadingOfficial(false);
             });
-    }, []);
+    }, [isOnline, user?.id, officialUserId]);
 
     const renderContent = () => {
         const commonProps = {
@@ -86,6 +130,32 @@ export function CollectionBrowser({
                     </View>
                 );
             case 'search':
+                if (!isOnline && !browsingUserId) {
+                    return cachedUsers.length === 0 ? (
+                        <View className="py-12 text-center">
+                            <Text color="secondary">キャッシュされた他ユーザーのデータがありません</Text>
+                        </View>
+                    ) : (
+                        <Stack gap="md">
+                            <Text variant="detail" color="secondary" weight="bold" className="px-1">キャッシュされたユーザー</Text>
+                            <Stack gap="sm">
+                                {cachedUsers.map(u => (
+                                    <Button
+                                        key={u.id}
+                                        variant="ghost"
+                                        className="justify-start h-auto py-3 px-4 bg-surface-base border border-surface-muted/30 rounded-xl hover:bg-surface-muted/10"
+                                        onClick={() => {
+                                            setBrowsingUserId(u.id);
+                                            setBrowsingUsername(u.name);
+                                        }}
+                                    >
+                                        <Text weight="bold">{u.name}</Text>
+                                    </Button>
+                                ))}
+                            </Stack>
+                        </Stack>
+                    );
+                }
                 return browsingUserId ? (
                     <Stack gap="md">
                         <Flex align="center" gap="sm" className="mb-2">

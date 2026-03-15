@@ -7,7 +7,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { View } from '@/src/design/primitives/View';
-import { CheckCircle, XCircle, ArrowRight, MessageSquare } from 'lucide-react';
+import { CheckCircle, XCircle, ArrowRight, MessageSquare, Edit3 } from 'lucide-react';
 import { cn } from '@/src/shared/utils/cn';
 import { Question } from '@/src/entities/question';
 import { EditRequestModal } from '@/src/features/questions/components/EditRequestModal';
@@ -39,44 +39,46 @@ export function Result({ isCorrect, correctAnswer, description, onNext, question
         <Stack gap="lg" className="w-full max-w-2xl mx-auto">
             <Card
                 className={cn(
-                    "border-2 transition-colors shadow-lg",
+                    "border-2 transition-colors shadow-lg overflow-hidden",
                     isCorrect ? "border-brand-success bg-brand-success/5" : "border-brand-danger bg-brand-danger/5"
                 )}
             >
-                <Stack gap="xl" align="center" className="py-8 px-6">
-                    {/* Question Text */}
-                    {question && (
-                        <Text variant="h3" weight="bold" className="text-center w-full leading-relaxed border-b border-surface-muted/50 pb-4">
-                            Q. {question.questionText}
-                        </Text>
-                    )}
-
-                    {/* Icon + Result */}
-                    <Flex gap="md" align="center" className="animate-in zoom-in fade-in duration-500">
+                <Stack gap="lg" className="p-4 sm:p-6">
+                    {/* Icon + Result at the top */}
+                    <Flex gap="sm" align="center" justify="center" className="animate-in zoom-in fade-in duration-500 py-2">
                         {isCorrect ? (
-                            <CheckCircle size={56} className="text-brand-success animate-in bounce-in duration-700" />
+                            <CheckCircle size={32} className="text-brand-success animate-in bounce-in duration-700" />
                         ) : (
-                            <XCircle size={56} className="text-brand-danger animate-in shake-in duration-500" />
+                            <XCircle size={32} className="text-brand-danger animate-in shake-in duration-500" />
                         )}
-                        <Text variant="h1" weight="bold" className={cn("text-5xl", isCorrect ? "text-brand-success" : "text-brand-danger")}>
+                        <Text variant="h3" weight="bold" className={cn("text-2xl", isCorrect ? "text-brand-success" : "text-brand-danger")}>
                             {isCorrect ? '正解！' : '不正解'}
                         </Text>
                     </Flex>
 
+                    {/* Question Text */}
+                    {question && (
+                        <View className="border-t border-surface-muted/50 pt-4">
+                            <Text variant="body" weight="bold" className="text-center w-full leading-relaxed">
+                                Q. {question.questionText}
+                            </Text>
+                        </View>
+                    )}
+
                     {/* Answers Comparison */}
-                    <Stack gap="md" className="w-full text-center bg-surface-base p-4 rounded-xl border border-surface-muted">
+                    <Stack gap="sm" className="w-full bg-surface-base p-4 rounded-xl border border-surface-muted">
                         <View>
                             <Text variant="xs" color="secondary" weight="bold">あなたの回答</Text>
-                            <Text variant="h3" weight="bold" className={cn("mt-1", isCorrect ? "text-brand-success" : "text-brand-danger")}>
+                            <Text variant="body" weight="bold" className={cn("mt-1", isCorrect ? "text-brand-success" : "text-brand-danger")}>
                                 {userAnswer || '(未回答)'}
                             </Text>
                         </View>
-                        <View className="pt-4 border-t border-surface-muted/50">
+                        <View className="pt-3 border-t border-surface-muted/50">
                             <Text variant="xs" color="secondary" weight="bold">
                                 {isCorrect ? '正解の候補' : '正解'}
                             </Text>
                             <Text
-                                variant={isCorrect ? 'detail' : 'h3'}
+                                variant="body"
                                 weight="bold"
                                 color="primary"
                                 className="mt-1"
@@ -90,31 +92,13 @@ export function Result({ isCorrect, correctAnswer, description, onNext, question
                     {fuzzyScore !== undefined && (
                         (() => {
                             const pct = Math.round(fuzzyScore * 100);
-                            const radius = 28;
-                            const circumference = 2 * Math.PI * radius;
-                            const dash = (pct / 100) * circumference;
                             const color = pct >= 80 ? '#22c55e' : pct >= 60 ? '#f59e0b' : '#ef4444';
                             return (
-                                <Flex direction="column" align="center" gap="xs" className="pt-4 border-t border-surface-muted/50">
-                                    <Text variant="xs" color="secondary" weight="bold">AI類似度</Text>
-                                    <View className="relative w-20 h-20">
-                                        <svg viewBox="0 0 64 64" className="w-full h-full -rotate-90">
-                                            <circle cx="32" cy="32" r={radius} fill="none" stroke="currentColor"
-                                                strokeWidth="6" className="text-surface-muted" />
-                                            <circle cx="32" cy="32" r={radius} fill="none"
-                                                stroke={color} strokeWidth="6"
-                                                strokeDasharray={`${dash} ${circumference}`}
-                                                strokeLinecap="round"
-                                                style={{ transition: 'stroke-dasharray 0.6s ease' }}
-                                            />
-                                        </svg>
-                                        <View className="absolute inset-0 flex items-center justify-center">
-                                            <Text variant="xs" weight="bold" style={{ color }}>{pct}%</Text>
-                                        </View>
+                                <Flex direction="column" align="center" gap="xs" className="pt-2">
+                                    <Text variant="xs" color="secondary" weight="bold">AI類似度: <span style={{ color }}>{pct}%</span></Text>
+                                    <View className="h-1.5 w-full max-w-[200px] bg-surface-muted rounded-full overflow-hidden">
+                                        <View className="h-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: color }} />
                                     </View>
-                                    <Text variant="xs" color="secondary">
-                                        {pct >= 80 ? '✅ 閾値クリア' : `閾値まで ${80 - pct}%`}
-                                    </Text>
                                 </Flex>
                             );
                         })()
@@ -122,42 +106,46 @@ export function Result({ isCorrect, correctAnswer, description, onNext, question
 
                     {/* Description */}
                     {description && (
-                        <View className="border-t border-surface-muted pt-6 w-full">
+                        <View className="border-t border-surface-muted/50 pt-4 w-full">
                             <Text variant="xs" color="secondary" weight="bold" className="mb-2 flex items-center gap-1">
                                 <MessageSquare size={14} />
                                 解説
                             </Text>
-                            <Text variant="detail" color="secondary" className="leading-relaxed bg-surface-muted/30 p-4 rounded-lg">
+                            <Text variant="detail" color="secondary" className="leading-relaxed opacity-90">
                                 {description}
                             </Text>
                         </View>
                     )}
 
-                    {/* Actions */}
-                    <Flex gap="md" className="w-full mt-4" wrap justify="center">
-                        {question && (
-                            <Button
-                                variant="ghost"
-                                color="primary"
-                                size="lg"
-                                onClick={handleEditClick}
-                                className="gap-2 flex-1 sm:flex-none border border-brand-primary/20"
-                            >
-                                <MessageSquare size={18} />
-                                {isOwner ? '問題を編集' : '修正提案'}
-                            </Button>
-                        )}
+                    {/* Next Button inside Card */}
+                    <View className="pt-4 mt-2">
                         <Button
                             variant="solid"
                             color="primary"
                             size="lg"
+                            className="w-full py-4 gap-2 shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all"
                             onClick={onNext}
-                            className="gap-2 flex-1 sm:flex-none shadow-md shadow-brand-primary/20"
                         >
-                            次の問題へ
-                            <ArrowRight size={18} />
+                            <span className="font-bold text-lg">次へ</span>
+                            <ArrowRight size={20} />
                         </Button>
-                    </Flex>
+                    </View>
+
+                    {/* Edit/Report button only at bottom */}
+                    {question && (
+                        <Flex justify="center" className="pt-2">
+                            <Button
+                                variant="ghost"
+                                color="secondary"
+                                size="sm"
+                                onClick={handleEditClick}
+                                className="gap-2 text-xs opacity-60 hover:opacity-100"
+                            >
+                                <Edit3 size={14} />
+                                {isOwner ? '修正' : '修正提案'}
+                            </Button>
+                        </Flex>
+                    )}
                 </Stack>
             </Card>
 

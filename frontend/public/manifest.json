@@ -1,20 +1,21 @@
 {
-    "name": "AiQ",
-    "short_name": "AiQ",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#ffffff",
-    "icons": [
-        {
-            "src": "/logo_black.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "/logo_black.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+  "name": "AiQ - AI Quiz Creator",
+  "short_name": "AiQ",
+  "description": "Create and play AI-powered quizzes offline.",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0369a1",
+  "icons": [
+    {
+      "src": "/logo_white.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo_white.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }

@@ -23,7 +23,7 @@ export function QuizOptionModal({ selectedCount, onStart, onCancel, loading }: Q
     const [filterNode, setFilterNode] = useState<FilterNode | undefined>(undefined);
     const [sorts, setSorts] = useState<SortCondition[]>([]);
     const [limit, setLimit] = useState(10);
-    const [preferredMode, setPreferredMode] = useState<QuizMode>('chips');
+    const [preferredMode, setPreferredMode] = useState<QuizMode>('fourChoice');
     const [dummyCharCount, setDummyCharCount] = useState<number>(6);
 
     return (

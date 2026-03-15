@@ -21,18 +21,18 @@ function NavCard({ label, iconName, onClick }: NavCardProps) {
   return (
     <Card
       onClick={onClick}
-      className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 active:scale-95 group"
+      className="cursor-pointer transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95 group h-full"
       bg="base"
       border="base"
     >
-      <View padding="xl">
-        <Stack gap="md" align="center">
-          <View bg="muted" padding="lg" rounded="full">
+      <View padding="md">
+        <Stack gap="sm" align="center">
+          <View bg="muted" padding="md" rounded="full">
             <Text color="primary" span>
-              <Icon name={iconName} size={32} />
+              <Icon name={iconName} size={24} />
             </Text>
           </View>
-          <Text weight="bold" align="center" className="transition-colors group-hover:text-brand-primary">
+          <Text variant="xs" weight="bold" align="center" className="transition-colors group-hover:text-brand-primary leading-tight">
             {label}
           </Text>
         </Stack>
@@ -66,7 +66,7 @@ export function NavCards() {
   };
 
   return (
-    <Grid cols={{ sm: 1, md: 2, lg: 4 }} gap="md">
+    <Grid cols={{ base: 2, lg: 4 }} gap="md">
       <NavCard
         label="クイズを始める"
         iconName="play"

@@ -28,6 +28,8 @@ impl CsvService {
         let mut question_idx = None;
         let mut answer_idx = None;
         let mut ruby_idx = None;
+        let mut chip_idx = None;
+        let mut select_idx = None;
         let mut dist_idx = None;
         let mut desc_idx = None;
 
@@ -36,6 +38,8 @@ impl CsvService {
                 "question" | "question_text" | "問題文" => question_idx = Some(i),
                 "answer" | "correct_answer" | "正解" => answer_idx = Some(i),
                 "ruby" | "rubi" | "answer_rubi" | "ルビ" => ruby_idx = Some(i),
+                "chip" | "chip_answer" | "チップ" => chip_idx = Some(i),
+                "selection_only" | "is_selection_only" | "4択専用" => select_idx = Some(i),
                 "distractors" | "distractor" | "choices" | "選択肢" => dist_idx = Some(i),
                 "description" | "description_text" | "解説" => desc_idx = Some(i),
                 _ => {}
@@ -74,6 +78,12 @@ impl CsvService {
                         .collect::<Vec<_>>()
                 });
 
+                let chip_answer = chip_idx.and_then(|idx| record.get(idx)).map(|s| s.trim().to_string()).filter(|s| !s.is_empty());
+                let is_selection_only = select_idx.and_then(|idx| record.get(idx)).map(|s| {
+                    let s = s.to_lowercase();
+                    s == "true" || s == "1" || s == "yes" || s == "はい"
+                });
+
                 let distractors = dist_idx.and_then(|idx| record.get(idx)).map(|s| {
                     s.split(';')
                         .map(|v| v.trim().to_string())
@@ -90,8 +100,8 @@ impl CsvService {
                         correct_answers: Some(correct_answers),
                         answer_rubis,
                         distractors,
-                        preferred_mode: None,
-                        recommended_mode: None,
+                        chip_answer,
+                        is_selection_only,
                         description_text: if description_text.as_deref() == Some("") {
                             None
                         } else {

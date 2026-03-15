@@ -12,6 +12,8 @@ pub struct EditRequest {
     pub correct_answers: Vec<String>,
     pub answer_rubis: Vec<String>,
     pub distractors: Vec<String>,
+    pub chip_answer: Option<String>,
+    pub is_selection_only: bool,
     pub description_text: Option<String>,
     pub reason_id: i32,
     pub status: String,
@@ -20,6 +22,8 @@ pub struct EditRequest {
     pub original_correct_answers: Vec<String>,
     pub original_answer_rubis: Vec<String>,
     pub original_distractors: Vec<String>,
+    pub original_chip_answer: Option<String>,
+    pub original_is_selection_only: bool,
     pub original_description_text: Option<String>,
     pub collection_name: String,
 }
