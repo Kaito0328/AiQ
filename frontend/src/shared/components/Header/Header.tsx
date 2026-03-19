@@ -146,7 +146,8 @@ export function Header() {
                                     onClick={() => setManualOffline(!isManualOffline)}
                                     className={cn(
                                         "p-2 h-auto transition-colors rounded-lg flex items-center justify-center relative",
-                                        isManualOffline ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20" : "text-foreground hover:bg-surface-muted"
+                                        isManualOffline ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20" : "text-foreground hover:bg-surface-muted",
+                                        !isOnline && !isManualOffline && "opacity-60 cursor-not-allowed"
                                     )}
                                     title={isManualOffline ? "オンラインに戻る" : "オフラインモードを試す"}
                                 >
@@ -164,7 +165,10 @@ export function Header() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={toggleMute}
-                                className="p-2 h-auto hover:bg-surface-muted transition-colors rounded-lg flex items-center justify-center text-foreground"
+                                className={cn(
+                                    "p-2 h-auto hover:bg-surface-muted transition-colors rounded-lg flex items-center justify-center text-foreground",
+                                    !isOnline && "opacity-80"
+                                )}
                                 title={isMuted ? "音声を再生" : "音声をミュート"}
                             >
                                 {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
