@@ -72,11 +72,7 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
                 if (cancelled) return;
                 setAllUsers(users);
 
-                // 取得したユーザーをDexie profilesにキャッシュ
-                const savedAt = Date.now();
-                for (const u of users) {
-                    await db.profiles.put({ ...u, savedAt });
-                }
+                // 全ユーザーの自動キャッシュを廃止（プロフィール閲覧時のみキャッシュされるようにする）
             } catch (err) {
                 // APIエラー時はキャッシュデータを維持
                 logger.error('ユーザー一覧の取得に失敗しました', err);

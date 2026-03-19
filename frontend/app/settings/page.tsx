@@ -220,6 +220,13 @@ export default function SettingsPage() {
                             >
                                 パスワードを変更する
                             </button>
+                            <button
+                                type="button"
+                                onClick={() => router.push('/settings/cache')}
+                                className="text-brand-primary hover:underline font-medium text-sm transition-all w-fit"
+                            >
+                                キャッシュを管理する (オフライン設定)
+                            </button>
                             <View className="pt-4 border-t border-brand-danger/20">
                                 <Button
                                     variant="ghost"
