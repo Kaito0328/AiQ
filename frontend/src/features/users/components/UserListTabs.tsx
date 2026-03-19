@@ -17,6 +17,7 @@ import { getFollowers, getFollowees } from '@/src/features/follow/api';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 import { db } from '@/src/shared/db/db';
+import { saveOfflineProfile } from '@/src/shared/api/offlineApi';
 import { User } from '@/src/entities/user';
 
 interface UserListTabsProps {
@@ -72,7 +73,8 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
                 if (cancelled) return;
                 setAllUsers(users);
 
-                // 全ユーザーの自動キャッシュを廃止（プロフィール閲覧時のみキャッシュされるようにする）
+                // オフラインで他ユーザープロフィールに入れるよう、一覧取得時にプロフィールを保存
+                Promise.allSettled(users.map((u) => saveOfflineProfile(u)));
             } catch (err) {
                 // APIエラー時はキャッシュデータを維持
                 logger.error('ユーザー一覧の取得に失敗しました', err);
@@ -101,6 +103,9 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
                 ]);
                 setFollowers(f1);
                 setFollowees(f2);
+
+                // フォロー一覧経由でもプロフィール詳細へ入れるようにキャッシュしておく
+                Promise.allSettled([...f1, ...f2].map((u) => saveOfflineProfile(u)));
             } catch (err) {
                 logger.error('フォローデータの取得に失敗しました', err);
             } finally {

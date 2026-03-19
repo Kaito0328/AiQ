@@ -10,6 +10,8 @@ import { Icon } from "@/src/design/baseComponents/Icon";
 import { useSafeRouter } from "@/src/shared/hooks/useSafeRouter";
 import { useAuth } from "@/src/shared/auth/useAuth";
 import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
+import { getOfficialUser } from "@/src/features/auth/api";
+import { db } from "@/src/shared/db/db";
 
 interface NavCardProps {
   label: string;
@@ -51,9 +53,58 @@ export function NavCards() {
   const router = useSafeRouter();
   const { user } = useAuth();
   const { isOnline } = useNetworkStatus();
+  const [officialUserId, setOfficialUserId] = React.useState<string | null>(
+    null,
+  );
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const loadOfficialUserId = async () => {
+      if (typeof window === "undefined") return;
+
+      const cachedId = localStorage.getItem("aiq_official_user_id");
+      if (cachedId) {
+        setOfficialUserId(cachedId);
+        return;
+      }
+
+      try {
+        const profiles = await db.profiles.toArray();
+        const official = profiles.find((p) => p.isOfficial);
+        if (official) {
+          if (!cancelled) setOfficialUserId(official.id);
+          localStorage.setItem("aiq_official_user_id", official.id);
+          return;
+        }
+      } catch {
+        // Ignore local DB errors and try API when online.
+      }
+
+      if (!isOnline) return;
+
+      try {
+        const official = await getOfficialUser();
+        if (cancelled) return;
+        setOfficialUserId(official.id);
+        localStorage.setItem("aiq_official_user_id", official.id);
+      } catch {
+        // Keep card functional by falling back to users list if lookup fails.
+      }
+    };
+
+    loadOfficialUserId();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOnline]);
 
   const handleNavigateToOfficial = () => {
-    router.push("/users/official");
+    if (officialUserId) {
+      router.push(`/users/${officialUserId}`);
+      return;
+    }
+    router.push("/users");
   };
 
   const handleNavigateToMe = () => {
@@ -76,13 +127,15 @@ export function NavCards() {
   React.useEffect(() => {
     if (!isOnline) return;
 
-    router.prefetch("/users/official");
+    if (officialUserId) {
+      router.prefetch(`/users/${officialUserId}`);
+    }
     router.prefetch("/users");
     router.prefetch("/quiz/start");
     if (user) {
       router.prefetch(`/users/${user.id}`);
     }
-  }, [router, user, isOnline]);
+  }, [router, user, isOnline, officialUserId]);
 
   return (
     <Grid cols={{ base: 2, lg: 4 }} gap="md">
