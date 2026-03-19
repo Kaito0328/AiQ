@@ -68,6 +68,12 @@ export function CollectionCard({
         setFavCount(collection.favoriteCount || 0);
     }, [collection.isFavorited, collection.favoriteCount]);
 
+    // オフライン遷移のためにルートをプリフェッチ
+    useEffect(() => {
+        router.prefetch(`/collections/${collection.id}`);
+        router.prefetch(`/collections/${collection.id}/ranking`);
+    }, [router, collection.id]);
+
 
 
     const handleDelete = (e: React.MouseEvent) => {

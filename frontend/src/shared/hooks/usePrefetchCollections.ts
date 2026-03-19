@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Collection } from '@/src/entities/collection';
 import { getCollectionQuestions } from '@/src/features/questions/api';
 import { syncCollectionToOffline } from '@/src/shared/api/offlineApi';
@@ -7,12 +8,14 @@ import { logger } from '@/src/shared/utils/logger';
 /**
  * ユーザーのコレクション一覧が取得済みの場合、
  * バックグラウンドで各コレクションの問題をプリフェッチしてDexieにキャッシュする。
+ * また、Next.jsのルートもプリフェッチしてオフライン遷移を可能にする。
  *
  * - ページ遷移時にAbortControllerでキャンセル
  * - 同時フェッチ数を制限（2並列）
  * - 優先度: ユーザーが既にアクセス中のリクエストを妨げない
  */
 export function usePrefetchCollections(collections: Collection[], enabled: boolean = true) {
+    const router = useRouter();
     const abortRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
@@ -35,12 +38,16 @@ export function usePrefetchCollections(collections: Collection[], enabled: boole
                     if (!col) return;
 
                     try {
+                        // ルートのプリフェッチ (シェルとJS/JSONをキャッシュ)
+                        router.prefetch(`/collections/${col.id}`);
+                        router.prefetch(`/collections/${col.id}/ranking`);
+
                         const questions = await getCollectionQuestions(col.id);
                         if (controller.signal.aborted) return;
                         // Dexie にキャッシュ (明示保存フラグはfalse)
                         await syncCollectionToOffline(col, questions, false);
                     } catch {
-                        // プリフェッチ失敗は無視（ユーザーに影響なし）
+                        // プリフェッチ失敗は無視
                     }
                 }
             };
