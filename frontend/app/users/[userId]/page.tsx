@@ -29,6 +29,7 @@ import { CollectionSetForm } from '@/src/features/collectionSets/components/Coll
 import { deleteSet } from '@/src/features/collectionSets/api';
 import { AddToSetModal } from '@/src/features/collectionSets/components/AddToSetModal';
 import { useUserCollections, useUserCollectionSets } from '@/src/features/collections/hooks/useCollections';
+import { usePrefetchCollections } from '@/src/shared/hooks/usePrefetchCollections';
 
 export default function UserPage() {
     const params = useParams();
@@ -39,6 +40,9 @@ export default function UserPage() {
     const { profile, loading: profileLoading, error: profileError, isOffline, refresh: refreshProfile } = useProfile(userId);
     const { collections, loading: collectionsLoading, refresh: refreshCollections } = useUserCollections(userId);
     const { collectionSets, loading: setsLoading, refresh: refreshSets } = useUserCollectionSets(userId);
+
+    // 空間的局所性: コレクション一覧取得後、バックグラウンドで問題をプリフェッチ
+    usePrefetchCollections(collections, !collectionsLoading && collections.length > 0);
 
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showCreateSetForm, setShowCreateSetForm] = useState(false);

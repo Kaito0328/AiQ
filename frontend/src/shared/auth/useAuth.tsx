@@ -3,7 +3,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { UserProfile } from '@/src/entities/user';
 import { getMe, logout as apiLogout } from '@/src/features/auth/api';
-import { ApiError, ErrorCodeType } from '@/src/shared/api/error';
+import { ApiError } from '@/src/shared/api/error';
+import { isOfflineError as isOfflineErr } from '@/src/shared/api/isOfflineError';
 import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
 interface AuthContextType {
@@ -37,59 +38,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const cachedUserStr = typeof window !== 'undefined' ? localStorage.getItem('aiq_user_profile') : null;
         const cachedUser = cachedUserStr ? JSON.parse(cachedUserStr) as UserProfile : null;
 
-        setLoading(true);
+        // キャッシュファースト: キャッシュがあれば即座に表示してからAPIを確認
+        if (cachedUser) {
+            setUser(cachedUser);
+            setLoading(false);
+        } else {
+            setLoading(true);
+        }
         setIsTechnicalError(false);
 
-        const maxRetries = 3;
-        let attempt = 0;
+        try {
+            const userData = await getMe();
+            setUser(userData);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('aiq_user_profile', JSON.stringify(userData));
+            }
+            setError(null);
+            setIsTechnicalError(false);
+            setLoading(false);
+            return;
+        } catch (err) {
+            const isManualOffline = typeof window !== 'undefined' && localStorage.getItem('aiq_manual_offline') === 'true';
+            const isAuthError = err instanceof ApiError && err.status === 401;
 
-        while (attempt < maxRetries) {
-            try {
-                const userData = await getMe();
-                setUser(userData);
+            if (isAuthError) {
+                setUser(null);
                 if (typeof window !== 'undefined') {
-                    localStorage.setItem('aiq_user_profile', JSON.stringify(userData));
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('aiq_user_profile');
                 }
                 setError(null);
-                setIsTechnicalError(false);
-                setLoading(false);
-                return;
-            } catch (err) {
-                attempt++;
-                const isManualOffline = typeof window !== 'undefined' && localStorage.getItem('aiq_manual_offline') === 'true';
-                const isAuthError = err instanceof ApiError && err.status === 401;
-                const isOfflineError = err instanceof ApiError && (err.status === 503 || err.status === 0);
-                const isRetryable = err instanceof ApiError && (err.status === 408 || err.status >= 500);
-                const isTimeout = err instanceof ApiError && err.errorCode.code === ErrorCodeType.TIMEOUT;
-
-                if (isAuthError) {
-                    setUser(null);
-                    if (typeof window !== 'undefined') {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('aiq_user_profile');
-                    }
+            } else if (isManualOffline || isOfflineErr(err)) {
+                // オフライン時はキャッシュがあればそれを使用し、エラーは表示しない
+                if (cachedUser) {
+                    setUser(cachedUser);
                     setError(null);
-                    break;
-                } else if (isManualOffline || isOfflineError) {
-                    // オフライン時はキャッシュがあればそれを使用し、エラーは表示しない
-                    if (cachedUser) {
-                        setUser(cachedUser);
-                        setError(null);
-                    } else {
-                        setError('オフラインです。データを利用するには一度オンラインで読み込む必要があります。');
-                    }
-                    setIsTechnicalError(false);
-                    break;
-                } else if ((isRetryable || isTimeout) && attempt < maxRetries) {
-                    const delay = Math.pow(2, attempt - 1) * 1000;
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    continue;
                 } else {
+                    setError('オフラインです。データを利用するには一度オンラインで読み込む必要があります。');
+                }
+                setIsTechnicalError(false);
+            } else {
+                // キャッシュがない場合のみエラーを表示
+                if (!cachedUser) {
                     setError(err instanceof Error ? err.message : 'Failed to fetch user');
-                    if (isRetryable || isTimeout) {
-                        setIsTechnicalError(true);
-                    }
-                    break;
+                    setIsTechnicalError(true);
                 }
             }
         }

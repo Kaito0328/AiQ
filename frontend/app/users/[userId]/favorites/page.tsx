@@ -15,6 +15,9 @@ import { CollectionCard } from '@/src/features/collections/components/Collection
 import { Heart, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/src/design/baseComponents/Button';
 import { Flex } from '@/src/design/primitives/Flex';
+import { getAllOfflineCollections } from '@/src/shared/api/offlineApi';
+import { isOfflineError } from '@/src/shared/api/isOfflineError';
+import { db } from '@/src/shared/db/db';
 
 export default function FavoritesPage() {
     const params = useParams();
@@ -22,20 +25,54 @@ export default function FavoritesPage() {
 
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isStale, setIsStale] = useState(false);
     const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
+        let cancelled = false;
+
         const fetchFavorites = async () => {
+            // Step 1: キャッシュファースト — お気に入りフラグ付きのコレクションを表示
+            try {
+                const cached = await getAllOfflineCollections(false);
+                const favorites = cached.filter(c => c.isFavorited);
+                if (favorites.length > 0 && !cancelled) {
+                    setCollections(favorites);
+                    setIsStale(true);
+                    setLoading(false);
+                }
+            } catch {
+                // キャッシュ読み取りエラーは無視
+            }
+
+            // Step 2: APIからリバリデーション
             try {
                 const data = await listFavorites(userId);
+                if (cancelled) return;
                 setCollections(data);
+                setIsStale(false);
+
+                // キャッシュ更新
+                const savedAt = Date.now();
+                for (const col of data) {
+                    const existing = await db.collections.get(col.id);
+                    await db.collections.put({
+                        ...col,
+                        savedAt,
+                        isExplicitlySaved: existing?.isExplicitlySaved || false,
+                    });
+                }
             } catch (err) {
-                logger.error('お気に入りの取得に失敗しました', err);
+                if (!isOfflineError(err)) {
+                    logger.error('お気に入りの取得に失敗しました', err);
+                }
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
         fetchFavorites();
+
+        return () => { cancelled = true; };
     }, [userId]);
 
     if (loading) {

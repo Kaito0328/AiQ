@@ -1,122 +1,108 @@
-import { useState, useEffect } from 'react';
 import { Collection, CollectionSet } from '@/src/entities/collection';
 import { getRecentCollections, getUserCollections, getFolloweeCollections, getUserCollectionSets } from '../api';
-import { ApiError } from '@/src/shared/api/error';
 import { getAllOfflineCollections } from '@/src/shared/api/offlineApi';
 import { mergePendingCollections } from '@/src/shared/api/mergePendingActions';
+import { useSWRData } from '@/src/shared/hooks/useSWRData';
+import { db } from '@/src/shared/db/db';
+import { isOfflineError } from '@/src/shared/api/isOfflineError';
+import { useState, useEffect } from 'react';
+import { ApiError } from '@/src/shared/api/error';
+
+/**
+ * コレクション一覧をDexieに自動キャッシュするヘルパー
+ */
+async function cacheCollections(collections: Collection[]) {
+    const savedAt = Date.now();
+    for (const col of collections) {
+        const existing = await db.collections.get(col.id);
+        await db.collections.put({
+            ...col,
+            savedAt,
+            isExplicitlySaved: existing?.isExplicitlySaved || false,
+        });
+    }
+}
 
 export function useRecentCollections(enabled: boolean = true) {
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isOffline, setIsOffline] = useState(false);
-
-    const refresh = async () => {
-        setLoading(true);
-        setIsOffline(false);
-        try {
+    const result = useSWRData<Collection[]>({
+        cacheReader: async () => {
+            const cached = await getAllOfflineCollections(false);
+            if (cached.length === 0) return null;
+            return await mergePendingCollections(cached);
+        },
+        fetcher: async () => {
             const data = await getRecentCollections();
-            const merged = await mergePendingCollections(data);
-            setCollections(merged);
-            setError(null);
-        } catch (err) {
-            if (err instanceof ApiError && (err.status === 503 || err.status === 0)) {
-                setIsOffline(true);
-                // 近況の代わりにオフライン保存済みを表示
-                const offline = await getAllOfflineCollections();
-                const merged = await mergePendingCollections(offline);
-                setCollections(merged);
-            } else {
-                setError(err instanceof Error ? err.message : 'Failed to fetch collections');
-            }
-        } finally {
-            setLoading(false);
-        }
+            return await mergePendingCollections(data);
+        },
+        cacheWriter: cacheCollections,
+        enabled,
+    });
+
+    return {
+        collections: result.data || [],
+        loading: result.loading,
+        error: result.error,
+        isOffline: result.isOffline,
+        isStale: result.isStale,
+        isRevalidating: result.isRevalidating,
+        refresh: result.refresh,
     };
-
-    useEffect(() => {
-        if (enabled) {
-            refresh();
-        }
-    }, [enabled]);
-
-    return { collections, loading, error, isOffline, refresh };
 }
 
 export function useUserCollections(userId: string | undefined) {
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isOffline, setIsOffline] = useState(false);
-
-    const refresh = async () => {
-        if (!userId) return;
-        setLoading(true);
-        setIsOffline(false);
-        try {
+    const result = useSWRData<Collection[]>({
+        cacheReader: async () => {
+            if (!userId) return null;
+            const allOffline = await getAllOfflineCollections(false);
+            const filtered = allOffline.filter(c => c.userId === userId);
+            if (filtered.length === 0) return null;
+            return await mergePendingCollections(filtered);
+        },
+        fetcher: async () => {
+            if (!userId) return [];
             const data = await getUserCollections(userId);
-            const merged = await mergePendingCollections(data);
-            setCollections(merged);
-            setError(null);
-        } catch (err) {
-            if (err instanceof ApiError && (err.status === 503 || err.status === 0)) {
-                setIsOffline(true);
-                // オフライン保存済みから自分のものを抽出 (自動キャッシュも含める)
-                const allOffline = await getAllOfflineCollections(false);
-                const filtered = allOffline.filter(c => c.userId === userId);
-                const merged = await mergePendingCollections(filtered);
-                setCollections(merged);
-            } else {
-                setError(err instanceof Error ? err.message : 'Failed to fetch user collections');
-            }
-        } finally {
-            setLoading(false);
-        }
+            return await mergePendingCollections(data);
+        },
+        cacheWriter: cacheCollections,
+        enabled: !!userId,
+        deps: [userId],
+    });
+
+    return {
+        collections: result.data || [],
+        loading: result.loading,
+        error: result.error,
+        isOffline: result.isOffline,
+        isStale: result.isStale,
+        isRevalidating: result.isRevalidating,
+        refresh: result.refresh,
     };
-
-    useEffect(() => {
-        refresh();
-    }, [userId]);
-
-    return { collections, loading, error, isOffline, refresh };
 }
 
 export function useFolloweeCollections(enabled: boolean = true) {
-    const [collections, setCollections] = useState<Collection[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [isOffline, setIsOffline] = useState(false);
-
-    const refresh = async () => {
-        setLoading(true);
-        setIsOffline(false);
-        try {
+    const result = useSWRData<Collection[]>({
+        cacheReader: async () => {
+            const cached = await getAllOfflineCollections(false);
+            if (cached.length === 0) return null;
+            return await mergePendingCollections(cached);
+        },
+        fetcher: async () => {
             const data = await getFolloweeCollections();
-            const merged = await mergePendingCollections(data);
-            setCollections(merged);
-            setError(null);
-        } catch (err) {
-            if (err instanceof ApiError && (err.status === 503 || err.status === 0)) {
-                setIsOffline(true);
-                // タイムライン用にオフラインデータを取得
-                const offline = await getAllOfflineCollections();
-                const merged = await mergePendingCollections(offline);
-                setCollections(merged);
-            } else {
-                setError(err instanceof Error ? err.message : 'Failed to fetch followee collections');
-            }
-        } finally {
-            setLoading(false);
-        }
+            return await mergePendingCollections(data);
+        },
+        cacheWriter: cacheCollections,
+        enabled,
+    });
+
+    return {
+        collections: result.data || [],
+        loading: result.loading,
+        error: result.error,
+        isOffline: result.isOffline,
+        isStale: result.isStale,
+        isRevalidating: result.isRevalidating,
+        refresh: result.refresh,
     };
-
-    useEffect(() => {
-        if (enabled) {
-            refresh();
-        }
-    }, [enabled]);
-
-    return { collections, loading, error, isOffline, refresh };
 }
 
 export function useUserCollectionSets(userId: string | undefined) {
@@ -134,7 +120,7 @@ export function useUserCollectionSets(userId: string | undefined) {
             setCollectionSets(data);
             setError(null);
         } catch (err) {
-            if (err instanceof ApiError && (err.status === 503 || err.status === 0)) {
+            if (isOfflineError(err)) {
                 setIsOffline(true);
             } else {
                 setError(err instanceof Error ? err.message : 'Failed to fetch collection sets');
