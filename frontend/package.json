@@ -6,7 +6,7 @@
     "predev": "cp ../app_config.json ./src/app_config.json",
     "dev": "next dev",
     "prebuild": "cp ../app_config.json ./src/app_config.json",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },

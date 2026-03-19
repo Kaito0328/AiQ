@@ -41,6 +41,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/src/shared/db/db';
 import { createMatchRoom } from "@/src/features/battle/api";
 import { MatchActionCard } from "@/src/features/battle/components/MatchActionCard";
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
 import { Tabs, TabItem } from '@/src/design/baseComponents/Tabs';
 import { useSearchParams } from 'next/navigation';
@@ -54,6 +55,7 @@ function HomeContent() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
   const currentTab = searchParams.get('tab') || 'dashboard';
+  const { isOnline } = useNetworkStatus();
 
   const { collections, loading, isOffline } = useRecentCollections();
 
@@ -107,7 +109,9 @@ function HomeContent() {
           <Flex align="center" gap="sm">
             <WifiOff size={18} className="text-amber-500" />
             <Text variant="body" color="secondary">
-              オフラインモードです。キャッシュ済みのコンテンツのみを表示しています。
+              {isOnline
+                ? 'サーバーに接続できないため、キャッシュ済みのコンテンツを表示しています。'
+                : 'オフラインモードです。キャッシュ済みのコンテンツのみを表示しています。'}
             </Text>
           </Flex>
         </View>

@@ -17,7 +17,7 @@ interface SWROptions<T> {
      */
     displayThreshold?: number;
     /** 依存配列 — 変更されたら再フェッチ */
-    deps?: any[];
+    deps?: unknown[];
 }
 
 interface SWRResult<T> {
@@ -99,10 +99,10 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
                                 setData(cached);
                                 setIsStale(true);
                             } else {
-                                setError('オフラインです。データを利用するには一度オンラインで読み込む必要があります。');
+                                setError('ネットワークまたはサーバーに接続できません。データを利用するには一度正常接続で読み込む必要があります。');
                             }
-                        } catch (e) {
-                            setError('オフラインです。');
+                        } catch {
+                            setError('ネットワークまたはサーバーに接続できません。');
                         }
                     }
                 } else {
@@ -130,8 +130,8 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
                             setLoading(false);
                             hasShownCache = true;
                         }
-                    } catch (e) {
-                        logger.error('SWR: キャッシュ読み込みエラー', e);
+                    } catch (err) {
+                        logger.error('SWR: キャッシュ読み込みエラー', err);
                     }
                 }
             }, displayThreshold);
@@ -147,7 +147,7 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
                 } else {
                     // キャッシュもない場合は即座にロード中を解除しオフラインエラー
                     setLoading(false);
-                    setError('オフラインかつキャッシュがないため、データを表示できません。');
+                    setError('ネットワークまたはサーバーに接続できず、キャッシュもないためデータを表示できません。');
                     setIsOffline(true);
                 }
             } catch (e) {
