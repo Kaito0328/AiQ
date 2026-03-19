@@ -36,7 +36,7 @@ import {
 import { BattleJoinModal } from "@/src/features/battle/components/BattleJoinModal";
 import { useState } from "react";
 import { cn } from "@/src/shared/utils/cn";
-import { useRouter } from "next/navigation";
+import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/src/shared/db/db';
 import { createMatchRoom } from "@/src/features/battle/api";
@@ -47,7 +47,7 @@ import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 
 function HomeContent() {
-  const router = useRouter();
+  const router = useSafeRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const [showJoin, setShowJoin] = useState(false);

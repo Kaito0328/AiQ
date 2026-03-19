@@ -7,7 +7,7 @@ import { Stack } from "@/src/design/primitives/Stack";
 import { Text } from "@/src/design/baseComponents/Text";
 import { View } from "@/src/design/primitives/View";
 import { Icon } from "@/src/design/baseComponents/Icon";
-import { useRouter } from "next/navigation";
+import { useSafeRouter } from "@/src/shared/hooks/useSafeRouter";
 import { useAuth } from "@/src/shared/auth/useAuth";
 
 interface NavCardProps {
@@ -42,7 +42,7 @@ function NavCard({ label, iconName, onClick }: NavCardProps) {
 }
 
 export function NavCards() {
-  const router = useRouter();
+  const router = useSafeRouter();
   const { user } = useAuth();
 
   const handleNavigateToOfficial = () => {
