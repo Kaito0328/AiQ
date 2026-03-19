@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from 'react';
-import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
+import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
@@ -12,6 +12,7 @@ import { cn } from '@/src/shared/utils/cn';
 function BottomNavContent() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
+    const router = useSafeRouter();
 
     // Determine if we should hide the nav completely
     // Hide on active quiz play, battle play, or landing pages where it's not needed
@@ -72,9 +73,9 @@ function BottomNavContent() {
                     const active = isCurrentRoute(item.route);
                     const Icon = item.icon;
                     return (
-                        <Link
+                        <button
                             key={item.label}
-                            href={item.route}
+                            onClick={() => router.push(item.route)}
                             className={cn(
                                 "flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors",
                                 active ? "text-brand-primary" : "text-secondary hover:text-foreground"
@@ -84,7 +85,7 @@ function BottomNavContent() {
                             <Text variant="xs" weight="bold" color={active ? "primary" : "secondary"}>
                                 {item.label}
                             </Text>
-                        </Link>
+                        </button>
                     );
                 })}
             </Flex>

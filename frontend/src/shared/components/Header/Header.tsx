@@ -71,7 +71,7 @@ export function Header() {
                 className={cn(
                     "sticky top-0 z-50 border-b-2 border-brand-primary/30 h-16 flex items-center shadow-sm backdrop-blur-md transition-all duration-500",
                     (isGameRoute || isBattlePlaying) ? "hidden" : "flex",
-                    !isOnline && "grayscale-[0.5] opacity-95 blur-[0.2px]"
+                    !isOnline && "grayscale-[0.3] opacity-95"
                 )}
             >
                 <Container className="relative h-full px-4">
@@ -129,6 +129,11 @@ export function Header() {
                                     className="h-7 w-7 transition-transform group-hover:scale-110"
                                 />
                                 <Text variant="h4" weight="bold" color="primary" className="tracking-tight whitespace-nowrap">AiQ</Text>
+                                {!isOnline && mounted && (
+                                    <Text variant="xs" className="px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold ml-1 animate-pulse-subtle">
+                                        OFFLINE
+                                    </Text>
+                                )}
                             </Link>
                         </div>
 
