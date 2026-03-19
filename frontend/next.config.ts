@@ -6,6 +6,9 @@ const withPWA = withPWAInit({
   dest: "public",
   disable: process.env.NODE_ENV === "development",
   register: true,
+  // NOTE: Turbopack build currently doesn't emit next-pwa artifacts reliably in this setup.
+  // Keep SW generation deterministic with webpack builds and avoid external custom-worker imports.
+  customWorkerSrc: "worker-disabled",
   cacheOnFrontEndNav: true, // オフライン遷移を安定化
   extendDefaultRuntimeCaching: true,
   workboxOptions: {
