@@ -6,6 +6,7 @@ import {
 } from "@/src/shared/api/offlineApi";
 import { mergePendingProfile } from "@/src/shared/api/mergePendingActions";
 import { useSWRData } from "@/src/shared/hooks/useSWRData";
+import { db } from "@/src/shared/db/db";
 
 export function useProfile(userId: string | undefined) {
   const result = useSWRData<UserProfile>({
@@ -29,6 +30,34 @@ export function useProfile(userId: string | undefined) {
             // ignore parse errors and continue as cache-miss
           }
         }
+      }
+
+      // Fallback for other users: if profile cache is missing but collection metadata exists,
+      // synthesize a minimal profile so /users/[userId] stays reachable offline.
+      const cachedCollections = await db.collections
+        .where("userId")
+        .equals(userId)
+        .toArray();
+      if (cachedCollections.length > 0) {
+        const sample =
+          cachedCollections.find((c) => c.authorName || c.authorIconUrl) ||
+          cachedCollections[0];
+        const fallbackProfile: UserProfile = {
+          id: userId,
+          username: sample.authorName || `user-${userId.slice(0, 8)}`,
+          displayName: undefined,
+          bio: undefined,
+          iconUrl: sample.authorIconUrl,
+          isOfficial: !!sample.isOfficial,
+          isSelf: false,
+          followerCount: 0,
+          followingCount: 0,
+          isFollowing: false,
+          isFollowed: false,
+          collectionCount: cachedCollections.length,
+          setCount: 0,
+        };
+        return await mergePendingProfile(fallbackProfile);
       }
 
       return null;

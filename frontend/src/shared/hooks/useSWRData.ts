@@ -75,6 +75,8 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
 
     let isApiDone = false;
     let hasShownCache = false;
+    let hasFreshData = false;
+    let hasAnyData = data != null;
 
     // Step 1: APIからの取得を開始（バックグラウンド）
     setIsRevalidating(true);
@@ -85,6 +87,8 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
       try {
         const freshData = await fetcherRef.current();
         isApiDone = true;
+        hasFreshData = true;
+        hasAnyData = true;
         setData(freshData);
         setIsStale(false);
         setError(null);
@@ -99,10 +103,11 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
         if (isOfflineError(err)) {
           setIsOffline(true);
           // キャッシュが未表示なら表示を試みる（オフラインなら即座に表示して良い）
-          if (!data) {
+          if (!hasAnyData) {
             try {
               const cached = await cacheReaderRef.current();
-              if (cached !== null) {
+              if (cached != null) {
+                hasAnyData = true;
                 setData(cached);
                 setIsStale(true);
               } else {
@@ -116,7 +121,7 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
           }
         } else {
           // APIエラー時もキャッシュがあれば表示を維持
-          if (!data) {
+          if (!hasAnyData) {
             setError(
               err instanceof Error ? err.message : "データの取得に失敗しました",
             );
@@ -135,7 +140,8 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
         if (!isApiDone && !hasShownCache) {
           try {
             const cached = await cacheReaderRef.current();
-            if (cached !== null && !isApiDone) {
+            if (cached != null && !hasFreshData && !hasShownCache) {
+              hasAnyData = true;
               setData(cached);
               setIsStale(true);
               setLoading(false);
@@ -150,7 +156,8 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
       // オフライン時は即座にキャッシュ表示を試みる
       try {
         const cached = await cacheReaderRef.current();
-        if (cached !== null && !isApiDone) {
+        if (cached != null && !hasFreshData && !hasShownCache) {
+          hasAnyData = true;
           setData(cached);
           setIsStale(true);
           setLoading(false);
