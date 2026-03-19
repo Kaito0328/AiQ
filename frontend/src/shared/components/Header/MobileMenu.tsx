@@ -8,8 +8,9 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { cn } from '@/src/shared/utils/cn';
 import { X, User, LogOut, Heart, Settings, MessageSquare, History, LogIn, FileText, Cloud } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 import { useAuth } from '@/src/shared/auth/useAuth';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
 interface MobileMenuProps {
     isOpen: boolean;
@@ -17,8 +18,9 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
-    const router = useRouter();
+    const router = useSafeRouter();
     const { user, logout, isAuthenticated } = useAuth();
+    const { isOnline } = useNetworkStatus();
 
     const handleNavigate = (path: string) => {
         router.push(path);
@@ -85,9 +87,9 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
                                 {/* Links Section */}
                                 <Stack gap="xs">
-                                    <MenuLink icon={<User size={20} />} label="プロフィール" onClick={() => handleNavigate(`/users/${user?.id}`)} />
-                                    <MenuLink icon={<Heart size={20} />} label="お気に入り" onClick={() => handleNavigate(`/users/${user?.id}/favorites`)} />
-                                    <MenuLink icon={<MessageSquare size={20} />} label="修正依頼の管理" onClick={() => handleNavigate('/edit-requests')} />
+                                    <MenuLink icon={<User size={20} />} label="プロフィール" onClick={() => handleNavigate(`/users/${user?.id}`)} disabled={!isOnline} />
+                                    <MenuLink icon={<Heart size={20} />} label="お気に入り" onClick={() => handleNavigate(`/users/${user?.id}/favorites`)} disabled={!isOnline} />
+                                    <MenuLink icon={<MessageSquare size={20} />} label="修正依頼の管理" onClick={() => handleNavigate('/edit-requests')} disabled={!isOnline} />
                                     <MenuLink icon={<History size={20} />} label="中断したクイズ" onClick={() => handleNavigate('/quiz/resume')} />
                                     <MenuLink icon={<Cloud size={20} />} label="同期ステータス" onClick={() => handleNavigate('/settings/sync')} />
                                     <MenuLink icon={<Settings size={20} />} label="設定" onClick={() => handleNavigate('/settings')} />
@@ -133,13 +135,16 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     );
 }
 
-function MenuLink({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick: () => void }) {
+function MenuLink({ icon, label, onClick, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; disabled?: boolean }) {
     return (
         <button
-            className="flex items-center gap-4 p-3 rounded-lg hover:bg-surface-muted transition-colors text-foreground"
-            onClick={onClick}
+            className={cn(
+                "flex items-center gap-4 p-3 rounded-lg hover:bg-surface-muted transition-colors text-foreground w-full",
+                disabled && "opacity-50 cursor-not-allowed"
+            )}
+            onClick={disabled ? undefined : onClick}
         >
-            <View className="text-brand-primary">{icon}</View>
+            <View className={cn("text-brand-primary", disabled && "grayscale")}>{icon}</View>
             <Text weight="medium">{label}</Text>
         </button>
     );

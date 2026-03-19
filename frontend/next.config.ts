@@ -11,25 +11,36 @@ const withPWA = withPWAInit({
   workboxOptions: {
     runtimeCaching: [
       {
-        urlPattern: /^https:\/\/.*\/_next\/data\/.*\.json$/,
-        handler: "NetworkFirst",
+        urlPattern: /^https:\/\/.*\/_next\/static\/.*/i,
+        handler: "CacheFirst",
         options: {
-          cacheName: "next-data",
-          networkTimeoutSeconds: 3,
+          cacheName: "static-assets",
           expiration: {
-            maxEntries: 32,
-            maxAgeSeconds: 24 * 60 * 60, // 24 hours
+            maxEntries: 128,
+            maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
           },
         },
       },
       {
-        urlPattern: /\/_rsc=.*$/,
+        urlPattern: /^https:\/\/.*\/_next\/data\/.*\.json$/i,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "next-data",
+          networkTimeoutSeconds: 2, // 2秒で諦める
+          expiration: {
+            maxEntries: 64,
+            maxAgeSeconds: 24 * 60 * 60,
+          },
+        },
+      },
+      {
+        urlPattern: /\/_rsc=.*$/i,
         handler: "StaleWhileRevalidate",
         options: {
           cacheName: "next-rsc-data",
           expiration: {
-            maxEntries: 64,
-            maxAgeSeconds: 24 * 60 * 60, // 24 hours
+            maxEntries: 128,
+            maxAgeSeconds: 24 * 60 * 60,
           },
         },
       },
