@@ -9,7 +9,26 @@ export function useProfile(userId: string | undefined) {
         cacheReader: async () => {
             if (!userId) return null;
             const cached = await getOfflineProfile(userId);
-            return await mergePendingProfile(cached || null);
+            if (cached) {
+                return await mergePendingProfile(cached);
+            }
+
+            // Fallback for own profile: auth cache may exist in localStorage before Dexie sync.
+            if (typeof window !== 'undefined') {
+                const raw = localStorage.getItem('aiq_user_profile');
+                if (raw) {
+                    try {
+                        const authCached = JSON.parse(raw) as UserProfile;
+                        if (authCached?.id === userId) {
+                            return await mergePendingProfile(authCached);
+                        }
+                    } catch {
+                        // ignore parse errors and continue as cache-miss
+                    }
+                }
+            }
+
+            return null;
         },
         fetcher: async () => {
             if (!userId) throw new Error('userId is required');
