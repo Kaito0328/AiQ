@@ -35,9 +35,10 @@ const withPWA = withPWAInit({
       },
       {
         urlPattern: /\/_rsc=.*$/i,
-        handler: "StaleWhileRevalidate",
+        handler: "NetworkFirst",
         options: {
           cacheName: "next-rsc-data",
+          networkTimeoutSeconds: 1, // 1秒で諦めてキャッシュを使う
           expiration: {
             maxEntries: 128,
             maxAgeSeconds: 24 * 60 * 60,

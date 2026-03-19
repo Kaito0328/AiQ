@@ -10,7 +10,8 @@ import { Button } from '@/src/design/baseComponents/Button';
 import { Menu, ArrowLeft, Volume2, VolumeX, LogOut, WifiOff, Wifi, Cloud } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 import { cn } from '@/src/shared/utils/cn';
 import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from '@/src/shared/contexts/ThemeContext';
@@ -20,7 +21,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/src/shared/db/db';
 
 export function Header() {
-    const router = useRouter();
+    const router = useSafeRouter();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { isAuthenticated } = useAuth();
     const { theme } = useTheme();
@@ -118,8 +119,8 @@ export function Header() {
 
                         {/* 中央: ロゴとタイトル */}
                         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-0.5">
-                            <Link
-                                href="/home"
+                            <button
+                                onClick={() => router.push("/home")}
                                 className="flex items-center gap-2 group pointer-events-auto"
                             >
                                 <View
@@ -134,7 +135,7 @@ export function Header() {
                                         OFFLINE
                                     </Text>
                                 )}
-                            </Link>
+                            </button>
                         </div>
 
                         {/* 右側: オーディオ切替, オフライン切替, テーマ切替 */}

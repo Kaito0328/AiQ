@@ -144,8 +144,16 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
                     setIsStale(true);
                     setLoading(false);
                     hasShownCache = true;
+                } else {
+                    // キャッシュもない場合は即座にロード中を解除しオフラインエラー
+                    setLoading(false);
+                    setError('オフラインかつキャッシュがないため、データを表示できません。');
+                    setIsOffline(true);
                 }
-            } catch (e) {}
+            } catch (e) {
+                setLoading(false);
+                setIsOffline(true);
+            }
         }
 
         await apiPromise;
