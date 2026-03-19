@@ -12,6 +12,7 @@ import { useUserCollections, useUserCollectionSets } from '@/src/features/collec
 import { CollectionCard } from '@/src/features/collections/components/CollectionCard';
 import { CollectionSetCard } from '@/src/features/collectionSets/components/CollectionSetCard';
 import { useAuth } from '@/src/shared/auth/useAuth';
+import { db } from '@/src/shared/db/db';
 
 interface UserContentTabsProps {
     userId: string;
@@ -52,8 +53,59 @@ export function UserContentTabs({
     hideExtras = false,
     displayMode = 'list'
 }: UserContentTabsProps) {
+    const { user: currentUser } = useAuth();
+    const isOwnProfile = currentUser?.id === userId;
+
     const { collections, loading: collectionsLoading, isOffline: isCollectionsOffline } = useUserCollections(userId);
     const { collectionSets, loading: setsLoading, isOffline: isSetsOffline } = useUserCollectionSets(userId);
+
+    const [collectionsWithCachedQuestions, setCollectionsWithCachedQuestions] = React.useState<Set<string>>(new Set());
+    const [isQuestionCacheCheckLoading, setIsQuestionCacheCheckLoading] = React.useState(false);
+
+    React.useEffect(() => {
+        let cancelled = false;
+
+        const checkQuestionCache = async () => {
+            if (!isCollectionsOffline || isOwnProfile) {
+                setCollectionsWithCachedQuestions(new Set(collections.map(c => c.id)));
+                setIsQuestionCacheCheckLoading(false);
+                return;
+            }
+
+            if (collections.length === 0) {
+                setCollectionsWithCachedQuestions(new Set());
+                setIsQuestionCacheCheckLoading(false);
+                return;
+            }
+
+            setIsQuestionCacheCheckLoading(true);
+            try {
+                const ids = collections.map(c => c.id);
+                const cachedQuestions = await db.questions.where('collectionId').anyOf(ids).toArray();
+                if (cancelled) return;
+                setCollectionsWithCachedQuestions(new Set(cachedQuestions.map(q => q.collectionId)));
+            } catch {
+                if (!cancelled) {
+                    setCollectionsWithCachedQuestions(new Set());
+                }
+            } finally {
+                if (!cancelled) {
+                    setIsQuestionCacheCheckLoading(false);
+                }
+            }
+        };
+
+        checkQuestionCache();
+        return () => {
+            cancelled = true;
+        };
+    }, [collections, isCollectionsOffline, isOwnProfile]);
+
+    const visibleCollections = (!isOwnProfile && isCollectionsOffline)
+        ? collections.filter(c => collectionsWithCachedQuestions.has(c.id))
+        : collections;
+
+    const hiddenCollectionCount = collections.length - visibleCollections.length;
 
     const items: TabItem[] = [
         {
@@ -66,7 +118,7 @@ export function UserContentTabs({
                             <Flex justify="between" align="center">
                                 <Flex gap="xs" align="center">
                                     <Text variant="detail" color="secondary" weight="bold">
-                                        {collections.length} 個のコレクション
+                                        {visibleCollections.length} 個のコレクション
                                     </Text>
                                     {isCollectionsOffline && (
                                         <Text variant="xs" color="secondary" className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full font-bold">Offline</Text>
@@ -76,13 +128,19 @@ export function UserContentTabs({
                             </Flex>
                         )}
 
-                        {collectionsLoading ? (
+                        {!isOwnProfile && isCollectionsOffline && hiddenCollectionCount > 0 && (
+                            <Text variant="xs" color="secondary">
+                                問題が未キャッシュの {hiddenCollectionCount} 件はオフライン中は非表示です。
+                            </Text>
+                        )}
+
+                        {(collectionsLoading || isQuestionCacheCheckLoading) ? (
                             <View padding="xl">
                                 <Flex justify="center">
                                     <Spinner size="lg" />
                                 </Flex>
                             </View>
-                        ) : collections.length === 0 ? (
+                        ) : visibleCollections.length === 0 ? (
                             <View padding="xl">
                                 <Stack gap="sm" align="center">
                                     <Text color="secondary" align="center" variant="xs">
@@ -97,7 +155,7 @@ export function UserContentTabs({
                             </View>
                         ) : displayMode === 'list' ? (
                             <Stack gap="none" className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5">
-                                {collections.map(c => (
+                                {visibleCollections.map(c => (
                                     <CollectionCard
                                         key={c.id}
                                         collection={c}
@@ -115,7 +173,7 @@ export function UserContentTabs({
                             </Stack>
                         ) : (
                             <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
-                                {collections.map(c => (
+                                {visibleCollections.map(c => (
                                     <CollectionCard
                                         key={c.id}
                                         collection={c}

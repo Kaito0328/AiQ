@@ -69,6 +69,13 @@ export function CollectionBrowser({
                     if (official) {
                         setOfficialUserId(official.id);
                         localStorage.setItem('aiq_official_user_id', official.id);
+                    } else {
+                        // プロフィール未保存でも、公式コレクションの所有者IDから推定する
+                        const officialCollection = cols.find(c => c.isOfficial && !!c.userId);
+                        if (officialCollection?.userId) {
+                            setOfficialUserId(officialCollection.userId);
+                            localStorage.setItem('aiq_official_user_id', officialCollection.userId);
+                        }
                     }
                 }
 
@@ -92,7 +99,7 @@ export function CollectionBrowser({
                 }
                 setLoadingOfficial(false);
             });
-    }, [isOnline, user?.id, officialUserId]);
+    }, [isOnline, user?.id]);
 
     const renderContent = () => {
         const commonProps = {
