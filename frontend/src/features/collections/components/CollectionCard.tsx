@@ -10,7 +10,7 @@ import { Badge } from '@/src/design/baseComponents/Badge';
 import { View } from '@/src/design/primitives/View';
 import { Collection } from '@/src/entities/collection';
 import { Book, Heart, Trophy, Trash2, Edit, FolderPlus, Lock, Unlock, Cloud, AlertTriangle, WifiOff } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 import { Checkbox } from '@/src/design/baseComponents/Checkbox';
 import { Button } from '@/src/design/baseComponents/Button';
 import { addFavorite, removeFavorite } from '@/src/features/favorites/api';
@@ -49,7 +49,7 @@ export function CollectionCard({
     hideExtras = false,
     displayMode = 'list'
 }: CollectionCardProps) {
-    const router = useRouter();
+    const router = useSafeRouter();
     const { isAuthenticated, user } = useAuth();
     const { isOnline } = useNetworkStatus();
     const [isFavorited, setIsFavorited] = useState(collection.isFavorited || false);

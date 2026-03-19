@@ -11,7 +11,7 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Badge } from '@/src/design/baseComponents/Badge';
 import { User } from '@/src/entities/user';
 import { UserCircle, Users, Library } from 'lucide-react';
-import Link from 'next/link';
+import { OfflineLink } from '@/src/shared/components/Navigation/OfflineLink';
 
 interface UserCardProps {
     user: User;
@@ -84,8 +84,8 @@ export function UserCard({ user, onClick }: UserCardProps) {
     }
 
     return (
-        <Link href={`/users/${user.id}`} className="block">
+        <OfflineLink href={`/users/${user.id}`} className="block">
             {content}
-        </Link>
+        </OfflineLink>
     );
 }

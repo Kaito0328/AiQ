@@ -7,7 +7,7 @@ import { CollectionSet } from '@/src/entities/collection';
 import { FolderOpen, ChevronRight, Edit, Trash2, ChevronDown, Check } from 'lucide-react';
 import { Button } from '@/src/design/baseComponents/Button';
 import { View } from '@/src/design/primitives/View';
-import Link from 'next/link';
+import { OfflineLink } from '@/src/shared/components/Navigation/OfflineLink';
 import { cn } from '@/src/shared/utils/cn';
 import { useCollectionSet } from '@/src/features/collectionSets/hooks/useCollectionSets';
 import { Spinner } from '@/src/design/baseComponents/Spinner';
@@ -189,9 +189,9 @@ export function CollectionSetCard({
                         {cardContent}
                     </View>
                 ) : (
-                    <Link href={`/collection-sets/${set.id}`} className="block h-full">
+                    <OfflineLink href={`/collection-sets/${set.id}`} className="block h-full">
                         {cardContent}
-                    </Link>
+                    </OfflineLink>
                 )
             }
         </View >
