@@ -65,6 +65,16 @@ export function NavCards() {
     router.push("/quiz/start");
   };
 
+  // オフライン遷移のためにルートをプリフェッチ
+  React.useEffect(() => {
+    router.prefetch("/users/official");
+    router.prefetch("/users");
+    router.prefetch("/quiz/start");
+    if (user) {
+      router.prefetch(`/users/${user.id}`);
+    }
+  }, [router, user]);
+
   return (
     <Grid cols={{ base: 2, lg: 4 }} gap="md">
       <NavCard
