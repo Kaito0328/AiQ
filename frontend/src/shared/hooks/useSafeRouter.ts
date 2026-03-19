@@ -71,7 +71,6 @@ export function useSafeRouter() {
         href.startsWith("/collections/") ||
         href.startsWith("/collection-sets/") ||
         href.includes("/quiz") ||
-        href === "/users/official" ||
         href === "/users" ||
         href === "/settings/cache" ||
         href === "/settings" ||
