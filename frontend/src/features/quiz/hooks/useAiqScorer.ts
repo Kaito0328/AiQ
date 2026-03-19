@@ -9,9 +9,11 @@ import { useRef, useState, useCallback } from 'react';
 // ───────────────────────────────────────────────────────────
 let _extractor: any = null;
 let _loadPromise: Promise<void> | null = null;
+let _transformersModulePromise: Promise<any> | null = null;
 
 const MODEL_ID = 'Miya67/aiq-scoring-e5-small';
 const THRESHOLD = 0.80;
+const TRANSFORMERS_CDN_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.7.6/+esm';
 
 function normalizeText(text: string): string {
     // Full-width → half-width, lowercase, collapse whitespace
@@ -40,8 +42,22 @@ function rubisToHiragana(
 }
 
 async function cosineSim(a: Float32Array | number[], b: Float32Array | number[]): Promise<number> {
-    const { cos_sim } = await import('@huggingface/transformers');
+    const { cos_sim } = await loadTransformersModule();
     return cos_sim(a as any, b as any);
+}
+
+async function loadTransformersModule(): Promise<any> {
+    if (_transformersModulePromise) {
+        return _transformersModulePromise;
+    }
+
+    // Keep this import runtime-only so the server bundle does not trace huge ML binaries.
+    _transformersModulePromise = import(
+        /* webpackIgnore: true */
+        TRANSFORMERS_CDN_URL
+    );
+
+    return _transformersModulePromise;
 }
 
 async function evaluatePair(extractor: any, question: string, expected: string, userAnswer: string): Promise<number> {
@@ -77,7 +93,7 @@ export function useAiqScorer() {
         setProgress(0);
 
         _loadPromise = (async () => {
-            const { pipeline, env } = await import('@huggingface/transformers');
+            const { pipeline, env } = await loadTransformersModule();
             // Use browser cache so subsequent loads are instant
             env.useBrowserCache = true;
 
