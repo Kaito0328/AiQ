@@ -24,8 +24,11 @@ class SyncManager {
         if (this.isProcessing) return;
         
         // ネットワーク状態の確認
-        if (typeof window !== 'undefined' && localStorage.getItem('aiq_manual_offline') === 'true') {
-            return;
+        if (typeof window !== 'undefined') {
+            const isManualOffline = localStorage.getItem('aiq_manual_offline') === 'true';
+            if (isManualOffline || !navigator.onLine) {
+                return;
+            }
         }
 
         // status が 'pending' のものだけを対象にする

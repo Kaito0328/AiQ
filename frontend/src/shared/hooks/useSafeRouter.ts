@@ -13,14 +13,18 @@ export function useSafeRouter() {
 
     const safePush = (href: string, options?: any) => {
         if (!isOnline) {
+            // オフライン時にキャッシュされている可能性が高いルートの判定を拡張
             const isLikelyCached = 
+                href === '/' ||
                 href === '/home' || 
-                href === '/' || 
                 href.startsWith('/home?') ||
+                href.startsWith('/users/') ||
+                href.startsWith('/collections/') ||
                 href.includes('/quiz') ||
                 href === '/users/official' ||
                 href === '/users' ||
-                href === '/settings/cache';
+                href === '/settings/cache' ||
+                href === '/settings';
 
             if (!isLikelyCached) {
                 showToast({ message: 'オフラインのため、このページへは移動できません', variant: 'danger' });
@@ -30,8 +34,15 @@ export function useSafeRouter() {
         router.push(href, options);
     };
 
+    const safeBack = () => {
+        // router.back() は遷移先が不明なため、基本的には実行させるが、
+        // 万が一のハング防止のために navigator.onLine をチェックする余地あり。
+        // ここでは Next.js の挙動を優先。
+        router.back();
+    };
+
     const safeReplace = (href: string, options?: any) => {
-        if (!isOnline && href !== '/home' && href !== '/') {
+        if (!isOnline && !href.startsWith('/home') && href !== '/') {
             showToast({ message: 'オフラインのため、遷移を制限しています', variant: 'danger' });
             return;
         }
@@ -42,6 +53,6 @@ export function useSafeRouter() {
         ...router,
         push: safePush,
         replace: safeReplace,
-        // prefetch はそのまま通す（内部で既にオフライン考慮されているため）
+        back: safeBack,
     };
 }

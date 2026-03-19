@@ -67,17 +67,20 @@ export async function apiClient<T>(
         headers.set('If-Modified-Since', ifModifiedSince);
     }
 
-    // タイムアウト設定 (デフォルト30秒)
-    const timeout = 30000;
+    // タイムアウト設定 (オフラインなら2秒、オンラインなら10秒。30秒は長すぎるため短縮)
+    const isActuallyOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+    const isManualOffline = typeof window !== 'undefined' && localStorage.getItem('aiq_manual_offline') === 'true';
+    
+    const timeout = (!isActuallyOnline || isManualOffline) ? 2000 : 10000;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-    // 手動オフラインモードのチェック
-    if (typeof window !== 'undefined' && localStorage.getItem('aiq_manual_offline') === 'true') {
+    // オフライン状態なら即座にエラーを投げる (fetch を待たない)
+    if (!isActuallyOnline || isManualOffline) {
         clearTimeout(timeoutId);
         throw new ApiError(503, {
             code: ErrorCodeType.UNKNOWN_ERROR,
-            message: 'Manual offline mode is enabled',
+            message: isManualOffline ? 'Manual offline mode is enabled' : 'Network is offline',
         });
     }
 
