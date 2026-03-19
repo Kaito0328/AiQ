@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import path from 'path';
+import path from "path";
 import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
@@ -51,7 +51,6 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   /* config options here */
-  // @ts-ignore - Turbopack config is required to bypass the custom webpack check in Next.js 16+
   turbopack: {},
 };
 

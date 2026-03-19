@@ -1,84 +1,120 @@
 "use client";
-import { useRouter } from 'next/navigation';
-import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
-import { useToast } from '@/src/shared/contexts/ToastContext';
+import { useRouter } from "next/navigation";
+import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
+import { useToast } from "@/src/shared/contexts/ToastContext";
 
 /**
  * Next.js の useRouter をラップし、オフライン時の遷移トラブル（フリーズ等）を防ぐためのフック。
  *
- * 【重要な設計判断】
- * マニュアルオフライン: navigator.onLine は true → Next.js の router.push が正常に動く
- * 実際のオフライン:    navigator.onLine は false → Next.js の router.push は RSC データ取得で
- *                     ハング・フリーズする。そのため window.location.href による「フルナビゲーション」
- *                     を使い、Service Worker のキャッシュから直接ページを取得する。
+ * 【設計】
+ * カスタム Service Worker (worker/index.ts) が、オフライン時の RSC データ取得失敗を
+ * キャッシュレスポンスまたは空レスポンスで即座に返すため、router.push() を安全に使用できる。
+ * このフックはキャッシュされていない可能性が高いルートへの遷移のみをブロックする。
  */
 export function useSafeRouter() {
-    const router = useRouter();
-    const { isOnline, isManualOffline } = useNetworkStatus();
-    const { showToast } = useToast();
+  const router = useRouter();
+  const { isOnline } = useNetworkStatus();
+  const { showToast } = useToast();
+  type RouterPushOptions = Parameters<typeof router.push>[1];
 
-    /** ブラウザのネットワークが実際に切断されているかどうか */
-    const isReallyOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+  const hasOfflineCacheForRoute = async (href: string): Promise<boolean> => {
+    if (typeof window === "undefined" || !("caches" in window)) {
+      return false;
+    }
 
-    const safePush = (href: string, options?: any) => {
-        if (!isOnline) {
-            // オフライン時にキャッシュされている可能性が高いルートの判定
-            const isLikelyCached =
-                href === '/' ||
-                href === '/home' ||
-                href.startsWith('/home?') ||
-                href.startsWith('/users/') ||
-                href.startsWith('/collections/') ||
-                href.startsWith('/collection-sets/') ||
-                href.includes('/quiz') ||
-                href === '/users/official' ||
-                href === '/users' ||
-                href === '/settings/cache' ||
-                href === '/settings' ||
-                href === '/settings/sync' ||
-                href === '/credits';
+    try {
+      const targetUrl = new URL(href, window.location.origin);
+      const targetPath = targetUrl.pathname;
+      const targetPathWithoutSlash = targetPath.replace(/^\//, "");
+      const cacheNames = await caches.keys();
 
-            if (!isLikelyCached) {
-                showToast({ message: 'オフラインのため、このページへは移動できません', variant: 'danger' });
-                return;
-            }
+      for (const cacheName of cacheNames) {
+        const cache = await caches.open(cacheName);
+        const requests = await cache.keys();
 
-            // 実際のオフライン時: Next.js のクライアントルーティングを迂回し、
-            // Service Worker のナビゲーションキャッシュを直接使う
-            if (isReallyOffline) {
-                window.location.href = href;
-                return;
-            }
+        for (const req of requests) {
+          const reqUrl = new URL(req.url);
+
+          if (reqUrl.pathname === targetPath) {
+            return true;
+          }
+
+          const full = req.url;
+          if (full.includes(targetPath)) {
+            return true;
+          }
+
+          if (
+            reqUrl.pathname.includes("/_next/data/") &&
+            reqUrl.pathname.endsWith(".json") &&
+            reqUrl.pathname.includes(targetPathWithoutSlash)
+          ) {
+            return true;
+          }
         }
-        // オンライン or マニュアルオフライン（ネットワーク自体は接続中）→ 通常のルーティング
-        router.push(href, options);
-    };
+      }
+    } catch {
+      return false;
+    }
 
-    const safeBack = () => {
-        if (isReallyOffline) {
-            // 実際のオフライン時: ブラウザの履歴戻りを使用（RSCフェッチを回避）
-            window.history.back();
-            return;
-        }
-        router.back();
-    };
+    return false;
+  };
 
-    const safeReplace = (href: string, options?: any) => {
-        if (!isOnline && !href.startsWith('/home') && href !== '/') {
-            showToast({ message: 'オフラインのため、遷移を制限しています', variant: 'danger' });
-            return;
-        }
-        if (isReallyOffline) {
-            window.location.replace(href);
-            return;
-        }
-        router.replace(href, options);
-    };
+  const safePush = async (href: string, options?: RouterPushOptions) => {
+    if (!isOnline) {
+      // オフライン時にキャッシュされている可能性が高いルートの判定
+      const isLikelyCached =
+        href === "/" ||
+        href === "/home" ||
+        href.startsWith("/home?") ||
+        href.startsWith("/users/") ||
+        href.startsWith("/collections/") ||
+        href.startsWith("/collection-sets/") ||
+        href.includes("/quiz") ||
+        href === "/users/official" ||
+        href === "/users" ||
+        href === "/settings/cache" ||
+        href === "/settings" ||
+        href === "/settings/sync" ||
+        href === "/credits";
 
-    return {
-        ...router,
-        push: safePush,
-        replace: safeReplace,
-        back: safeBack,
-    };
+      if (!isLikelyCached) {
+        const hasCache = await hasOfflineCacheForRoute(href);
+        if (hasCache) {
+          router.push(href, options);
+          return;
+        }
+
+        showToast({
+          message: "オフラインのため、このページへは移動できません",
+          variant: "danger",
+        });
+        return;
+      }
+    }
+
+    router.push(href, options);
+  };
+
+  const safeBack = () => {
+    router.back();
+  };
+
+  const safeReplace = (href: string, options?: RouterPushOptions) => {
+    if (!isOnline && !href.startsWith("/home") && href !== "/") {
+      showToast({
+        message: "オフラインのため、遷移を制限しています",
+        variant: "danger",
+      });
+      return;
+    }
+    router.replace(href, options);
+  };
+
+  return {
+    ...router,
+    push: safePush,
+    replace: safeReplace,
+    back: safeBack,
+  };
 }

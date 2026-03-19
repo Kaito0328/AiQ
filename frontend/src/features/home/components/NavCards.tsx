@@ -9,10 +9,11 @@ import { View } from "@/src/design/primitives/View";
 import { Icon } from "@/src/design/baseComponents/Icon";
 import { useSafeRouter } from "@/src/shared/hooks/useSafeRouter";
 import { useAuth } from "@/src/shared/auth/useAuth";
+import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 
 interface NavCardProps {
   label: string;
-  iconName: React.ComponentProps<typeof Icon>['name'];
+  iconName: React.ComponentProps<typeof Icon>["name"];
   onClick: () => void;
   color?: "primary" | "secondary" | "accent";
 }
@@ -32,7 +33,12 @@ function NavCard({ label, iconName, onClick }: NavCardProps) {
               <Icon name={iconName} size={24} />
             </Text>
           </View>
-          <Text variant="xs" weight="bold" align="center" className="transition-colors group-hover:text-brand-primary leading-tight">
+          <Text
+            variant="xs"
+            weight="bold"
+            align="center"
+            className="transition-colors group-hover:text-brand-primary leading-tight"
+          >
             {label}
           </Text>
         </Stack>
@@ -44,6 +50,7 @@ function NavCard({ label, iconName, onClick }: NavCardProps) {
 export function NavCards() {
   const router = useSafeRouter();
   const { user } = useAuth();
+  const { isOnline } = useNetworkStatus();
 
   const handleNavigateToOfficial = () => {
     router.push("/users/official");
@@ -67,13 +74,15 @@ export function NavCards() {
 
   // オフライン遷移のためにルートをプリフェッチ
   React.useEffect(() => {
+    if (!isOnline) return;
+
     router.prefetch("/users/official");
     router.prefetch("/users");
     router.prefetch("/quiz/start");
     if (user) {
       router.prefetch(`/users/${user.id}`);
     }
-  }, [router, user]);
+  }, [router, user, isOnline]);
 
   return (
     <Grid cols={{ base: 2, lg: 4 }} gap="md">
