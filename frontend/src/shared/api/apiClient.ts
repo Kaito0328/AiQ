@@ -27,17 +27,25 @@ const API_PREFIX = '/api';
 
 interface RequestOptions extends RequestInit {
     authenticated?: boolean;
+    /** If-Modified-Since ヘッダー送信用。304時にnullを返す */
+    ifModifiedSince?: string;
+}
+
+interface RequestOptionsWithIMS extends RequestOptions {
+    ifModifiedSince: string;
 }
 
 /**
  * バックエンド API と通信するための共通関数です。
  * サーバーサイド (RSC) とクライアントサイドの両方で動作します。
  */
+export async function apiClient<T>(endpoint: string, options: RequestOptionsWithIMS): Promise<T | null>;
+export async function apiClient<T>(endpoint: string, options?: RequestOptions): Promise<T>;
 export async function apiClient<T>(
     endpoint: string,
     options: RequestOptions = {}
-): Promise<T> {
-    const { authenticated = false, headers: customHeaders, ...rest } = options;
+): Promise<T | null> {
+    const { authenticated = false, ifModifiedSince, headers: customHeaders, ...rest } = options;
 
     const url = `${API_BASE_URL}${API_PREFIX}${endpoint}`;
     const headers = new Headers(customHeaders);
@@ -52,6 +60,11 @@ export async function apiClient<T>(
         if (token) {
             headers.set('Authorization', `Bearer ${token}`);
         }
+    }
+
+    // If-Modified-Since ヘッダー（差分検知用）
+    if (ifModifiedSince) {
+        headers.set('If-Modified-Since', ifModifiedSince);
     }
 
     // タイムアウト設定 (デフォルト30秒)
@@ -75,6 +88,11 @@ export async function apiClient<T>(
             signal: controller.signal,
         });
         clearTimeout(timeoutId);
+
+        // 304 Not Modified: データに変更なし
+        if (response.status === 304) {
+            return null;
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -117,8 +135,8 @@ export async function apiClient<T>(
             });
         }
 
-        // ネットワークエラー等
-        throw new ApiError(500, {
+        // ネットワークエラー等 (status=0 はブラウザでネットワーク到達不可能を意味する)
+        throw new ApiError(0, {
             code: ErrorCodeType.UNKNOWN_ERROR,
             message: error instanceof Error ? error.message : 'Network error',
         });

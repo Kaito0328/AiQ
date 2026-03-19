@@ -113,10 +113,30 @@ pub async fn get_collection(
     State(state): State<AppState>,
     OptionalClaims(claims): OptionalClaims, // 🌟 ログインしていない人も見れるように Option にする
     Path(collection_id): Path<Uuid>,
-) -> Result<Json<crate::dtos::collection_dto::CollectionResponse>, StatusCode> {
+    headers: axum::http::HeaderMap,
+) -> Result<impl IntoResponse, StatusCode> {
     let requester_id = claims.map(|c| c.user_id());
     match CollectionService::get_collection(&state.db, collection_id, requester_id).await {
-        Ok(collection) => Ok(Json(collection)),
+        Ok(collection) => {
+            // If-Modified-Since ヘッダーがあれば、差分検知
+            if let Some(ims) = headers.get(axum::http::header::IF_MODIFIED_SINCE) {
+                if let Ok(ims_str) = ims.to_str() {
+                    if let Ok(ims_time) = chrono::DateTime::parse_from_rfc2822(ims_str) {
+                        if collection.updated_at <= ims_time {
+                            return Ok(StatusCode::NOT_MODIFIED.into_response());
+                        }
+                    }
+                }
+            }
+
+            // Last-Modified ヘッダーを添付してレスポンス
+            let last_modified = collection.updated_at.to_rfc2822();
+            let mut response_headers = axum::http::HeaderMap::new();
+            if let Ok(val) = axum::http::header::HeaderValue::from_str(&last_modified) {
+                response_headers.insert(axum::http::header::LAST_MODIFIED, val);
+            }
+            Ok((response_headers, Json(collection)).into_response())
+        },
         Err(sqlx::Error::RowNotFound) => Err(StatusCode::NOT_FOUND), // 存在しない、または非公開
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }

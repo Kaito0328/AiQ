@@ -30,7 +30,7 @@ import { FileUp, Download } from 'lucide-react';
 import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
 import { ArrowUp, ArrowDown, Gamepad2, WifiOff } from 'lucide-react';
-import { ApiError } from '@/src/shared/api/error';
+import { isOfflineError as isOfflineErr } from '@/src/shared/api/isOfflineError';
 import { getOfflineCollection, getOfflineQuestions, syncCollectionToOffline } from '@/src/shared/api/offlineApi';
 import { OfflinePlaceholder } from '@/src/shared/components/Navigation/OfflinePlaceholder';
 
@@ -56,37 +56,64 @@ export default function CollectionDetailPage() {
     const [isEditMode, setIsEditMode] = useState(false);
 
     const [isOffline, setIsOffline] = useState(false);
+    const [isStale, setIsStale] = useState(false);
 
     useEffect(() => {
+        let cancelled = false;
+
         const fetchData = async () => {
             setIsOffline(false);
+
+            // Step 1: キャッシュファースト — Dexie から即座に表示
+            try {
+                const cachedCol = await getOfflineCollection(collectionId);
+                if (cachedCol && !cancelled) {
+                    setCollection(cachedCol);
+                    const cachedQs = await getOfflineQuestions(collectionId);
+                    setQuestions(cachedQs);
+                    setIsOwner(!!(user && user.id === cachedCol.userId));
+                    setIsStale(true);
+                    setLoading(false);
+                }
+            } catch {
+                // キャッシュ読み取りエラーは無視
+            }
+
+            // Step 2: APIからリバリデーション
             try {
                 const data = await getCollection(collectionId);
+                if (cancelled) return;
                 setCollection(data);
                 const qList = await getCollectionQuestions(collectionId);
+                if (cancelled) return;
                 setQuestions(qList);
                 setIsOwner(!!(user && user.id === data.userId));
+                setIsStale(false);
                 // 自動キャッシュを保存
                 syncCollectionToOffline(data, qList, false).catch(err => logger.error('Auto-cache failed', err));
             } catch (err) {
-                if (err instanceof ApiError && (err.status === 503 || err.status === 0)) {
+                if (isOfflineErr(err)) {
                     setIsOffline(true);
-                    // オフラインキャッシュから取得を試みる
-                    const offlineData = await getOfflineCollection(collectionId);
-                    if (offlineData) {
-                        setCollection(offlineData);
-                        const offlineQs = await getOfflineQuestions(collectionId);
-                        setQuestions(offlineQs);
-                        setIsOwner(!!(user && user.id === offlineData.userId));
+                    // キャッシュがまだロードされていない場合はここで取得を試みる
+                    if (!collection) {
+                        const offlineData = await getOfflineCollection(collectionId);
+                        if (offlineData && !cancelled) {
+                            setCollection(offlineData);
+                            const offlineQs = await getOfflineQuestions(collectionId);
+                            setQuestions(offlineQs);
+                            setIsOwner(!!(user && user.id === offlineData.userId));
+                        }
                     }
                 } else {
                     logger.error('Failed to fetch collection details', err);
                 }
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
         fetchData();
+
+        return () => { cancelled = true; };
     }, [collectionId, user]);
 
     const handleQuestionDeleted = (id: string) => {

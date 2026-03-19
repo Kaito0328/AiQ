@@ -38,33 +38,50 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
     const [loadingFollowers, setLoadingFollowers] = useState(false);
     const [loadingFollowees, setLoadingFollowees] = useState(false);
 
-    // Initial fetch for all users with search/sort
+    // Initial fetch for all users with search/sort (SWR pattern)
     useEffect(() => {
+        let cancelled = false;
+
         const fetchAll = async () => {
             setLoadingAll(true);
+
+            // Step 1: キャッシュファースト — Dexie からキャッシュ済みプロフィールを即表示
             try {
-                if (isOnline) {
-                    const users = await getUsers({
-                        q: searchQuery || undefined,
-                        sort: sortBy === 'newest' ? 'created_at' : 'followers'
-                    });
-                    setAllUsers(users);
-                } else {
-                    // オフライン時はキャッシュされたプロフィールを表示
-                    let users = await db.profiles.toArray();
-                    if (searchQuery) {
-                        const q = searchQuery.toLowerCase();
-                        users = users.filter(u => 
-                            u.username.toLowerCase().includes(q) || 
-                            (u.displayName && u.displayName.toLowerCase().includes(q))
-                        );
-                    }
-                    setAllUsers(users);
+                let cached = await db.profiles.toArray();
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    cached = cached.filter(u =>
+                        u.username.toLowerCase().includes(q) ||
+                        (u.displayName && u.displayName.toLowerCase().includes(q))
+                    );
+                }
+                if (cached.length > 0 && !cancelled) {
+                    setAllUsers(cached);
+                    setLoadingAll(false);
+                }
+            } catch {
+                // キャッシュ読み取りエラーは無視
+            }
+
+            // Step 2: APIからリバリデーション
+            try {
+                const users = await getUsers({
+                    q: searchQuery || undefined,
+                    sort: sortBy === 'newest' ? 'created_at' : 'followers'
+                });
+                if (cancelled) return;
+                setAllUsers(users);
+
+                // 取得したユーザーをDexie profilesにキャッシュ
+                const savedAt = Date.now();
+                for (const u of users) {
+                    await db.profiles.put({ ...u, savedAt });
                 }
             } catch (err) {
+                // APIエラー時はキャッシュデータを維持
                 logger.error('ユーザー一覧の取得に失敗しました', err);
             } finally {
-                setLoadingAll(false);
+                if (!cancelled) setLoadingAll(false);
             }
         };
 
@@ -72,7 +89,7 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
             fetchAll();
         }, 300);
 
-        return () => clearTimeout(timer);
+        return () => { cancelled = true; clearTimeout(timer); };
     }, [searchQuery, sortBy]);
 
     useEffect(() => {
