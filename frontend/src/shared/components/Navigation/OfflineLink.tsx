@@ -4,13 +4,11 @@ import React from 'react';
 import Link from 'next/link';
 
 /**
- * Next.js の <Link> をラップし、実際のオフライン時は window.location.href で
- * フルページナビゲーションを行うコンポーネント。
- *
- * 実際のオフライン (navigator.onLine === false) 時に Next.js の <Link> を使うと、
- * RSC データの取得でハングし UI がフリーズする。この問題を回避するために、
- * 実際のオフライン時は Service Worker のナビゲーションキャッシュを直接利用する
- * フルナビゲーションにフォールバックする。
+ * Next.js の <Link> のオフライン対応ラッパー。
+ * 
+ * カスタム Service Worker (worker/index.ts) が RSC 取得失敗をキャッシュ応答や
+ * 空レスポンスで処理するため、通常の <Link> と同じ動作で安全に使用できる。
+ * 将来的にオフライン特有の処理が必要になった場合の拡張ポイント。
  */
 export function OfflineLink({
     href,
@@ -18,16 +16,8 @@ export function OfflineLink({
     className,
     ...rest
 }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children: React.ReactNode }) {
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        if (typeof navigator !== 'undefined' && !navigator.onLine) {
-            e.preventDefault();
-            window.location.href = href;
-        }
-        // オンライン時は Link のデフォルト挙動（クライアントサイドナビゲーション）をそのまま使う
-    };
-
     return (
-        <Link href={href} className={className} onClick={handleClick} {...rest}>
+        <Link href={href} className={className} {...rest}>
             {children}
         </Link>
     );
