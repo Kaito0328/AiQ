@@ -89,7 +89,7 @@ export function NavCards() {
         setOfficialUserId(official.id);
         localStorage.setItem("aiq_official_user_id", official.id);
       } catch {
-        // Keep card functional by falling back to users list if lookup fails.
+        // Keep card functional by falling back to users list when lookup fails.
       }
     };
 
