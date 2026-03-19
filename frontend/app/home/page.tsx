@@ -1,5 +1,5 @@
-"use client"
-import { logger } from '@/src/shared/utils/logger';
+"use client";
+import { logger } from "@/src/shared/utils/logger";
 
 import React from "react";
 import { Container } from "@/src/design/primitives/Container";
@@ -36,16 +36,16 @@ import {
 import { BattleJoinModal } from "@/src/features/battle/components/BattleJoinModal";
 import { useState } from "react";
 import { cn } from "@/src/shared/utils/cn";
-import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '@/src/shared/db/db';
+import { useSafeRouter } from "@/src/shared/hooks/useSafeRouter";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/src/shared/db/db";
 import { createMatchRoom } from "@/src/features/battle/api";
 import { MatchActionCard } from "@/src/features/battle/components/MatchActionCard";
-import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 
-import { Tabs, TabItem } from '@/src/design/baseComponents/Tabs';
-import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Tabs, TabItem } from "@/src/design/baseComponents/Tabs";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 function HomeContent() {
   const router = useSafeRouter();
@@ -54,15 +54,16 @@ function HomeContent() {
   const [showJoin, setShowJoin] = useState(false);
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
-  const currentTab = searchParams.get('tab') || 'dashboard';
+  const currentTab = searchParams.get("tab") || "dashboard";
   const { isOnline } = useNetworkStatus();
 
   const { collections, loading, isOffline } = useRecentCollections();
 
-  const pendingCount = useLiveQuery(
-    () => db.pendingActions.where('status').equals('pending').count(),
-    []
-  ) || 0;
+  const pendingCount =
+    useLiveQuery(
+      () => db.pendingActions.where("status").equals("pending").count(),
+      [],
+    ) || 0;
 
   const handleCreateRoom = async () => {
     setIsCreatingRoom(true);
@@ -73,12 +74,12 @@ function HomeContent() {
         sortKeys: [],
         totalQuestions: 10,
         maxBuzzesPerRound: 2,
-        visibility: 'private'
+        visibility: "private",
       });
       router.push(`/battle/${resp.roomId}?token=${resp.joinToken}`);
     } catch (err) {
-      logger.error('Failed to create room', err);
-      alert('ルームの作成に失敗しました');
+      logger.error("Failed to create room", err);
+      alert("ルームの作成に失敗しました");
     } finally {
       setIsCreatingRoom(false);
     }
@@ -90,13 +91,20 @@ function HomeContent() {
         <Card border="primary" bg="primary" className="bg-opacity-5">
           <Flex justify="between" align="center" gap="md" className="flex-wrap">
             <Stack gap="xs">
-              <Text variant="detail" weight="bold" color="primary">ログインしてさらに楽しもう</Text>
+              <Text variant="detail" weight="bold" color="primary">
+                ログインしてさらに楽しもう
+              </Text>
               <Text variant="xs" color="secondary">
                 クイズの作成、お気に入り登録、修正依頼の送信など、全ての機能が利用可能になります。
               </Text>
             </Stack>
             <Link href="/login">
-              <Button variant="solid" color="primary" size="sm" className="gap-2">
+              <Button
+                variant="solid"
+                color="primary"
+                size="sm"
+                className="gap-2"
+              >
                 <LogIn size={18} />
                 ログイン / 新規登録
               </Button>
@@ -110,15 +118,19 @@ function HomeContent() {
             <WifiOff size={18} className="text-amber-500" />
             <Text variant="body" color="secondary">
               {isOnline
-                ? 'サーバーに接続できないため、キャッシュ済みのコンテンツを表示しています。'
-                : 'オフラインモードです。キャッシュ済みのコンテンツのみを表示しています。'}
+                ? "サーバーに接続できないため、キャッシュ済みのコンテンツを表示しています。"
+                : "オフラインモードです。キャッシュ済みのコンテンツのみを表示しています。"}
             </Text>
           </Flex>
         </View>
       )}
 
       {pendingCount > 0 && (
-        <Card border="primary" bg="card" className="border-brand-primary/30 mb-4 overflow-hidden relative">
+        <Card
+          border="primary"
+          bg="card"
+          className="border-brand-primary/30 mb-4 overflow-hidden relative"
+        >
           <Link href="/settings/sync">
             <Flex justify="between" align="center" gap="md">
               <Flex gap="md" align="center">
@@ -186,7 +198,13 @@ function HomeContent() {
       <Grid cols={{ sm: 1, md: 2 }} gap="md">
         <MatchActionCard
           title="ルームを作成"
-          description={isOffline ? "オフラインでは利用できません" : (user ? "ルームを新規作成して友達を招待します" : "ログインが必要です")}
+          description={
+            isOffline
+              ? "オフラインでは利用できません"
+              : user
+                ? "ルームを新規作成して友達を招待します"
+                : "ログインが必要です"
+          }
           icon={<Plus size={32} />}
           onClick={handleCreateRoom}
           isLoading={isCreatingRoom}
@@ -195,9 +213,13 @@ function HomeContent() {
 
         <MatchActionCard
           title="ルームに参加"
-          description={isOffline ? "オフラインでは利用できません" : "公開ルーム一覧から対戦に参加します"}
+          description={
+            isOffline
+              ? "オフラインでは利用できません"
+              : "公開ルーム一覧から対戦に参加します"
+          }
           icon={<LogIn size={32} />}
-          onClick={() => router.push('/battle/lobby')}
+          onClick={() => router.push("/battle/lobby")}
           disabled={isOffline}
         />
       </Grid>
@@ -218,22 +240,22 @@ function HomeContent() {
 
   const tabItems: TabItem[] = [
     {
-      id: 'dashboard',
-      label: 'ダッシュボード',
+      id: "dashboard",
+      label: "ダッシュボード",
       icon: <LayoutGrid size={18} />,
-      content: dashboardContent
+      content: dashboardContent,
     },
     {
-      id: 'timeline',
-      label: 'タイムライン',
+      id: "timeline",
+      label: "タイムライン",
       icon: <History size={18} />,
-      content: timelineContent
+      content: timelineContent,
     },
     {
-      id: 'battle',
-      label: '対戦',
+      id: "battle",
+      label: "対戦",
       icon: <Swords size={18} />,
-      content: battleContent
+      content: battleContent,
     },
   ];
 
@@ -255,11 +277,13 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <Suspense fallback={
-      <View className="min-h-screen bg-surface-muted py-12 flex justify-center">
-        <Spinner size="lg" />
-      </View>
-    }>
+    <Suspense
+      fallback={
+        <View className="min-h-screen bg-surface-muted py-12 flex justify-center">
+          <Spinner size="lg" />
+        </View>
+      }
+    >
       <HomeContent />
     </Suspense>
   );
