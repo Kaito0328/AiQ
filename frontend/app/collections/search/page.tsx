@@ -15,12 +15,9 @@ import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { CollectionCard } from "@/src/features/collections/components/CollectionCard";
 import { searchCollections } from "@/src/features/collections/api";
 import { Collection } from "@/src/entities/collection";
-import {
-  getAllOfflineCollections,
-  getOfflineCollection,
-  getOfflineQuestions,
-} from "@/src/shared/api/offlineApi";
+import { getAllOfflineCollections } from "@/src/shared/api/offlineApi";
 import { isOfflineError } from "@/src/shared/api/isOfflineError";
+import { CollectionDetailPageContent } from "@/src/features/collections/components/CollectionDetailPageContent";
 import {
   Search,
   LayoutGrid,
@@ -215,39 +212,9 @@ function CollectionSearchPageContent() {
   const router = useRouter();
   const offlineCollectionId = searchParams.get("offlineCollectionId");
 
-  const [offlineCollection, setOfflineCollection] = useState<Collection | null>(
-    null,
-  );
-  const [offlineQuestions, setOfflineQuestions] = useState<string[]>([]);
-  const [offlineLoading, setOfflineLoading] = useState(false);
-
-  useEffect(() => {
-    if (!offlineCollectionId) return;
-
-    let cancelled = false;
-    const loadOfflineDetail = async () => {
-      setOfflineLoading(true);
-      try {
-        const [collection, questions] = await Promise.all([
-          getOfflineCollection(offlineCollectionId),
-          getOfflineQuestions(offlineCollectionId),
-        ]);
-
-        if (cancelled) return;
-        setOfflineCollection(collection || null);
-        setOfflineQuestions(questions.map((q) => q.questionText));
-      } finally {
-        if (!cancelled) {
-          setOfflineLoading(false);
-        }
-      }
-    };
-
-    void loadOfflineDetail();
-    return () => {
-      cancelled = true;
-    };
-  }, [offlineCollectionId]);
+  if (offlineCollectionId) {
+    return <CollectionDetailPageContent collectionId={offlineCollectionId} />;
+  }
 
   const initialQuery = searchParams.get("q")?.trim() ?? "";
   const initialSort = normalizeSort(searchParams.get("sort"));
@@ -492,288 +459,226 @@ function CollectionSearchPageContent() {
   return (
     <View className="min-h-screen bg-surface-muted pt-4 pb-20 sm:py-8">
       <Container className="px-3 sm:px-6 lg:px-8">
-        {offlineCollectionId ? (
           <Stack gap="md">
-            <Flex justify="between" align="center" className="flex-wrap gap-2">
-              <Text variant="h4" weight="bold" className="tracking-tight">
-                オフラインコレクション
-              </Text>
-              <Button
-                variant="outline"
-                color="secondary"
-                onClick={() => router.replace("/collections/search")}
-              >
-                検索に戻る
-              </Button>
-            </Flex>
-
-            {offlineLoading ? (
-              <View className="py-10 flex justify-center">
-                <Spinner size="lg" />
-              </View>
-            ) : !offlineCollection ? (
-              <Card border="danger" bg="card">
-                <Text color="danger" align="center">
-                  このコレクションのオフラインデータが見つかりません
+            <Stack gap="xs">
+              <Flex gap="sm" align="center">
+                <Text variant="h4" weight="bold" className="tracking-tight">
+                  コレクション検索
                 </Text>
-              </Card>
-            ) : (
-              <Stack gap="md">
-                <Card border="base" bg="card">
-                  <Stack gap="sm">
-                    <Text variant="h3" weight="bold">
-                      {offlineCollection.name}
+                {showOfflineCacheBadge && (
+                  <Flex
+                    gap="xs"
+                    align="center"
+                    className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
+                  >
+                    <WifiOff size={12} />
+                    <Text variant="xs" weight="bold" className="text-amber-700">
+                      オフライン
                     </Text>
-                    <Text variant="detail" color="secondary">
-                      {offlineCollection.descriptionText || "説明はありません"}
-                    </Text>
-                    <Text variant="xs" color="secondary">
-                      問題数: {offlineQuestions.length}
-                    </Text>
-                  </Stack>
-                </Card>
+                  </Flex>
+                )}
+              </Flex>
+            </Stack>
 
-                <Card border="base" bg="card">
-                  <Stack gap="xs">
-                    <Text variant="detail" weight="bold">
-                      問題一覧
-                    </Text>
-                    {offlineQuestions.length === 0 ? (
-                      <Text variant="xs" color="secondary">
-                        問題データがありません
-                      </Text>
-                    ) : (
-                      <Stack gap="xs">
-                        {offlineQuestions.map((q, idx) => (
-                          <Text key={`${idx}-${q}`} variant="xs" color="secondary">
-                            {idx + 1}. {q}
-                          </Text>
-                        ))}
-                      </Stack>
-                    )}
-                  </Stack>
-                </Card>
-              </Stack>
-            )}
-          </Stack>
-        ) : (
-        <Stack gap="md">
-          <Stack gap="xs">
-            <Flex gap="sm" align="center">
-              <Text variant="h4" weight="bold" className="tracking-tight">
-                コレクション検索
-              </Text>
-              {showOfflineCacheBadge && (
+            <Stack gap="xs">
+              <Flex gap="xs" align="center">
+                <Input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="例: #英語 単語"
+                  className="w-full !text-sm !py-2"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
+                />
+                <Button
+                  onClick={handleSearch}
+                  className="h-10 w-10 min-w-10 p-0"
+                  color="primary"
+                  title="検索"
+                  aria-label="検索"
+                >
+                  <Search size={16} />
+                </Button>
+              </Flex>
+
+              <View className="overflow-x-auto -mx-1 px-1">
                 <Flex
                   gap="xs"
                   align="center"
-                  className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
+                  className="min-w-max flex-nowrap py-0.5"
                 >
-                  <WifiOff size={12} />
-                  <Text variant="xs" weight="bold" className="text-amber-700">
-                    オフライン
-                  </Text>
-                </Flex>
-              )}
-            </Flex>
-          </Stack>
-
-          <Stack gap="xs">
-            <Flex gap="xs" align="center">
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="例: #英語 単語"
-                className="w-full !text-sm !py-2"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSearch();
-                  }
-                }}
-              />
-              <Button
-                onClick={handleSearch}
-                className="h-10 w-10 min-w-10 p-0"
-                color="primary"
-                title="検索"
-                aria-label="検索"
-              >
-                <Search size={16} />
-              </Button>
-            </Flex>
-
-            <View className="overflow-x-auto -mx-1 px-1">
-              <Flex
-                gap="xs"
-                align="center"
-                className="min-w-max flex-nowrap py-0.5"
-              >
-                <View className="text-secondary shrink-0">
-                  <ArrowUpDown size={16} />
-                </View>
-                <Select
-                  value={sort}
-                  onChange={(e) =>
-                    setSort(
-                      e.target.value as
-                        | "new"
-                        | "popular"
-                        | "difficultyAsc"
-                        | "difficultyDesc",
-                    )
-                  }
-                  className="!text-sm !py-2"
-                >
-                  <option value="popular">人気</option>
-                  <option value="new">新着</option>
-                  <option value="difficultyAsc">易→難</option>
-                  <option value="difficultyDesc">難→易</option>
-                </Select>
-                <View className="w-2 shrink-0" />
-                <View className="text-secondary shrink-0">
-                  <SlidersHorizontal size={16} />
-                </View>
-                <Select
-                  value={difficultyLevel}
-                  onChange={(e) => setDifficultyLevel(e.target.value)}
-                  className="min-w-[94px] flex-1 !text-sm !py-2"
-                >
-                  <option value="1">Lv1</option>
-                  <option value="2">Lv2</option>
-                  <option value="3">Lv3</option>
-                  <option value="4">Lv4</option>
-                  <option value="5">Lv5</option>
-                </Select>
-                <Select
-                  value={difficultyMode}
-                  onChange={(e) =>
-                    setDifficultyMode(
-                      e.target.value as "none" | "exact" | "atLeast" | "atMost",
-                    )
-                  }
-                  className="min-w-[94px] flex-1 !text-sm !py-2"
-                >
-                  <option value="none">指定なし</option>
-                  <option value="exact">一致</option>
-                  <option value="atLeast">以上</option>
-                  <option value="atMost">以下</option>
-                </Select>
-              </Flex>
-            </View>
-          </Stack>
-
-          <Flex justify="between" align="center" className="pt-1">
-            <Text variant="detail" color="secondary" weight="bold">
-              表示中 {results.length} 件
-            </Text>
-            <Flex gap="sm" align="center">
-              <Flex
-                gap="xs"
-                align="center"
-                className="bg-surface-muted/50 p-1 rounded-lg border border-surface-muted"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "w-8 h-8 p-0 transition-all",
-                    viewMode === "grid"
-                      ? "bg-surface-base shadow-sm text-brand-primary"
-                      : "text-secondary",
-                  )}
-                  onClick={() => handleViewModeChange("grid")}
-                  title="グリッド表示"
-                >
-                  <LayoutGrid size={16} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "w-8 h-8 p-0 transition-all",
-                    viewMode === "list"
-                      ? "bg-surface-base shadow-sm text-brand-primary"
-                      : "text-secondary",
-                  )}
-                  onClick={() => handleViewModeChange("list")}
-                  title="インライン表示"
-                >
-                  <List size={16} />
-                </Button>
-              </Flex>
-            </Flex>
-          </Flex>
-
-          {loading && results.length === 0 ? (
-            <View className="py-10 flex justify-center">
-              <Spinner size="lg" />
-            </View>
-          ) : error && results.length === 0 ? (
-            <Card border="danger" bg="card">
-              <Text color="danger" align="center">
-                {error}
-              </Text>
-            </Card>
-          ) : results.length === 0 ? (
-            <Card border="base" bg="card">
-              <Text color="secondary" align="center">
-                条件に一致するコレクションがありません
-              </Text>
-            </Card>
-          ) : viewMode === "list" ? (
-            <Stack
-              gap="none"
-              className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5"
-            >
-              {results.map((collection) => (
-                <CollectionCard
-                  key={collection.id}
-                  collection={collection}
-                  displayMode="list"
-                />
-              ))}
-            </Stack>
-          ) : (
-            <Grid cols={{ base: 1, md: 2, lg: 2, xl: 3 }} gap="md">
-              {results.map((collection) => (
-                <CollectionCard
-                  key={collection.id}
-                  collection={collection}
-                  displayMode="grid"
-                />
-              ))}
-            </Grid>
-          )}
-
-          {results.length > 0 ? (
-            <Stack gap="xs" className="pt-2">
-              {loadMoreError ? (
-                <Text variant="detail" color="danger" align="center">
-                  {loadMoreError}
-                </Text>
-              ) : null}
-
-              {hasMore ? (
-                <Flex justify="center">
-                  <Button
-                    variant="outline"
-                    color="secondary"
-                    onClick={handleLoadMore}
-                    disabled={loadingMore}
+                  <View className="text-secondary shrink-0">
+                    <ArrowUpDown size={16} />
+                  </View>
+                  <Select
+                    value={sort}
+                    onChange={(e) =>
+                      setSort(
+                        e.target.value as
+                          | "new"
+                          | "popular"
+                          | "difficultyAsc"
+                          | "difficultyDesc",
+                      )
+                    }
+                    className="!text-sm !py-2"
                   >
-                    {loadingMore ? "読み込み中..." : "もっと見る"}
+                    <option value="popular">人気</option>
+                    <option value="new">新着</option>
+                    <option value="difficultyAsc">易→難</option>
+                    <option value="difficultyDesc">難→易</option>
+                  </Select>
+                  <View className="w-2 shrink-0" />
+                  <View className="text-secondary shrink-0">
+                    <SlidersHorizontal size={16} />
+                  </View>
+                  <Select
+                    value={difficultyLevel}
+                    onChange={(e) => setDifficultyLevel(e.target.value)}
+                    className="min-w-[94px] flex-1 !text-sm !py-2"
+                  >
+                    <option value="1">Lv1</option>
+                    <option value="2">Lv2</option>
+                    <option value="3">Lv3</option>
+                    <option value="4">Lv4</option>
+                    <option value="5">Lv5</option>
+                  </Select>
+                  <Select
+                    value={difficultyMode}
+                    onChange={(e) =>
+                      setDifficultyMode(
+                        e.target.value as
+                          | "none"
+                          | "exact"
+                          | "atLeast"
+                          | "atMost",
+                      )
+                    }
+                    className="min-w-[94px] flex-1 !text-sm !py-2"
+                  >
+                    <option value="none">指定なし</option>
+                    <option value="exact">一致</option>
+                    <option value="atLeast">以上</option>
+                    <option value="atMost">以下</option>
+                  </Select>
+                </Flex>
+              </View>
+            </Stack>
+
+            <Flex justify="between" align="center" className="pt-1">
+              <Text variant="detail" color="secondary" weight="bold">
+                表示中 {results.length} 件
+              </Text>
+              <Flex gap="sm" align="center">
+                <Flex
+                  gap="xs"
+                  align="center"
+                  className="bg-surface-muted/50 p-1 rounded-lg border border-surface-muted"
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "w-8 h-8 p-0 transition-all",
+                      viewMode === "grid"
+                        ? "bg-surface-base shadow-sm text-brand-primary"
+                        : "text-secondary",
+                    )}
+                    onClick={() => handleViewModeChange("grid")}
+                    title="グリッド表示"
+                  >
+                    <LayoutGrid size={16} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={cn(
+                      "w-8 h-8 p-0 transition-all",
+                      viewMode === "list"
+                        ? "bg-surface-base shadow-sm text-brand-primary"
+                        : "text-secondary",
+                    )}
+                    onClick={() => handleViewModeChange("list")}
+                    title="インライン表示"
+                  >
+                    <List size={16} />
                   </Button>
                 </Flex>
-              ) : (
-                <Text variant="detail" color="secondary" align="center">
-                  すべて表示しました
+              </Flex>
+            </Flex>
+
+            {loading && results.length === 0 ? (
+              <View className="py-10 flex justify-center">
+                <Spinner size="lg" />
+              </View>
+            ) : error && results.length === 0 ? (
+              <Card border="danger" bg="card">
+                <Text color="danger" align="center">
+                  {error}
                 </Text>
-              )}
-            </Stack>
-          ) : null}
-        </Stack>
-        )}
+              </Card>
+            ) : results.length === 0 ? (
+              <Card border="base" bg="card">
+                <Text color="secondary" align="center">
+                  条件に一致するコレクションがありません
+                </Text>
+              </Card>
+            ) : viewMode === "list" ? (
+              <Stack
+                gap="none"
+                className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5"
+              >
+                {results.map((collection) => (
+                  <CollectionCard
+                    key={collection.id}
+                    collection={collection}
+                    displayMode="list"
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <Grid cols={{ base: 1, md: 2, lg: 2, xl: 3 }} gap="md">
+                {results.map((collection) => (
+                  <CollectionCard
+                    key={collection.id}
+                    collection={collection}
+                    displayMode="grid"
+                  />
+                ))}
+              </Grid>
+            )}
+
+            {results.length > 0 ? (
+              <Stack gap="xs" className="pt-2">
+                {loadMoreError ? (
+                  <Text variant="detail" color="danger" align="center">
+                    {loadMoreError}
+                  </Text>
+                ) : null}
+
+                {hasMore ? (
+                  <Flex justify="center">
+                    <Button
+                      variant="outline"
+                      color="secondary"
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                    >
+                      {loadingMore ? "読み込み中..." : "もっと見る"}
+                    </Button>
+                  </Flex>
+                ) : (
+                  <Text variant="detail" color="secondary" align="center">
+                    すべて表示しました
+                  </Text>
+                )}
+              </Stack>
+            ) : null}
+          </Stack>
       </Container>
     </View>
   );

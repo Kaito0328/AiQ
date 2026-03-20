@@ -62,7 +62,12 @@ export function useSafeRouter() {
   };
 
   const safePush = async (href: string, options?: RouterPushOptions) => {
-    if (!isOnline) {
+    const isRuntimeOffline =
+      typeof window !== "undefined" &&
+      (localStorage.getItem("aiq_manual_offline") === "true" ||
+        !navigator.onLine);
+
+    if (!isOnline || isRuntimeOffline) {
       const pathname =
         typeof window !== "undefined"
           ? new URL(href, window.location.origin).pathname
@@ -203,7 +208,12 @@ export function useSafeRouter() {
   };
 
   const safeReplace = (href: string, options?: RouterPushOptions) => {
-    if (!isOnline && !href.startsWith("/home") && href !== "/") {
+    const isRuntimeOffline =
+      typeof window !== "undefined" &&
+      (localStorage.getItem("aiq_manual_offline") === "true" ||
+        !navigator.onLine);
+
+    if ((!isOnline || isRuntimeOffline) && !href.startsWith("/home") && href !== "/") {
       showToast({
         message: "オフラインのため、遷移を制限しています",
         variant: "danger",
