@@ -15,7 +15,11 @@ import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { CollectionCard } from "@/src/features/collections/components/CollectionCard";
 import { searchCollections } from "@/src/features/collections/api";
 import { Collection } from "@/src/entities/collection";
-import { getAllOfflineCollections } from "@/src/shared/api/offlineApi";
+import {
+  getAllOfflineCollections,
+  getOfflineCollection,
+  getOfflineQuestions,
+} from "@/src/shared/api/offlineApi";
 import { isOfflineError } from "@/src/shared/api/isOfflineError";
 import {
   Search,
@@ -209,6 +213,41 @@ function CollectionSearchPageContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+  const offlineCollectionId = searchParams.get("offlineCollectionId");
+
+  const [offlineCollection, setOfflineCollection] = useState<Collection | null>(
+    null,
+  );
+  const [offlineQuestions, setOfflineQuestions] = useState<string[]>([]);
+  const [offlineLoading, setOfflineLoading] = useState(false);
+
+  useEffect(() => {
+    if (!offlineCollectionId) return;
+
+    let cancelled = false;
+    const loadOfflineDetail = async () => {
+      setOfflineLoading(true);
+      try {
+        const [collection, questions] = await Promise.all([
+          getOfflineCollection(offlineCollectionId),
+          getOfflineQuestions(offlineCollectionId),
+        ]);
+
+        if (cancelled) return;
+        setOfflineCollection(collection || null);
+        setOfflineQuestions(questions.map((q) => q.questionText));
+      } finally {
+        if (!cancelled) {
+          setOfflineLoading(false);
+        }
+      }
+    };
+
+    void loadOfflineDetail();
+    return () => {
+      cancelled = true;
+    };
+  }, [offlineCollectionId]);
 
   const initialQuery = searchParams.get("q")?.trim() ?? "";
   const initialSort = normalizeSort(searchParams.get("sort"));
@@ -453,6 +492,71 @@ function CollectionSearchPageContent() {
   return (
     <View className="min-h-screen bg-surface-muted pt-4 pb-20 sm:py-8">
       <Container className="px-3 sm:px-6 lg:px-8">
+        {offlineCollectionId ? (
+          <Stack gap="md">
+            <Flex justify="between" align="center" className="flex-wrap gap-2">
+              <Text variant="h4" weight="bold" className="tracking-tight">
+                オフラインコレクション
+              </Text>
+              <Button
+                variant="outline"
+                color="secondary"
+                onClick={() => router.replace("/collections/search")}
+              >
+                検索に戻る
+              </Button>
+            </Flex>
+
+            {offlineLoading ? (
+              <View className="py-10 flex justify-center">
+                <Spinner size="lg" />
+              </View>
+            ) : !offlineCollection ? (
+              <Card border="danger" bg="card">
+                <Text color="danger" align="center">
+                  このコレクションのオフラインデータが見つかりません
+                </Text>
+              </Card>
+            ) : (
+              <Stack gap="md">
+                <Card border="base" bg="card">
+                  <Stack gap="sm">
+                    <Text variant="h3" weight="bold">
+                      {offlineCollection.name}
+                    </Text>
+                    <Text variant="detail" color="secondary">
+                      {offlineCollection.descriptionText || "説明はありません"}
+                    </Text>
+                    <Text variant="xs" color="secondary">
+                      問題数: {offlineQuestions.length}
+                    </Text>
+                  </Stack>
+                </Card>
+
+                <Card border="base" bg="card">
+                  <Stack gap="xs">
+                    <Text variant="detail" weight="bold">
+                      問題一覧
+                    </Text>
+                    {offlineQuestions.length === 0 ? (
+                      <Text variant="xs" color="secondary">
+                        問題データがありません
+                      </Text>
+                    ) : (
+                      <Stack gap="xs">
+                        {offlineQuestions.map((q, idx) => (
+                          <Text key={`${idx}-${q}`} variant="xs" color="secondary">
+                            {idx + 1}. {q}
+                          </Text>
+                        ))}
+                      </Stack>
+                    )}
+                  </Stack>
+                </Card>
+              </Stack>
+            )}
+          </Stack>
+        ) : (
         <Stack gap="md">
           <Stack gap="xs">
             <Flex gap="sm" align="center">
@@ -669,6 +773,7 @@ function CollectionSearchPageContent() {
             </Stack>
           ) : null}
         </Stack>
+        )}
       </Container>
     </View>
   );

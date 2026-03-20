@@ -167,15 +167,6 @@ export function UserContentTabs({
                     <Text variant="detail" color="secondary" weight="bold">
                       {displayedCollections.length} 個のコレクション
                     </Text>
-                    {isCollectionsOffline && (
-                      <Text
-                        variant="xs"
-                        color="secondary"
-                        className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full font-bold"
-                      >
-                        Offline
-                      </Text>
-                    )}
                   </Flex>
                   <Flex gap="xs" align="center">
                     {collectionActions}
