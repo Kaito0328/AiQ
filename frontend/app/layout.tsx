@@ -32,8 +32,8 @@ export const metadata: Metadata = {
     ],
   },
   other: {
-    google: "notranslate"
-  }
+    google: "notranslate",
+  },
 };
 
 export const viewport: Viewport = {
@@ -69,9 +69,7 @@ export default function RootLayout({
                 <ToastProvider>
                   <PwaUpdater />
                   <Header />
-                  <main className="pb-16 sm:pb-0">
-                    {children}
-                  </main>
+                  <main className="pb-16 sm:pb-0">{children}</main>
                   <BottomNav />
                 </ToastProvider>
               </AudioProvider>

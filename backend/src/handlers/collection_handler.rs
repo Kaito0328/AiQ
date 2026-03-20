@@ -10,7 +10,7 @@ use crate::{models::user::User, utils::jwt::Claims};
 
 // --- Collection Handlers ---
 use crate::dtos::collection_dto::{
-    CreateCollectionRequest, UpsertCollectionSearchMetadataRequest, UpdateCollectionRequest,
+    CreateCollectionRequest, UpdateCollectionRequest, UpsertCollectionSearchMetadataRequest,
 };
 use crate::models::collection::Collection;
 use crate::services::collection_service::CollectionService;
@@ -138,7 +138,7 @@ pub async fn get_collection(
                 response_headers.insert(axum::http::header::LAST_MODIFIED, val);
             }
             Ok((response_headers, Json(collection)).into_response())
-        },
+        }
         Err(sqlx::Error::RowNotFound) => Err(StatusCode::NOT_FOUND), // 存在しない、または非公開
         Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
     }
@@ -333,8 +333,13 @@ pub async fn upsert_collection_search_metadata(
     Path(collection_id): Path<Uuid>,
     Json(payload): Json<UpsertCollectionSearchMetadataRequest>,
 ) -> Result<StatusCode, StatusCode> {
-    match CollectionService::upsert_search_metadata(&state.db, collection_id, claims.user_id(), payload)
-        .await
+    match CollectionService::upsert_search_metadata(
+        &state.db,
+        collection_id,
+        claims.user_id(),
+        payload,
+    )
+    .await
     {
         Ok(true) => Ok(StatusCode::NO_CONTENT),
         Ok(false) => Err(StatusCode::FORBIDDEN),

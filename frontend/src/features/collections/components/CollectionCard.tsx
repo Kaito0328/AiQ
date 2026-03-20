@@ -96,7 +96,11 @@ export function CollectionCard({
 
   const renderDifficultyStars = (size: number = 12) => {
     return (
-      <Flex gap="none" align="center" title={`難易度 ${normalizedDifficulty}/5`}>
+      <Flex
+        gap="none"
+        align="center"
+        title={`難易度 ${normalizedDifficulty}/5`}
+      >
         {Array.from({ length: 5 }).map((_, index) => {
           const filled = index < normalizedDifficulty;
           return (
@@ -338,7 +342,11 @@ export function CollectionCard({
                       ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                       : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
                   )}
-                  title={isOpen ? "公開中（タップで非公開）" : "非公開（タップで公開）"}
+                  title={
+                    isOpen
+                      ? "公開中（タップで非公開）"
+                      : "非公開（タップで公開）"
+                  }
                   onClick={handleToggleVisibility}
                   disabled={isTogglingOpen}
                 >
@@ -487,7 +495,9 @@ export function CollectionCard({
                   </Flex>
                 )}
 
-                <Flex className="w-[76px] justify-end">{renderDifficultyStars(11)}</Flex>
+                <Flex className="w-[76px] justify-end">
+                  {renderDifficultyStars(11)}
+                </Flex>
                 <Flex
                   gap="xs"
                   align="center"
@@ -663,8 +673,13 @@ export function CollectionCard({
                     )}
                   </Button>
                   {collection.userRank && (
-                    <Text variant="xs" weight="bold" color="primary" title="あなたのランキング順位">
-                        {collection.userRank}位
+                    <Text
+                      variant="xs"
+                      weight="bold"
+                      color="primary"
+                      title="あなたのランキング順位"
+                    >
+                      {collection.userRank}位
                     </Text>
                   )}
                 </Flex>

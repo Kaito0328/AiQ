@@ -40,8 +40,13 @@ interface SWRResult<T> {
  * 3. オフライン/ネットワーク失敗時のみ cacheReader() でフォールバック表示
  */
 export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
-  const { cacheReader, fetcher, cacheWriter, enabled = true, deps = [] } =
-    options;
+  const {
+    cacheReader,
+    fetcher,
+    cacheWriter,
+    enabled = true,
+    deps = [],
+  } = options;
 
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);

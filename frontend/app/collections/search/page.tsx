@@ -62,7 +62,13 @@ function normalizeDifficultyMode(value: string | null): DifficultyMode {
 }
 
 function normalizeDifficultyLevel(value: string | null): string {
-  if (value === "1" || value === "2" || value === "3" || value === "4" || value === "5") {
+  if (
+    value === "1" ||
+    value === "2" ||
+    value === "3" ||
+    value === "4" ||
+    value === "5"
+  ) {
     return value;
   }
   return "3";
@@ -146,10 +152,12 @@ function CollectionSearchPageContent() {
 
   const [query, setQuery] = useState(initialQuery);
   const [sort, setSort] = useState<SortOption>(initialSort);
-  const [difficultyMode, setDifficultyMode] =
-    useState<DifficultyMode>(initialDifficultyMode);
-  const [difficultyLevel, setDifficultyLevel] =
-    useState<string>(initialDifficultyLevel);
+  const [difficultyMode, setDifficultyMode] = useState<DifficultyMode>(
+    initialDifficultyMode,
+  );
+  const [difficultyLevel, setDifficultyLevel] = useState<string>(
+    initialDifficultyLevel,
+  );
   const [viewMode, setViewMode] = useState<ViewMode>(initialViewMode);
 
   const [results, setResults] = useState<Collection[]>([]);
@@ -348,85 +356,89 @@ function CollectionSearchPageContent() {
           </Stack>
 
           <Stack gap="xs">
-              <Flex gap="xs" align="center">
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="例: #英語 単語"
-                  className="w-full !text-sm !py-2"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSearch();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={handleSearch}
-                  className="h-10 w-10 min-w-10 p-0"
-                  color="primary"
-                  title="検索"
-                  aria-label="検索"
-                >
-                  <Search size={16} />
-                </Button>
-              </Flex>
+            <Flex gap="xs" align="center">
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="例: #英語 単語"
+                className="w-full !text-sm !py-2"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSearch();
+                  }
+                }}
+              />
+              <Button
+                onClick={handleSearch}
+                className="h-10 w-10 min-w-10 p-0"
+                color="primary"
+                title="検索"
+                aria-label="検索"
+              >
+                <Search size={16} />
+              </Button>
+            </Flex>
 
-              <View className="overflow-x-auto -mx-1 px-1">
-                <Flex gap="xs" align="center" className="min-w-max flex-nowrap py-0.5">
-                  <View className="text-secondary shrink-0">
-                    <ArrowUpDown size={16} />
-                  </View>
-                  <Select
-                    value={sort}
-                    onChange={(e) =>
-                      setSort(
-                        e.target.value as
-                          | "new"
-                          | "popular"
-                          | "difficultyAsc"
-                          | "difficultyDesc",
-                      )
-                    }
-                    className="!text-sm !py-2"
-                  >
-                    <option value="popular">人気</option>
-                    <option value="new">新着</option>
-                    <option value="difficultyAsc">易→難</option>
-                    <option value="difficultyDesc">難→易</option>
-                  </Select>
-                  <View className="w-2 shrink-0" />
-                  <View className="text-secondary shrink-0">
-                    <SlidersHorizontal size={16} />
-                  </View>
-                  <Select
-                    value={difficultyLevel}
-                    onChange={(e) => setDifficultyLevel(e.target.value)}
-                    className="min-w-[94px] flex-1 !text-sm !py-2"
-                  >
-                    <option value="1">Lv1</option>
-                    <option value="2">Lv2</option>
-                    <option value="3">Lv3</option>
-                    <option value="4">Lv4</option>
-                    <option value="5">Lv5</option>
-                  </Select>
-                  <Select
-                    value={difficultyMode}
-                    onChange={(e) =>
-                      setDifficultyMode(
-                        e.target.value as "none" | "exact" | "atLeast" | "atMost",
-                      )
-                    }
-                    className="min-w-[94px] flex-1 !text-sm !py-2"
-                  >
-                    <option value="none">指定なし</option>
-                    <option value="exact">一致</option>
-                    <option value="atLeast">以上</option>
-                    <option value="atMost">以下</option>
-                  </Select>
-                </Flex>
-              </View>
-            </Stack>
+            <View className="overflow-x-auto -mx-1 px-1">
+              <Flex
+                gap="xs"
+                align="center"
+                className="min-w-max flex-nowrap py-0.5"
+              >
+                <View className="text-secondary shrink-0">
+                  <ArrowUpDown size={16} />
+                </View>
+                <Select
+                  value={sort}
+                  onChange={(e) =>
+                    setSort(
+                      e.target.value as
+                        | "new"
+                        | "popular"
+                        | "difficultyAsc"
+                        | "difficultyDesc",
+                    )
+                  }
+                  className="!text-sm !py-2"
+                >
+                  <option value="popular">人気</option>
+                  <option value="new">新着</option>
+                  <option value="difficultyAsc">易→難</option>
+                  <option value="difficultyDesc">難→易</option>
+                </Select>
+                <View className="w-2 shrink-0" />
+                <View className="text-secondary shrink-0">
+                  <SlidersHorizontal size={16} />
+                </View>
+                <Select
+                  value={difficultyLevel}
+                  onChange={(e) => setDifficultyLevel(e.target.value)}
+                  className="min-w-[94px] flex-1 !text-sm !py-2"
+                >
+                  <option value="1">Lv1</option>
+                  <option value="2">Lv2</option>
+                  <option value="3">Lv3</option>
+                  <option value="4">Lv4</option>
+                  <option value="5">Lv5</option>
+                </Select>
+                <Select
+                  value={difficultyMode}
+                  onChange={(e) =>
+                    setDifficultyMode(
+                      e.target.value as "none" | "exact" | "atLeast" | "atMost",
+                    )
+                  }
+                  className="min-w-[94px] flex-1 !text-sm !py-2"
+                >
+                  <option value="none">指定なし</option>
+                  <option value="exact">一致</option>
+                  <option value="atLeast">以上</option>
+                  <option value="atMost">以下</option>
+                </Select>
+              </Flex>
+            </View>
+          </Stack>
 
           <Flex justify="between" align="center" className="pt-1">
             <Text variant="detail" color="secondary" weight="bold">

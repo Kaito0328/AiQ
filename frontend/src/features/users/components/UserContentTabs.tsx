@@ -121,8 +121,7 @@ export function UserContentTabs({
     };
   }, [collections, isCollectionsOffline]);
 
-  const offlineVisibleCollections =
-    collections;
+  const offlineVisibleCollections = collections;
 
   const hiddenIdSet = React.useMemo(
     () => new Set(hiddenCollectionIds),
@@ -142,12 +141,11 @@ export function UserContentTabs({
       ? offlineReadyCollections
       : visibleCollections;
 
-  const offlineUnavailableCount =
-    isCollectionsOffline
-      ? visibleCollections.filter(
-          (c) => !collectionsWithCachedQuestions.has(c.id),
-        ).length
-      : 0;
+  const offlineUnavailableCount = isCollectionsOffline
+    ? visibleCollections.filter(
+        (c) => !collectionsWithCachedQuestions.has(c.id),
+      ).length
+    : 0;
 
   const items: TabItem[] = [
     {
@@ -191,7 +189,8 @@ export function UserContentTabs({
 
             {isCollectionsOffline && offlineUnavailableCount > 0 && (
               <Text variant="xs" color="secondary">
-                問題が未キャッシュの {offlineUnavailableCount} 件はオフライン中は開けません。
+                問題が未キャッシュの {offlineUnavailableCount}{" "}
+                件はオフライン中は開けません。
                 {showOfflineReadyOnly
                   ? " 現在は利用可能なものだけ表示しています。"
                   : " 必要なら「利用可能のみ」で絞り込めます。"}

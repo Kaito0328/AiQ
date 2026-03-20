@@ -23,7 +23,10 @@ pub fn app(state: AppState) -> Router {
         .route("/api/auth/register", post(handlers::user_handler::register))
         .route("/api/auth/login", post(handlers::user_handler::login))
         .route("/api/auth/me", get(handlers::user_handler::get_me))
-        .route("/api/auth/me", delete(handlers::user_handler::delete_account))
+        .route(
+            "/api/auth/me",
+            delete(handlers::user_handler::delete_account),
+        )
         .route(
             "/api/users/{user_id}/follow",
             post(handlers::follow_handler::follow_user),
@@ -222,10 +225,7 @@ pub fn app(state: AppState) -> Router {
             "/api/ai/complete",
             post(handlers::ai_handler::complete_ai_questions),
         )
-        .route(
-            "/api/ai/usage",
-            get(handlers::ai_handler::get_ai_usage),
-        )
+        .route("/api/ai/usage", get(handlers::ai_handler::get_ai_usage))
         .route(
             "/api/ws/generate/collection/{collection_id}",
             get(handlers::ai_handler::generate_ai_questions_ws),

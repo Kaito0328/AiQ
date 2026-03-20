@@ -212,7 +212,11 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
         </Flex>
 
         <View className="overflow-x-auto -mx-1 px-1">
-          <Flex gap="xs" align="center" className="min-w-max flex-nowrap py-0.5">
+          <Flex
+            gap="xs"
+            align="center"
+            className="min-w-max flex-nowrap py-0.5"
+          >
             <View className="text-secondary shrink-0">
               <ArrowUpDown size={16} />
             </View>
