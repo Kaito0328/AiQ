@@ -16,6 +16,27 @@ import { FormField } from '@/src/design/baseComponents/FormField';
 import { View } from '@/src/design/primitives/View';
 import { Modal } from '@/src/design/baseComponents/Modal';
 import AppConfig from '@/src/app_config';
+import { DifficultyStarsInput } from './DifficultyStarsInput';
+import { useToast } from '@/src/shared/contexts/ToastContext';
+
+const MAX_TAG_LENGTH = 10;
+const MAX_TAGS = 10;
+
+function parseTagInput(value: string): string[] {
+    const tags: string[] = [];
+    for (const part of value.split(/[\s,]+/)) {
+        const cleaned = part.trim().replace(/^#+/, '').toLowerCase();
+        if (!cleaned) continue;
+
+        const normalized = cleaned.slice(0, MAX_TAG_LENGTH);
+        if (!normalized) continue;
+        if (!tags.includes(normalized)) {
+            tags.push(normalized);
+        }
+        if (tags.length >= MAX_TAGS) break;
+    }
+    return tags;
+}
 
 interface CollectionCreateFormProps {
     onCreated: (collection: Collection) => void;
@@ -24,10 +45,13 @@ interface CollectionCreateFormProps {
 
 export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFormProps) {
     const { createCollection } = useCollectionMutations();
+    const { showToast } = useToast();
     const [name, setName] = useState('');
     const [descriptionText, setDescriptionText] = useState('');
     const [isOpen, setIsOpen] = useState(false);
     const [defaultMode, setDefaultMode] = useState<any>('omakase');
+    const [tagsText, setTagsText] = useState('');
+    const [difficultyLevel, setDifficultyLevel] = useState(3);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -40,15 +64,20 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
         setLoading(true);
         setError(null);
         try {
+            const tags = parseTagInput(tagsText);
             const collection = await createCollection({
                 name: name.trim(),
                 descriptionText: descriptionText.trim() || undefined,
                 isOpen,
-                defaultMode
+                defaultMode,
+                difficultyLevel,
+                tags,
             });
+            showToast({ message: 'コレクションを作成しました', variant: 'success' });
             onCreated(collection);
         } catch (err) {
             setError('作成に失敗しました');
+            showToast({ message: '作成に失敗しました', variant: 'danger' });
         } finally {
             setLoading(false);
         }
@@ -84,6 +113,19 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
                             />
                         </FormField>
 
+                        <Flex gap="sm" align="center" className="flex-nowrap">
+                            <Text variant="xs" weight="bold" className="shrink-0">
+                                難易度
+                            </Text>
+                            <DifficultyStarsInput
+                                value={difficultyLevel}
+                                onChange={setDifficultyLevel}
+                            />
+                            <Text variant="xs" color="secondary" className="shrink-0">
+                                {difficultyLevel}/5
+                            </Text>
+                        </Flex>
+
                         <FormField label="説明">
                             <TextArea
                                 value={descriptionText}
@@ -117,6 +159,17 @@ export function CollectionCreateForm({ onCreated, onCancel }: CollectionCreateFo
                                 <option value="fourChoice">4択</option>
                                 <option value="chips">文字チップ</option>
                             </Select>
+                        </FormField>
+
+                        <FormField
+                            label="タグ"
+                            description="空白かカンマで区切って入力（最大10個、1タグ10文字）。"
+                        >
+                            <Input
+                                value={tagsText}
+                                onChange={(e) => setTagsText(e.target.value)}
+                                placeholder="#英語 #TOEIC #中学"
+                            />
                         </FormField>
                     </Stack>
 

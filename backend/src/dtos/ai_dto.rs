@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct GenerateQuestionsRequest {
     pub prompt: String,
     pub count: Option<i32>,
+    pub collection_difficulty: Option<i16>,
     pub pdf_data: Option<String>, // Base64 encoded PDF
     pub pdf_page_count: Option<i32>,
     pub question_format: Option<String>,
@@ -56,6 +57,7 @@ pub struct CompleteQuestionsRequest {
     pub question_format: Option<String>,
     pub answer_format: Option<String>,
     pub explanation_language: Option<String>,
+    pub collection_difficulty: Option<i16>,
 }
 
 #[derive(Debug, Serialize)]

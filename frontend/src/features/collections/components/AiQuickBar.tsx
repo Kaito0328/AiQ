@@ -31,11 +31,12 @@ import { cn } from '@/src/shared/utils/cn';
 
 interface AiQuickBarProps {
     collectionId: string;
+    collectionDifficulty?: number;
     onSuccess: () => void;
     onOpenAdvanced?: (prompt: string, count: number) => void;
 }
 
-export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickBarProps) {
+export function AiQuickBar({ collectionId, collectionDifficulty, onSuccess, onOpenAdvanced }: AiQuickBarProps) {
     const [prompt, setPrompt] = useState('');
     const [count, setCount] = useState(5);
     const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
@@ -75,6 +76,7 @@ export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickB
         generate({
             prompt,
             count,
+            collectionDifficulty,
             pdfData: pdfBase64 || undefined,
             questionFormat: questionFormat || undefined,
             answerFormat: answerFormat || undefined,
@@ -127,7 +129,7 @@ export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickB
             onDrop={onDrop}
         >
             <Stack gap="md">
-                <Flex gap="sm" align="start" className="flex-col sm:flex-row">
+                <Flex gap="sm" align="center" className="flex-nowrap">
                     <Stack gap="sm" className="flex-1 w-full">
                         <View className="relative">
                             <Input
@@ -172,10 +174,12 @@ export function AiQuickBar({ collectionId, onSuccess, onOpenAdvanced }: AiQuickB
                         onClick={handleGenerate}
                         disabled={isProcessing || (!prompt.trim() && !pdfFile)}
                         loading={isProcessing}
-                        className="h-11 sm:h-12 px-6 sm:px-8 gap-2 w-full sm:w-auto shrink-0 shadow-lg shadow-brand-primary/20 font-bold"
+                        className="h-11 sm:h-12 px-3 sm:px-6 gap-1.5 shrink-0 shadow-lg shadow-brand-primary/20 font-bold"
                     >
                         {!isProcessing && <Sparkles size={18} />}
-                        生成開始
+                        <Text variant="xs" weight="bold" color="inherit" className="hidden sm:inline">
+                            生成開始
+                        </Text>
                     </Button>
                 </Flex>
 

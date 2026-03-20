@@ -45,6 +45,68 @@ export const getRecentCollections = async (limit = 20, offset = 0): Promise<Coll
     return await apiClient<Collection[]>(`/timeline/recent?limit=${limit}&offset=${offset}`, { authenticated: true });
 };
 
+export interface CollectionSearchParams {
+    q?: string;
+    tags?: string[];
+    difficultyLevel?: number;
+    difficultyMode?: 'exact' | 'atLeast' | 'atMost';
+    sort?: 'new' | 'popular' | 'difficultyAsc' | 'difficultyDesc';
+    limit?: number;
+    offset?: number;
+}
+
+export interface PopularTagItem {
+    tag: string;
+    count: number;
+}
+
+export const searchCollections = async (params: CollectionSearchParams): Promise<Collection[]> => {
+    const query = new URLSearchParams();
+    if (params.q?.trim()) {
+        query.set('q', params.q.trim());
+    }
+    if (params.tags && params.tags.length > 0) {
+        query.set('tags', params.tags.join(','));
+    }
+    if (params.difficultyLevel) {
+        query.set('difficultyLevel', String(params.difficultyLevel));
+    }
+    if (params.difficultyMode) {
+        query.set('difficultyMode', params.difficultyMode);
+    }
+    if (params.sort) {
+        query.set('sort', params.sort);
+    }
+    query.set('limit', String(params.limit ?? 50));
+    query.set('offset', String(params.offset ?? 0));
+
+    return await apiClient<Collection[]>(`/collections/search?${query.toString()}`, { authenticated: true });
+};
+
+export const getPopularCollectionTags = async (q?: string, limit: number = 20): Promise<PopularTagItem[]> => {
+    const query = new URLSearchParams();
+    if (q?.trim()) {
+        query.set('q', q.trim());
+    }
+    query.set('limit', String(limit));
+
+    return await apiClient<PopularTagItem[]>(`/collections/tags/popular?${query.toString()}`, { authenticated: true });
+};
+
+export const upsertCollectionSearchMetadata = async (
+    id: string,
+    data: { difficultyLevel?: number; tags?: string[] }
+): Promise<void> => {
+    await apiClient<void>(`/collections/${id}/search-metadata`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            difficultyLevel: data.difficultyLevel,
+            tags: data.tags,
+        }),
+        authenticated: true,
+    });
+};
+
 export const batchCollections = async (data: BatchCollectionsRequest): Promise<void> => {
     await apiClient<void>('/collections/batch', {
         method: 'POST',

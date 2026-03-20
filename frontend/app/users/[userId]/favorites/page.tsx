@@ -25,32 +25,16 @@ export default function FavoritesPage() {
 
     const [collections, setCollections] = useState<Collection[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isStale, setIsStale] = useState(false);
     const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid');
 
     useEffect(() => {
         let cancelled = false;
 
         const fetchFavorites = async () => {
-            // Step 1: キャッシュファースト — お気に入りフラグ付きのコレクションを表示
-            try {
-                const cached = await getAllOfflineCollections(false);
-                const favorites = cached.filter(c => c.isFavorited);
-                if (favorites.length > 0 && !cancelled) {
-                    setCollections(favorites);
-                    setIsStale(true);
-                    setLoading(false);
-                }
-            } catch {
-                // キャッシュ読み取りエラーは無視
-            }
-
-            // Step 2: APIからリバリデーション
             try {
                 const data = await listFavorites(userId);
                 if (cancelled) return;
                 setCollections(data);
-                setIsStale(false);
 
                 // キャッシュ更新
                 const savedAt = Date.now();
@@ -63,6 +47,16 @@ export default function FavoritesPage() {
                     });
                 }
             } catch (err) {
+                if (cancelled) return;
+
+                try {
+                    const cached = await getAllOfflineCollections(false);
+                    const favorites = cached.filter(c => c.isFavorited);
+                    setCollections(favorites);
+                } catch {
+                    // ignore cache read error on fallback
+                }
+
                 if (!isOfflineError(err)) {
                     logger.error('お気に入りの取得に失敗しました', err);
                 }
@@ -123,7 +117,7 @@ export default function FavoritesPage() {
                             <Text color="secondary">お気に入りのコレクションはまだありません</Text>
                         </View>
                     ) : (
-                        <Grid cols={displayMode === 'grid' ? { sm: 2, lg: 3 } : 1} gap="md">
+                        <Grid cols={displayMode === 'grid' ? { base: 1, md: 2, xl: 3 } : 1} gap="md">
                             {collections.map(collection => (
                                 <CollectionCard
                                     key={collection.id}

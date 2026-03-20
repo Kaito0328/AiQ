@@ -7,7 +7,7 @@ import { Flex } from '@/src/design/primitives/Flex';
 import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
-import { Menu, ArrowLeft, Volume2, VolumeX, LogOut, WifiOff, Wifi, Cloud } from 'lucide-react';
+import { Menu, ArrowLeft, Volume2, VolumeX, LogOut, WifiOff, Wifi } from 'lucide-react';
 import { MobileMenu } from './MobileMenu';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { usePathname } from 'next/navigation';
@@ -26,7 +26,7 @@ export function Header() {
     const { isAuthenticated } = useAuth();
     const { theme } = useTheme();
     const { isMuted, toggleMute } = useAudio();
-    const { isOnline, isManualOffline, setManualOffline } = useNetworkStatus();
+    const { isOnline, isNetworkOnline, isManualOffline, setManualOffline } = useNetworkStatus();
     const [mounted, setMounted] = useState(false);
     const pathname = usePathname();
 
@@ -38,11 +38,12 @@ export function Header() {
 
     const isBattleRoom = pathname.startsWith('/battle/') && pathname !== '/battle/lobby';
     const isQuizStart = pathname === '/quiz/start';
+    const isActuallyOffline = !isNetworkOnline;
 
     const isGameRoute = (pathname.startsWith('/quiz') && pathname !== '/quiz/resume' && !isQuizStart) || 
         pathname.includes('/ranking');
 
-    const showBackButton = pathname.startsWith('/collections/') || pathname === '/settings';
+    const showBackButton = (pathname.startsWith('/collections/') && pathname !== '/collections/search') || pathname === '/settings';
 
     const [isBattlePlaying, setIsBattlePlaying] = useState(false);
 
@@ -130,11 +131,6 @@ export function Header() {
                                     className="h-7 w-7 transition-transform group-hover:scale-110"
                                 />
                                 <Text variant="h4" weight="bold" color="primary" className="tracking-tight whitespace-nowrap">AiQ</Text>
-                                {!isOnline && mounted && (
-                                    <Text variant="xs" className="px-1.5 py-0.5 rounded bg-amber-500 text-white font-bold ml-1 animate-pulse-subtle">
-                                        OFFLINE
-                                    </Text>
-                                )}
                             </button>
                         </div>
 
@@ -144,15 +140,28 @@ export function Header() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setManualOffline(!isManualOffline)}
+                                    onClick={() => {
+                                        if (!isActuallyOffline) {
+                                            setManualOffline(!isManualOffline);
+                                        }
+                                    }}
+                                    disabled={isActuallyOffline}
                                     className={cn(
                                         "p-2 h-auto transition-colors rounded-lg flex items-center justify-center relative",
-                                        isManualOffline ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20" : "text-foreground hover:bg-surface-muted",
-                                        !isOnline && !isManualOffline && "opacity-60 cursor-not-allowed"
+                                        (isManualOffline || isActuallyOffline)
+                                            ? "text-amber-500 bg-amber-500/10 hover:bg-amber-500/20"
+                                            : "text-foreground hover:bg-surface-muted",
+                                        isActuallyOffline && "opacity-60 cursor-not-allowed"
                                     )}
-                                    title={isManualOffline ? "オンラインに戻る" : "オフラインモードを試す"}
+                                    title={
+                                        isActuallyOffline
+                                            ? "ネットワークオフライン中"
+                                            : isManualOffline
+                                                ? "オンラインに戻る"
+                                                : "オフラインモードを試す"
+                                    }
                                 >
-                                    {isManualOffline ? <WifiOff size={20} /> : <Wifi size={20} />}
+                                    {(isManualOffline || isActuallyOffline) ? <WifiOff size={20} /> : <Wifi size={20} />}
                                     {pendingCount > 0 && (
                                         <View
                                             className="absolute -top-1 -right-1 bg-brand-primary text-white text-[10px] font-bold px-1 py-0.5 rounded-full flex items-center justify-center min-w-[17px] h-[17px] border-2 border-surface-base shadow-sm z-20"

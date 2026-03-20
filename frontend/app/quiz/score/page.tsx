@@ -132,55 +132,57 @@ export default function QuizScorePage() {
                                 </Stack>
                             </View>
 
-                            <Flex gap="md" wrap justify="center">
-                                <Button
-                                    variant="solid"
-                                    color="primary"
-                                    onClick={() => openRetryOptions(false)}
-                                    className="gap-1.5"
-                                >
-                                    <RefreshCcw size={16} />
-                                    もう一度解く
-                                </Button>
-                                {answers.some(a => !a.correct) && (
-                                    <Button
-                                        variant="outline"
-                                        color="primary"
-                                        onClick={() => openRetryOptions(true)}
-                                        className="gap-1.5"
-                                    >
-                                        <XCircle size={16} />
-                                        間違えた問題のみ
-                                    </Button>
-                                )}
-                                {rankingResult && (
+                            <View className="w-full max-w-2xl">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                                     <Button
                                         variant="solid"
-                                        color="secondary"
-                                        onClick={() => router.push(`/collections/${rankingResult.collectionId}/ranking`)}
-                                        className="gap-1.5"
+                                        color="primary"
+                                        onClick={() => openRetryOptions(false)}
+                                        className="gap-1.5 w-full"
                                     >
-                                        <Trophy size={16} />
-                                        ランキング
+                                        <RefreshCcw size={16} />
+                                        再挑戦
                                     </Button>
-                                )}
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => router.push('/quiz/start')}
-                                    className="gap-1.5 border border-surface-muted-border"
-                                >
-                                    <Settings size={16} />
-                                    設定に戻る
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => router.push('/home')}
-                                    className="gap-1.5 border border-surface-muted-border"
-                                >
-                                    <Home size={16} />
-                                    ホーム
-                                </Button>
-                            </Flex>
+                                    {answers.some(a => !a.correct) && (
+                                        <Button
+                                            variant="outline"
+                                            color="primary"
+                                            onClick={() => openRetryOptions(true)}
+                                            className="gap-1.5 w-full"
+                                        >
+                                            <XCircle size={16} />
+                                            ミスのみ
+                                        </Button>
+                                    )}
+                                    {rankingResult && (
+                                        <Button
+                                            variant="solid"
+                                            color="secondary"
+                                            onClick={() => router.push(`/collections/${rankingResult.collectionId}/ranking`)}
+                                            className="gap-1.5 w-full"
+                                        >
+                                            <Trophy size={16} />
+                                            <span className="hidden sm:inline">ランキング</span>
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => router.push('/quiz/start')}
+                                        className="gap-1.5 border border-surface-muted-border w-full"
+                                    >
+                                        <Settings size={16} />
+                                        設定
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => router.push('/home')}
+                                        className="gap-1.5 border border-surface-muted-border w-full"
+                                    >
+                                        <Home size={16} />
+                                        ホーム
+                                    </Button>
+                                </div>
+                            </View>
                         </Stack>
                     </Card>
 

@@ -23,12 +23,13 @@ interface AiGenerationModalProps {
     isOpen: boolean;
     onClose: () => void;
     collectionId: string;
+    collectionDifficulty?: number;
     onSuccess: () => void;
     initialPrompt?: string;
     initialCount?: number;
 }
 
-export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess, initialPrompt, initialCount }: AiGenerationModalProps) {
+export function AiGenerationModal({ isOpen, onClose, collectionId, collectionDifficulty, onSuccess, initialPrompt, initialCount }: AiGenerationModalProps) {
     const [prompt, setPrompt] = useState(initialPrompt || '');
     const [count, setCount] = useState(initialCount || 5);
     const [explanationLanguage, setExplanationLanguage] = useState('');
@@ -72,6 +73,7 @@ export function AiGenerationModal({ isOpen, onClose, collectionId, onSuccess, in
         generate({
             prompt,
             count,
+            collectionDifficulty,
             pdfData: pdfBase64 || undefined,
             questionFormat: questionFormat || undefined,
             answerFormat: answerFormat || undefined,

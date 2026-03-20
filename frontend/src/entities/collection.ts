@@ -16,6 +16,8 @@ export interface Collection {
     questionCount?: number;
     isFavorited?: boolean;
     userRank?: number;
+    difficultyLevel?: number;
+    tags?: string[];
 }
 export interface CollectionSet {
     id: string; // Uuid

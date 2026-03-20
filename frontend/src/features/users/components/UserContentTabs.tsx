@@ -7,6 +7,7 @@ import { Stack } from "@/src/design/primitives/Stack";
 import { Tabs, TabItem } from "@/src/design/baseComponents/Tabs";
 import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { Text } from "@/src/design/baseComponents/Text";
+import { Button } from "@/src/design/baseComponents/Button";
 import { Grid } from "@/src/design/primitives/Grid";
 import {
   useUserCollections,
@@ -14,7 +15,6 @@ import {
 } from "@/src/features/collections/hooks/useCollections";
 import { CollectionCard } from "@/src/features/collections/components/CollectionCard";
 import { CollectionSetCard } from "@/src/features/collectionSets/components/CollectionSetCard";
-import { useAuth } from "@/src/shared/auth/useAuth";
 import { db } from "@/src/shared/db/db";
 
 interface UserContentTabsProps {
@@ -37,6 +37,7 @@ interface UserContentTabsProps {
   initialTab?: "collections" | "sets";
   hideExtras?: boolean;
   displayMode?: "grid" | "list";
+  hiddenCollectionIds?: string[];
 }
 
 export function UserContentTabs({
@@ -55,10 +56,8 @@ export function UserContentTabs({
   initialTab = "collections",
   hideExtras = false,
   displayMode = "list",
+  hiddenCollectionIds = [],
 }: UserContentTabsProps) {
-  const { user: currentUser } = useAuth();
-  const isOwnProfile = currentUser?.id === userId;
-
   const {
     collections,
     loading: collectionsLoading,
@@ -74,12 +73,13 @@ export function UserContentTabs({
     React.useState<Set<string>>(new Set());
   const [isQuestionCacheCheckLoading, setIsQuestionCacheCheckLoading] =
     React.useState(false);
+  const [showOfflineReadyOnly, setShowOfflineReadyOnly] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
 
     const checkQuestionCache = async () => {
-      if (!isCollectionsOffline || isOwnProfile) {
+      if (!isCollectionsOffline) {
         setCollectionsWithCachedQuestions(
           new Set(collections.map((c) => c.id)),
         );
@@ -119,14 +119,35 @@ export function UserContentTabs({
     return () => {
       cancelled = true;
     };
-  }, [collections, isCollectionsOffline, isOwnProfile]);
+  }, [collections, isCollectionsOffline]);
 
-  const visibleCollections =
-    !isOwnProfile && isCollectionsOffline
-      ? collections.filter((c) => collectionsWithCachedQuestions.has(c.id))
-      : collections;
+  const offlineVisibleCollections =
+    collections;
 
-  const hiddenCollectionCount = collections.length - visibleCollections.length;
+  const hiddenIdSet = React.useMemo(
+    () => new Set(hiddenCollectionIds),
+    [hiddenCollectionIds],
+  );
+
+  const visibleCollections = offlineVisibleCollections.filter(
+    (c) => !hiddenIdSet.has(c.id),
+  );
+
+  const offlineReadyCollections = visibleCollections.filter((c) =>
+    collectionsWithCachedQuestions.has(c.id),
+  );
+
+  const displayedCollections =
+    isCollectionsOffline && showOfflineReadyOnly
+      ? offlineReadyCollections
+      : visibleCollections;
+
+  const offlineUnavailableCount =
+    isCollectionsOffline
+      ? visibleCollections.filter(
+          (c) => !collectionsWithCachedQuestions.has(c.id),
+        ).length
+      : 0;
 
   const items: TabItem[] = [
     {
@@ -139,7 +160,7 @@ export function UserContentTabs({
               <Flex justify="between" align="center">
                 <Flex gap="xs" align="center">
                   <Text variant="detail" color="secondary" weight="bold">
-                    {visibleCollections.length} 個のコレクション
+                    {displayedCollections.length} 個のコレクション
                   </Text>
                   {isCollectionsOffline && (
                     <Text
@@ -151,18 +172,31 @@ export function UserContentTabs({
                     </Text>
                   )}
                 </Flex>
-                {collectionActions}
+                <Flex gap="xs" align="center">
+                  {isCollectionsOffline && (
+                    <Button
+                      size="sm"
+                      variant={showOfflineReadyOnly ? "solid" : "outline"}
+                      color="primary"
+                      className="h-8 px-2 text-xs"
+                      onClick={() => setShowOfflineReadyOnly((prev) => !prev)}
+                    >
+                      {showOfflineReadyOnly ? "すべて表示" : "利用可能のみ"}
+                    </Button>
+                  )}
+                  {collectionActions}
+                </Flex>
               </Flex>
             )}
 
-            {!isOwnProfile &&
-              isCollectionsOffline &&
-              hiddenCollectionCount > 0 && (
-                <Text variant="xs" color="secondary">
-                  問題が未キャッシュの {hiddenCollectionCount}{" "}
-                  件はオフライン中は非表示です。
-                </Text>
-              )}
+            {isCollectionsOffline && offlineUnavailableCount > 0 && (
+              <Text variant="xs" color="secondary">
+                問題が未キャッシュの {offlineUnavailableCount} 件はオフライン中は開けません。
+                {showOfflineReadyOnly
+                  ? " 現在は利用可能なものだけ表示しています。"
+                  : " 必要なら「利用可能のみ」で絞り込めます。"}
+              </Text>
+            )}
 
             {collectionsLoading || isQuestionCacheCheckLoading ? (
               <View padding="xl">
@@ -170,7 +204,7 @@ export function UserContentTabs({
                   <Spinner size="lg" />
                 </Flex>
               </View>
-            ) : visibleCollections.length === 0 ? (
+            ) : displayedCollections.length === 0 ? (
               <View padding="xl">
                 <Stack gap="sm" align="center">
                   <Text color="secondary" align="center" variant="xs">
@@ -190,7 +224,7 @@ export function UserContentTabs({
                 gap="none"
                 className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5"
               >
-                {visibleCollections.map((c) => (
+                {displayedCollections.map((c) => (
                   <CollectionCard
                     key={c.id}
                     collection={c}
@@ -203,12 +237,17 @@ export function UserContentTabs({
                     onAddToSet={onAddToSet}
                     hideExtras={hideExtras}
                     displayMode="list"
+                    isInteractionDisabled={
+                      isCollectionsOffline &&
+                      !collectionsWithCachedQuestions.has(c.id)
+                    }
+                    disabledReason="このコレクションの問題は未キャッシュです。オンライン時に詳細を開いて保存してください。"
                   />
                 ))}
               </Stack>
             ) : (
-              <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
-                {visibleCollections.map((c) => (
+              <Grid cols={{ base: 1, md: 2, xl: 3 }} gap="lg">
+                {displayedCollections.map((c) => (
                   <CollectionCard
                     key={c.id}
                     collection={c}
@@ -221,6 +260,11 @@ export function UserContentTabs({
                     onAddToSet={onAddToSet}
                     hideExtras={hideExtras}
                     displayMode="grid"
+                    isInteractionDisabled={
+                      isCollectionsOffline &&
+                      !collectionsWithCachedQuestions.has(c.id)
+                    }
+                    disabledReason="このコレクションの問題は未キャッシュです。オンライン時に詳細を開いて保存してください。"
                   />
                 ))}
               </Grid>
@@ -271,7 +315,7 @@ export function UserContentTabs({
                 ))}
               </Stack>
             ) : (
-              <Grid cols={{ sm: 2, lg: 3 }} gap="lg">
+              <Grid cols={{ base: 1, md: 2, xl: 3 }} gap="lg">
                 {collectionSets.map((s) => (
                   <CollectionSetCard
                     key={s.id}

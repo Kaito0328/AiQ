@@ -9,7 +9,6 @@ import { View } from '@/src/design/primitives/View';
 import { Text } from '@/src/design/baseComponents/Text';
 import { Button } from '@/src/design/baseComponents/Button';
 import { db } from '@/src/shared/db/db';
-import { BackButton } from '@/src/shared/components/Navigation/BackButton';
 import { Database, Trash2, RefreshCw, HardDrive } from 'lucide-react';
 import { useToast } from '@/src/shared/contexts/ToastContext';
 
@@ -81,10 +80,7 @@ export default function CacheManagementPage() {
         <View className="min-h-screen bg-surface-muted py-6 sm:py-12">
             <Container>
                 <Stack gap="lg" className="max-w-2xl mx-auto">
-                    <Flex gap="sm" align="center">
-                        <BackButton />
-                        <Text variant="h2" weight="bold">キャッシュ管理</Text>
-                    </Flex>
+                    <Text variant="h2" weight="bold">キャッシュ管理</Text>
 
                     <Text color="secondary" variant="detail">
                         ブラウザに保存されているローカルデータの管理を行います。

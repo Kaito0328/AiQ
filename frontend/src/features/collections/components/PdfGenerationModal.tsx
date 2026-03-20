@@ -20,10 +20,11 @@ interface PdfGenerationModalProps {
     isOpen: boolean;
     onClose: () => void;
     collectionId: string;
+    collectionDifficulty?: number;
     onSuccess: () => void;
 }
 
-export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }: PdfGenerationModalProps) {
+export function PdfGenerationModal({ isOpen, onClose, collectionId, collectionDifficulty, onSuccess }: PdfGenerationModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [prompt, setPrompt] = useState('この資料の内容から重要なポイントを抜き出して問題を作成してください。');
     const [count, setCount] = useState(5);
@@ -54,6 +55,7 @@ export function PdfGenerationModal({ isOpen, onClose, collectionId, onSuccess }:
             generate({
                 prompt,
                 count,
+                collectionDifficulty,
                 pdfData: pdfBase64,
                 explanationLanguage: explanationLanguage || undefined
             });

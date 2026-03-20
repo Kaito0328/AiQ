@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -22,12 +22,25 @@ export const metadata: Metadata = {
     title: "AiQ",
   },
   icons: {
-    icon: "/logo_black.png",
-    apple: "/logo_black.png",
+    icon: [
+      { url: "/logo_white.png", media: "(prefers-color-scheme: light)" },
+      { url: "/logo_black.png", media: "(prefers-color-scheme: dark)" },
+    ],
+    apple: [
+      { url: "/logo_white.png", media: "(prefers-color-scheme: light)" },
+      { url: "/logo_black.png", media: "(prefers-color-scheme: dark)" },
+    ],
   },
   other: {
     google: "notranslate"
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
 };
 
 import { ThemeProvider } from "@/src/shared/contexts/ThemeContext";

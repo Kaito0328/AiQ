@@ -6,6 +6,7 @@ import { getMe, logout as apiLogout } from '@/src/features/auth/api';
 import { ApiError } from '@/src/shared/api/error';
 import { isOfflineError as isOfflineErr } from '@/src/shared/api/isOfflineError';
 import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { warmupServer } from '@/src/shared/api/serverHealth';
 
 interface AuthContextType {
     user: UserProfile | null;
@@ -36,15 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const cachedUserStr = typeof window !== 'undefined' ? localStorage.getItem('aiq_user_profile') : null;
-        const cachedUser = cachedUserStr ? JSON.parse(cachedUserStr) as UserProfile : null;
-
-        // キャッシュファースト: キャッシュがあれば即座に表示してからAPIを確認
-        if (cachedUser) {
-            setUser(cachedUser);
-            setLoading(false);
-        } else {
-            setLoading(true);
+        let cachedUser: UserProfile | null = null;
+        if (cachedUserStr) {
+            try {
+                cachedUser = JSON.parse(cachedUserStr) as UserProfile;
+            } catch {
+                cachedUser = null;
+            }
         }
+
+        setLoading(true);
         setIsTechnicalError(false);
 
         try {
@@ -101,6 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [wasOffline, setWasOffline] = useState(false);
 
     useEffect(() => {
+        void warmupServer();
         refreshUser();
     }, []);
 

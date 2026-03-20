@@ -5,20 +5,21 @@ import { syncManager } from '@/src/shared/api/SyncManager';
 
 interface NetworkStatusContextType {
     isOnline: boolean;
+    isNetworkOnline: boolean;
     isManualOffline: boolean;
     setManualOffline: (value: boolean) => void;
 }
 
 const NetworkStatusContext = createContext<NetworkStatusContextType>({
     isOnline: true,
+    isNetworkOnline: true,
     isManualOffline: false,
     setManualOffline: () => { }
 });
 
 export const NetworkStatusProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [navigatorOnline, setNavigatorOnline] = useState<boolean>(
-        typeof window !== 'undefined' ? navigator.onLine : true
-    );
+    // SSR とクライアント初回レンダーの差分を避けるため、初期値は固定にする
+    const [navigatorOnline, setNavigatorOnline] = useState<boolean>(true);
     const [isManualOffline, setIsManualOfflineState] = useState<boolean>(false);
 
     // Load manual offline state from localStorage
@@ -40,6 +41,8 @@ export const NetworkStatusProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     useEffect(() => {
+        setNavigatorOnline(navigator.onLine);
+
         const handleOnline = () => setNavigatorOnline(true);
         const handleOffline = () => setNavigatorOnline(false);
 
@@ -55,7 +58,7 @@ export const NetworkStatusProvider: React.FC<{ children: React.ReactNode }> = ({
     const isOnline = navigatorOnline && !isManualOffline;
 
     return (
-        <NetworkStatusContext.Provider value={{ isOnline, isManualOffline, setManualOffline }}>
+        <NetworkStatusContext.Provider value={{ isOnline, isNetworkOnline: navigatorOnline, isManualOffline, setManualOffline }}>
             {children}
         </NetworkStatusContext.Provider>
     );

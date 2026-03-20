@@ -5,6 +5,8 @@ export interface CreateCollectionRequest {
     descriptionText?: string;
     isOpen: boolean;
     defaultMode?: DefaultCollectionMode;
+    tags?: string[];
+    difficultyLevel?: number;
 }
 
 export interface UpdateCollectionRequest extends CreateCollectionRequest { }

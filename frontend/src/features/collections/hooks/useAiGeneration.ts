@@ -15,6 +15,7 @@ export interface GeneratedQuestion {
 export interface GenerateQuestionsRequest {
     prompt: string;
     count?: number;
+    collectionDifficulty?: number;
     pdfData?: string; // base64
     questionFormat?: string;
     answerFormat?: string;

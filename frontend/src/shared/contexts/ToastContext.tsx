@@ -21,7 +21,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const showToast = useCallback((props: Omit<ToastProps, 'onClose'>) => {
         // Prevent duplicate toasts with the same message from flooding the UI
         setToasts(prev => {
-            const isDuplicate = prev.some(t => t.message === props.message);
+            const isDuplicate = prev.some(t => t.message === props.message && t.variant === props.variant);
             if (isDuplicate) return prev;
 
             const id = Date.now();
@@ -31,6 +31,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             setTimeout(() => {
                 setToasts(current => current.filter(t => t.id !== id));
             }, 3000);
+
+            if (props.variant === 'success') {
+                // Keep only one success toast on screen; replace previous success toasts.
+                const next = prev.filter(t => t.variant !== 'success');
+                return [...next, newToast];
+            }
 
             return [...prev, newToast];
         });

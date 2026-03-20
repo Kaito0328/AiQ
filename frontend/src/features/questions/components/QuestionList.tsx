@@ -47,6 +47,7 @@ interface QuestionListProps {
     onSuccess: () => void;
     onOpenAdvanced?: (prompt: string, count: number) => void;
     collectionId?: string;
+    collectionDifficulty?: number;
 }
 
 export function QuestionList({
@@ -61,6 +62,7 @@ export function QuestionList({
     onSuccess,
     onOpenAdvanced,
     collectionId: propCollectionId,
+    collectionDifficulty,
 }: QuestionListProps) {
     const { showToast } = useToast();
     const { isOnline } = useNetworkStatus();
@@ -156,7 +158,8 @@ export function QuestionList({
                 completeDescription: cDesc,
                 questionFormat: qFmt,
                 answerFormat: aFmt,
-                explanationLanguage: eLang || undefined
+                explanationLanguage: eLang || undefined,
+                collectionDifficulty: collectionDifficulty ?? 3,
             };
 
             const completed = await completeQuestions(payload) as any[];
@@ -543,6 +546,7 @@ export function QuestionList({
             {isOwner && !isEditMode && propCollectionId && (
                 <AiQuickBar
                     collectionId={propCollectionId}
+                    collectionDifficulty={collectionDifficulty}
                     onSuccess={onSuccess}
                     onOpenAdvanced={onOpenAdvanced}
                 />

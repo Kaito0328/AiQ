@@ -11,18 +11,14 @@ import { Badge } from '@/src/design/baseComponents/Badge';
 import { View } from '@/src/design/primitives/View';
 import { Collection } from '@/src/entities/collection';
 import { useAuth } from '@/src/shared/auth/useAuth';
-import { Heart, Edit, Globe, Lock, Unlock, BookOpen, Trophy } from 'lucide-react';
+import { Heart, Edit, Lock, Unlock, BookOpen, Trophy } from 'lucide-react';
 import { addFavorite, removeFavorite } from '@/src/features/favorites/api';
 import { cn } from '@/src/shared/utils/cn';
-import { MoreVertical, Sparkles, FileText, Download, FileUp, Play } from 'lucide-react';
-import { CsvImportModal } from './CsvImportModal';
-import { AiGenerationModal } from './AiGenerationModal';
-import { PdfGenerationModal } from './PdfGenerationModal';
-import { exportCsv } from '../api';
+import { Download, FileUp } from 'lucide-react';
 import { useToast } from '@/src/shared/contexts/ToastContext';
 import { useCollectionOffline } from '../hooks/useCollectionOffline';
 import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
-import { CloudDownload, CheckCircle2, Loader2, Trash2, WifiOff } from 'lucide-react';
+import { CloudDownload, CheckCircle2, Loader2 } from 'lucide-react';
 
 interface CollectionHeaderProps {
     collection: Collection;
@@ -57,7 +53,6 @@ export function CollectionHeader({
     const [isFavorited, setIsFavorited] = useState(collection.isFavorited || false);
     const [favCount, setFavCount] = useState(collection.favoriteCount || 0);
     const [loading, setLoading] = useState(false);
-    const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
     React.useEffect(() => {
         setIsFavorited(collection.isFavorited || false);
@@ -84,28 +79,10 @@ export function CollectionHeader({
             setLoading(false);
         }
     };
-    const handleExportCsv = async () => {
-        try {
-            const blob = await exportCsv(collection.id);
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${collection.name}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            showToast({ message: 'CSVをエクスポートしました', variant: 'success' });
-        } catch (err) {
-            logger.error(err);
-            showToast({ message: 'エクスポートに失敗しました', variant: 'danger' });
-        }
-    };
-
     return (
         <Card border="base">
-            <Stack gap="lg">
-                <Flex justify="between" align="start" className="flex-wrap gap-4">
+            <Stack gap="none" className="gap-0 sm:gap-3">
+                <Flex justify="between" align="start" className="flex-wrap gap-3">
                     <Stack gap="sm" className="flex-1">
                         <Flex gap="sm" align="center">
                             <BookOpen size={24} className="text-brand-primary shrink-0" />
@@ -125,7 +102,7 @@ export function CollectionHeader({
 
                     <Flex gap="sm" align="center">
                         {isOwner && onEdit && (
-                            <Button variant="outline" size="sm" onClick={onEdit} disabled={!isOnline} className="gap-1.5 rounded-xl border-surface-muted" title={isOnline ? "編集" : "オフライン中は利用できません"}>
+                            <Button variant="outline" size="sm" onClick={onEdit} className="gap-1.5 rounded-xl border-surface-muted" title="編集">
                                 <Edit size={16} />
                                 編集
                             </Button>
@@ -134,13 +111,7 @@ export function CollectionHeader({
                 </Flex>
 
                 {isOwner && (
-                    <Flex gap="sm" align="center" className="justify-end border-t border-surface-muted/30 pt-4 -mt-2">
-                        {!isOnline && (
-                            <Flex align="center" gap="xs" className="mr-auto text-amber-600">
-                                <WifiOff size={14} />
-                                <Text variant="xs" weight="bold">オフライン中は制限されます</Text>
-                            </Flex>
-                        )}
+                    <Flex gap="sm" align="center" className="justify-end pt-0 mt-0 sm:mt-3">
                         <Text variant="xs" color="secondary" className={cn("mr-auto opacity-60", !isOnline && "hidden")}>データ操作:</Text>
                         <Button
                             variant="ghost"
@@ -175,7 +146,7 @@ export function CollectionHeader({
                     </View>
                 )}
 
-                <Flex align="center" gap="sm" className="border-t border-surface-muted/50 pt-4 flex-wrap gap-y-3">
+                <Flex align="center" gap="sm" className="flex-wrap gap-y-2 pt-0 mt-0 sm:mt-1 sm:pt-2 sm:border-t sm:border-surface-muted/30">
                     <Flex gap="xs" align="center" className="bg-surface-muted/40 px-2 py-1 rounded-lg">
                         <BookOpen size={14} className="text-brand-primary" />
                         <Text variant="xs" weight="bold">{questionCount} 問</Text>
@@ -218,7 +189,7 @@ export function CollectionHeader({
                             title={isOnline ? "ランキングを表示" : "ランキングクイズはオフラインではプレイできません"}
                         >
                             <Trophy size={14} strokeWidth={2.5} />
-                            <Text variant="xs" weight="bold">{isOnline ? 'ランキング' : 'オンライン専用'}</Text>
+                            <Text variant="xs" weight="bold" className="hidden sm:inline">{isOnline ? 'ランキング' : 'オンライン専用'}</Text>
                         </Button>
                     )}
                     
@@ -250,7 +221,10 @@ export function CollectionHeader({
                             ) : (
                                 <CloudDownload size={16} className="mr-1.5" />
                             )}
-                            <Text variant="xs" weight="bold" color="inherit">
+                            <Text variant="xs" weight="bold" color="inherit" className="sm:hidden">
+                                {isSyncing ? '保存中' : isOfflineAvailable ? '保存済み' : '保存'}
+                            </Text>
+                            <Text variant="xs" weight="bold" color="inherit" className="hidden sm:inline">
                                 {isSyncing ? '保存中...' : isOfflineAvailable ? 'オフライン保存済み' : 'オフライン保存'}
                             </Text>
                         </Button>

@@ -71,6 +71,14 @@ pub fn app(state: AppState) -> Router {
             post(handlers::collection_handler::create_collection),
         )
         .route(
+            "/api/collections/search",
+            get(handlers::collection_handler::search_collections),
+        )
+        .route(
+            "/api/collections/tags/popular",
+            get(handlers::collection_handler::get_popular_tags),
+        )
+        .route(
             "/api/collections/{collection_id}",
             get(handlers::collection_handler::get_collection),
         )
@@ -81,6 +89,10 @@ pub fn app(state: AppState) -> Router {
         .route(
             "/api/collections/{collection_id}",
             delete(handlers::collection_handler::delete_collection),
+        )
+        .route(
+            "/api/collections/{collection_id}/search-metadata",
+            put(handlers::collection_handler::upsert_collection_search_metadata),
         )
         // 特定ユーザーの作成した問題集一覧
         .route(

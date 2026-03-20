@@ -58,7 +58,14 @@ export const deleteQuestion = async (questionId: string): Promise<void> => {
 /**
  * 問題の不足している箇所をAIで補完
  */
-export const completeQuestions = async (data: { items: any[], completeDescription?: boolean, explanationLanguage?: string }): Promise<Question[]> => {
+export const completeQuestions = async (data: {
+    items: any[];
+    completeDescription?: boolean;
+    explanationLanguage?: string;
+    questionFormat?: string;
+    answerFormat?: string;
+    collectionDifficulty?: number;
+}): Promise<Question[]> => {
     return await apiClient<Question[]>(`/ai/complete`, {
         method: 'POST',
         body: JSON.stringify(data),

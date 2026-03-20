@@ -1,15 +1,20 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container } from '@/src/design/primitives/Container';
 import { Flex } from '@/src/design/primitives/Flex';
 import { LoginForm } from '@/src/features/auth/components/LoginForm';
 import { RegisterForm } from '@/src/features/auth/components/RegisterForm';
+import { warmupServer } from '@/src/shared/api/serverHealth';
 
 export default function LoginPage() {
     const [mode, setMode] = useState<'login' | 'register'>('login');
     const router = useRouter();
+
+    useEffect(() => {
+        void warmupServer();
+    }, []);
 
     const handleSuccess = () => {
         router.push('/home');

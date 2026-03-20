@@ -12,6 +12,7 @@ impl AiService {
         user_id: uuid::Uuid,
         prompt: &str,
         count: i32,
+        collection_difficulty: Option<i16>,
         pdf_data: Option<&str>,
         pdf_page_count: Option<i32>,
         question_format: Option<&str>,
@@ -54,6 +55,13 @@ impl AiService {
         }
         if let Some(el) = explanation_language {
             format_rules.push_str(&format!("\n- [MANDATORY] Explanation Language: {}", el));
+        }
+        if let Some(level) = collection_difficulty {
+            let normalized_level = level.clamp(1, 5);
+            format_rules.push_str(&format!(
+                "\n- [MANDATORY] Collection Difficulty: {} / 5 (1=易しい, 5=難しい). 問題文・選択肢・解説の難度をこのレベルに合わせてください。",
+                normalized_level
+            ));
         }
 
         let system_instruction = format!(
@@ -196,6 +204,7 @@ impl AiService {
         question_format: Option<String>,
         answer_format: Option<String>,
         explanation_language: Option<String>,
+        collection_difficulty: Option<i16>,
     ) -> Result<Vec<GeneratedQuestion>, AppError> {
         // ユニット消費の計算
         let units = 1.0 + (items.len() as f32 * 0.1); // 補完は基本コスト + 件数*0.1
@@ -221,6 +230,13 @@ impl AiService {
         }
         if let Some(el) = explanation_language {
             format_rules.push_str(&format!("\n- [MANDATORY] Explanation Language: {}", el));
+        }
+        if let Some(level) = collection_difficulty {
+            let normalized_level = level.clamp(1, 5);
+            format_rules.push_str(&format!(
+                "\n- [MANDATORY] Collection Difficulty: {} / 5 (1=易しい, 5=難しい). 補完時の問題文・選択肢・解説の難度をこのレベルに合わせてください。",
+                normalized_level
+            ));
         }
 
         let items_count = items.len();

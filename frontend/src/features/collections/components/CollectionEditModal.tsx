@@ -16,6 +16,27 @@ import { Modal } from '@/src/design/baseComponents/Modal';
 import { Stack } from '@/src/design/primitives/Stack';
 import AppConfig from '@/src/app_config';
 import { useCollectionMutations } from '../hooks/useCollectionMutations';
+import { DifficultyStarsInput } from './DifficultyStarsInput';
+import { useToast } from '@/src/shared/contexts/ToastContext';
+
+const MAX_TAG_LENGTH = 10;
+const MAX_TAGS = 10;
+
+function parseTagInput(value: string): string[] {
+    const tags: string[] = [];
+    for (const part of value.split(/[\s,]+/)) {
+        const cleaned = part.trim().replace(/^#+/, '').toLowerCase();
+        if (!cleaned) continue;
+
+        const normalized = cleaned.slice(0, MAX_TAG_LENGTH);
+        if (!normalized) continue;
+        if (!tags.includes(normalized)) {
+            tags.push(normalized);
+        }
+        if (tags.length >= MAX_TAGS) break;
+    }
+    return tags;
+}
 
 interface CollectionEditModalProps {
     collection: Collection;
@@ -25,10 +46,13 @@ interface CollectionEditModalProps {
 
 export function CollectionEditModal({ collection, onUpdated, onCancel }: CollectionEditModalProps) {
     const { updateCollection: doUpdateCollection } = useCollectionMutations();
+    const { showToast } = useToast();
     const [name, setName] = useState(collection.name);
     const [descriptionText, setDescriptionText] = useState(collection.descriptionText || '');
     const [isOpen, setIsOpen] = useState(collection.isOpen);
     const [defaultMode, setDefaultMode] = useState<any>(collection.defaultMode || 'omakase');
+    const [difficultyLevel, setDifficultyLevel] = useState<number>(collection.difficultyLevel ?? 3);
+    const [tagsText, setTagsText] = useState((collection.tags || []).map(t => `#${t}`).join(' '));
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,16 +65,22 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
         setLoading(true);
         setError(null);
         try {
+            const tags = parseTagInput(tagsText);
+            const shouldSendTags = tagsText.trim().length > 0 || (collection.tags?.length || 0) > 0;
             const updated = await doUpdateCollection(collection.id, {
                 name: name.trim(),
                 descriptionText: descriptionText.trim() || undefined,
                 isOpen,
-                defaultMode
+                defaultMode,
+                difficultyLevel,
+                tags: shouldSendTags ? tags : undefined,
             });
+            showToast({ message: 'コレクションを更新しました', variant: 'success' });
             onUpdated(updated);
         } catch (err) {
             logger.error('コレクション更新に失敗', err);
             setError('更新に失敗しました');
+            showToast({ message: '更新に失敗しました', variant: 'danger' });
         } finally {
             setLoading(false);
         }
@@ -87,6 +117,19 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
                             />
                         </FormField>
 
+                        <Flex gap="sm" align="center" className="flex-nowrap">
+                            <Text variant="xs" weight="bold" className="shrink-0">
+                                難易度
+                            </Text>
+                            <DifficultyStarsInput
+                                value={difficultyLevel}
+                                onChange={setDifficultyLevel}
+                            />
+                            <Text variant="xs" color="secondary" className="shrink-0">
+                                {difficultyLevel}/5
+                            </Text>
+                        </Flex>
+
                         <FormField label="説明">
                             <TextArea
                                 value={descriptionText}
@@ -120,6 +163,17 @@ export function CollectionEditModal({ collection, onUpdated, onCancel }: Collect
                                 <option value="fourChoice">4択</option>
                                 <option value="chips">文字チップ</option>
                             </Select>
+                        </FormField>
+
+                        <FormField
+                            label="タグ"
+                            description="空白かカンマ区切り。最大10個、1タグ10文字です。"
+                        >
+                            <Input
+                                value={tagsText}
+                                onChange={(e) => setTagsText(e.target.value)}
+                                placeholder="#英語 #TOEIC #中学"
+                            />
                         </FormField>
                     </Stack>
 
