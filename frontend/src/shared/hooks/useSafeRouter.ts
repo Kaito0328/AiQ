@@ -101,9 +101,9 @@ export function useSafeRouter() {
         `^/collections/${uuidLike}/ranking$`,
       ).test(pathname);
       const isUserDetail = new RegExp(`^/users/${uuidLike}$`).test(pathname);
-      const isUserFavorites = new RegExp(
-        `^/users/${uuidLike}/favorites$`,
-      ).test(pathname);
+      const isUserFavorites = new RegExp(`^/users/${uuidLike}/favorites$`).test(
+        pathname,
+      );
 
       let hasLocalDetailData = false;
       if (isCollectionDetail) {
@@ -155,7 +155,10 @@ export function useSafeRouter() {
         return;
       }
 
-      if ((isCollectionDetail || isUserDetail || isUserFavorites) && !hasLocalDetailData) {
+      if (
+        (isCollectionDetail || isUserDetail || isUserFavorites) &&
+        !hasLocalDetailData
+      ) {
         showToast({
           message:
             "このページのオフラインデータが不足しています。オンラインで一度開いて保存してください",

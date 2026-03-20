@@ -75,7 +75,10 @@ self.addEventListener("fetch", (event: FetchEvent) => {
         const collectionDynamic =
           /^\/collections\/[0-9a-fA-F-]{36}(\/ranking)?$/;
 
-        if (userDynamic.test(targetPath) || collectionDynamic.test(targetPath)) {
+        if (
+          userDynamic.test(targetPath) ||
+          collectionDynamic.test(targetPath)
+        ) {
           for (const cacheName of allCaches) {
             const cache = await caches.open(cacheName);
             const keys = await cache.keys();

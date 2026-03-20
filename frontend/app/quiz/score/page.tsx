@@ -125,7 +125,8 @@ export default function QuizScorePage() {
   const score = rankingResult?.score;
   const hasMistakeButton = answers.some((a) => !a.correct);
   const hasRankingButton = !!rankingResult;
-  const actionButtonCount = 3 + (hasMistakeButton ? 1 : 0) + (hasRankingButton ? 1 : 0);
+  const actionButtonCount =
+    3 + (hasMistakeButton ? 1 : 0) + (hasRankingButton ? 1 : 0);
   const actionGridClass =
     actionButtonCount === 4
       ? "grid grid-cols-2 gap-2 sm:gap-3"
