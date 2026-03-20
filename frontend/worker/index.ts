@@ -70,15 +70,12 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 
         // キャッシュにもない場合、ハングを防ぐために空のレスポンスを返す
         if (isNavigation) {
-          // ナビゲーションの場合はオフラインフォールバックページを返す
-          // (app shell が precache されていればそれを返す)
-          const fallback = await caches.match("/home");
-          if (fallback) return fallback;
-
+          // ナビゲーションの場合は専用のオフラインページを返す
+          // （/home を返すと「ホームへ飛んだ」ように見えるため避ける）
           return new Response(
-            "<!DOCTYPE html><html><head><meta charset='utf-8'><title>オフライン</title></head><body><h1>オフラインです</h1><p>このページはキャッシュされていません。</p><script>setTimeout(()=>history.back(),2000)</script></body></html>",
+            "<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>オフライン</title><style>body{font-family:sans-serif;background:#f8fafc;color:#0f172a;margin:0;padding:24px}main{max-width:560px;margin:8vh auto;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:24px}h1{font-size:20px;margin:0 0 12px}p{line-height:1.6;margin:8px 0}button{margin-top:12px;padding:10px 14px;border-radius:8px;border:1px solid #cbd5e1;background:#fff;cursor:pointer}</style></head><body><main><h1>オフラインのため表示できません</h1><p>このページはまだオフライン用に準備されていません。</p><p>オンライン時に一度ページを開くと、次回からオフラインで表示できる場合があります。</p><button onclick='location.reload()'>再試行</button></main></body></html>",
             {
-              status: 200,
+              status: 503,
               headers: { "Content-Type": "text/html; charset=utf-8" },
             },
           );

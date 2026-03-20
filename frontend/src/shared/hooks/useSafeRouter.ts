@@ -52,7 +52,6 @@ export function useSafeRouter() {
           ) {
             return true;
           }
-
         }
       }
     } catch {
@@ -142,10 +141,34 @@ export function useSafeRouter() {
         return;
       }
 
+      // オフライン時は詳細ページを固定URL+クエリへ寄せる
+      // （未訪問の動的URLでも、キャッシュ済みの固定ページから表示可能にする）
+      if (isCollectionDetail && hasLocalDetailData) {
+        const collectionId = pathname.split("/")[2];
+        if (collectionId) {
+          router.push(
+            `/collections/search?offlineCollectionId=${collectionId}`,
+            options,
+          );
+          return;
+        }
+      }
+
+      if ((isUserDetail || isUserFavorites) && hasLocalDetailData) {
+        const userId = pathname.split("/")[2];
+        if (userId) {
+          router.push(`/users?offlineUserId=${userId}`, options);
+          return;
+        }
+      }
+
       // 動的詳細ページは、ローカルデータだけでなくルートキャッシュも必要。
       // （別IDのキャッシュ流用で誤ページへ遷移する事象を防ぐ）
       if (
-        (isCollectionDetail || isCollectionRanking || isUserDetail || isUserFavorites) &&
+        (isCollectionDetail ||
+          isCollectionRanking ||
+          isUserDetail ||
+          isUserFavorites) &&
         !hasRouteCache
       ) {
         showToast({
