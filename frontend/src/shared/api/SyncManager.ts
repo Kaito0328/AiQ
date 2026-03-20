@@ -91,6 +91,15 @@ class SyncManager {
                 return await updateCollection(payload.id, payload.data);
             case 'DELETE_COLLECTION':
                 return await deleteCollection(payload);
+            case 'CREATE_SET':
+                const { createSet } = require('@/src/features/collectionSets/api');
+                return await createSet(payload.data);
+            case 'UPDATE_SET':
+                const { updateSet } = require('@/src/features/collectionSets/api');
+                return await updateSet(payload.id, payload.data);
+            case 'DELETE_SET':
+                const { deleteSet } = require('@/src/features/collectionSets/api');
+                return await deleteSet(payload.setId || payload);
             case 'CREATE_QUESTION':
                 return await createQuestion(payload.collectionId, payload.data);
             case 'UPDATE_QUESTION':
@@ -172,11 +181,63 @@ class SyncManager {
             }
         }
 
+        // 3.5. Set Create -> Delete 相殺
+        if (type === 'DELETE_SET') {
+            const setId = payload.setId || payload;
+            const createIndex = existing.findIndex(
+                a => a.type === 'CREATE_SET' && (a.payload.tempSet?.id === setId || a.payload.id === setId)
+            );
+            if (createIndex !== -1) {
+                await db.pendingActions.delete(existing[createIndex].id!);
+                return;
+            }
+        }
+
         // 4. 重複する UPDATE の統合 (簡易版: 最新で上書き)
         if (type === 'UPDATE_COLLECTION' || type === 'UPDATE_QUESTION') {
             const idKey = type === 'UPDATE_COLLECTION' ? 'id' : 'questionId';
             const entityId = payload[idKey];
             const duplicateIndex = existing.findIndex(a => a.type === type && a.payload[idKey] === entityId);
+            if (duplicateIndex !== -1) {
+                await db.pendingActions.delete(existing[duplicateIndex].id!);
+            }
+        }
+
+        // 4.4. 仮セット(local-set-*)の更新は CREATE_SET にマージして整合性を保つ
+        if (type === 'UPDATE_SET') {
+            const setId = payload.id as string | undefined;
+            if (setId && setId.startsWith('local-set-')) {
+                const createAction = existing.find(
+                    (a) => a.type === 'CREATE_SET' && a.payload?.tempSet?.id === setId,
+                );
+
+                if (createAction?.id) {
+                    const tempSet = createAction.payload.tempSet;
+                    const mergedTempSet = {
+                        ...tempSet,
+                        ...payload.data,
+                        updatedAt: new Date().toISOString(),
+                    };
+
+                    await db.pendingActions.update(createAction.id, {
+                        payload: {
+                            ...createAction.payload,
+                            data: {
+                                ...createAction.payload.data,
+                                ...payload.data,
+                            },
+                            tempSet: mergedTempSet,
+                        },
+                    });
+                    return;
+                }
+            }
+        }
+
+        // 4.5. セット UPDATE の統合
+        if (type === 'UPDATE_SET') {
+            const setId = payload.id;
+            const duplicateIndex = existing.findIndex(a => a.type === 'UPDATE_SET' && a.payload.id === setId);
             if (duplicateIndex !== -1) {
                 await db.pendingActions.delete(existing[duplicateIndex].id!);
             }

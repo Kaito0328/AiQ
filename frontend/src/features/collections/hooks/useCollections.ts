@@ -1,7 +1,7 @@
 import { Collection, CollectionSet } from '@/src/entities/collection';
 import { getRecentCollections, getUserCollections, getFolloweeCollections, getUserCollectionSets } from '../api';
 import { getAllOfflineCollections } from '@/src/shared/api/offlineApi';
-import { mergePendingCollections } from '@/src/shared/api/mergePendingActions';
+import { mergePendingCollections, mergePendingSets } from '@/src/shared/api/mergePendingActions';
 import { useSWRData } from '@/src/shared/hooks/useSWRData';
 import { db } from '@/src/shared/db/db';
 import { isOfflineError } from '@/src/shared/api/isOfflineError';
@@ -117,11 +117,14 @@ export function useUserCollectionSets(userId: string | undefined) {
         setIsOffline(false);
         try {
             const data = await getUserCollectionSets(userId);
-            setCollectionSets(data);
+            const merged = await mergePendingSets(data, userId);
+            setCollectionSets(merged);
             setError(null);
         } catch (err) {
             if (isOfflineError(err)) {
                 setIsOffline(true);
+                const merged = await mergePendingSets(collectionSets, userId);
+                setCollectionSets(merged);
             } else {
                 setError(err instanceof Error ? err.message : 'Failed to fetch collection sets');
             }

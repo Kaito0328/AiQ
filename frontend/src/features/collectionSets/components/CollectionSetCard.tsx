@@ -33,6 +33,7 @@ export function CollectionSetCard({
     onToggleCollection,
 }: CollectionSetCardProps) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const isPendingLocalSet = set.id.startsWith('local-set-');
     const { collections, loading } = useCollectionSet(isExpanded ? set.id : undefined);
 
     const handleCardClick = (e: React.MouseEvent) => {
@@ -60,9 +61,20 @@ export function CollectionSetCard({
                         <FolderOpen size={24} />
                     </View>
                     <Stack gap="none" className="flex-1 pr-16">
-                        <Text weight="bold" variant="detail" className="line-clamp-1 group-hover:text-brand-primary transition-colors">
-                            {set.name}
-                        </Text>
+                        <Flex gap="xs" align="center">
+                            <Text weight="bold" variant="detail" className="line-clamp-1 group-hover:text-brand-primary transition-colors">
+                                {set.name}
+                            </Text>
+                            {isPendingLocalSet && (
+                                <Text
+                                    variant="xs"
+                                    color="secondary"
+                                    className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 shrink-0"
+                                >
+                                    同期待ち
+                                </Text>
+                            )}
+                        </Flex>
                         <Text variant="xs" color="secondary" className="opacity-80">
                             {set.isOpen ? '公開' : '非公開'}
                         </Text>
@@ -77,7 +89,11 @@ export function CollectionSetCard({
 
                 <Flex justify="between" align="center" className="pt-4 border-t border-surface-muted/50">
                     <Text variant="xs" color="primary" weight="bold" className="flex items-center gap-1 transition-transform">
-                        {isSelectionMode ? (isExpanded ? '閉じる' : 'セット内を表示') : '詳細を見る'}
+                        {isSelectionMode
+                            ? (isExpanded ? '閉じる' : 'セット内を表示')
+                            : isPendingLocalSet
+                                ? '同期後に詳細表示'
+                                : '詳細を見る'}
                         {isSelectionMode ? (
                             <ChevronDown size={14} className={cn("transition-transform duration-300", isExpanded && "rotate-180")} />
                         ) : (
@@ -186,6 +202,10 @@ export function CollectionSetCard({
             {
                 isSelectionMode ? (
                     <View onClick={handleCardClick} className="block h-full cursor-pointer">
+                        {cardContent}
+                    </View>
+                ) : isPendingLocalSet ? (
+                    <View className="block h-full cursor-default">
                         {cardContent}
                     </View>
                 ) : (

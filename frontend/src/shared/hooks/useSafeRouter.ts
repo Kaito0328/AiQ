@@ -27,6 +27,13 @@ export function useSafeRouter() {
       const targetUrl = new URL(href, window.location.origin);
       const targetPath = targetUrl.pathname;
       const targetPathWithoutSlash = targetPath.replace(/^\//, "");
+      const uuidLike = "[0-9a-fA-F-]{36}";
+      const isDynamicUserPath = new RegExp(
+        `^/users/${uuidLike}(/favorites)?$`,
+      ).test(targetPath);
+      const isDynamicCollectionPath = new RegExp(
+        `^/collections/${uuidLike}(/ranking)?$`,
+      ).test(targetPath);
       const cacheNames = await caches.keys();
 
       for (const cacheName of cacheNames) {
@@ -52,6 +59,25 @@ export function useSafeRouter() {
           ) {
             return true;
           }
+
+          // 動的ルートは別IDのキャッシュでも App Router の起動に使える場合がある
+          if (
+            isDynamicUserPath &&
+            new RegExp(`^/users/${uuidLike}(/favorites)?$`).test(
+              reqUrl.pathname,
+            )
+          ) {
+            return true;
+          }
+
+          if (
+            isDynamicCollectionPath &&
+            new RegExp(`^/collections/${uuidLike}(/ranking)?$`).test(
+              reqUrl.pathname,
+            )
+          ) {
+            return true;
+          }
         }
       }
     } catch {
@@ -63,9 +89,25 @@ export function useSafeRouter() {
 
   const safePush = async (href: string, options?: RouterPushOptions) => {
     if (!isOnline) {
+      const pathname =
+        typeof window !== "undefined"
+          ? new URL(href, window.location.origin).pathname
+          : href;
+      const uuidLike = "[0-9a-fA-F-]{36}";
+      const isCollectionDetail = new RegExp(`^/collections/${uuidLike}$`).test(
+        pathname,
+      );
+      const isCollectionRanking = new RegExp(
+        `^/collections/${uuidLike}/ranking$`,
+      ).test(pathname);
+      const isUserDetail = new RegExp(`^/users/${uuidLike}$`).test(pathname);
+      const isUserFavorites = new RegExp(
+        `^/users/${uuidLike}/favorites$`,
+      ).test(pathname);
+
       let hasLocalDetailData = false;
-      if (href.startsWith("/collections/")) {
-        const collectionId = href.split("/")[2]?.split("?")[0];
+      if (isCollectionDetail) {
+        const collectionId = pathname.split("/")[2];
         if (collectionId) {
           const collection = await db.collections.get(collectionId);
           const questionCount = await db.questions
@@ -74,8 +116,8 @@ export function useSafeRouter() {
             .count();
           hasLocalDetailData = !!collection && questionCount > 0;
         }
-      } else if (href.startsWith("/users/")) {
-        const userId = href.split("/")[2]?.split("?")[0];
+      } else if (isUserDetail || isUserFavorites) {
+        const userId = pathname.split("/")[2];
         if (userId) {
           const profile = await db.profiles.get(userId);
           const collectionCount = await db.collections
@@ -88,26 +130,24 @@ export function useSafeRouter() {
 
       // オフライン時にキャッシュされている可能性が高いルートの判定
       const isLikelyCached =
-        href === "/" ||
-        href === "/home" ||
-        href.startsWith("/home?") ||
-        href.startsWith("/users/") ||
-        href.startsWith("/collections/") ||
-        href.startsWith("/collection-sets/") ||
-        href.includes("/quiz") ||
-        href === "/users" ||
-        href === "/settings/cache" ||
-        href === "/settings" ||
-        href === "/settings/sync" ||
-        href === "/credits";
+        pathname === "/" ||
+        pathname === "/home" ||
+        pathname === "/users" ||
+        pathname === "/collections/search" ||
+        pathname.startsWith("/collection-sets/") ||
+        pathname.includes("/quiz") ||
+        pathname === "/settings/cache" ||
+        pathname === "/settings" ||
+        pathname === "/settings/sync" ||
+        pathname === "/credits" ||
+        isCollectionDetail ||
+        isCollectionRanking ||
+        isUserDetail ||
+        isUserFavorites;
 
-      if (!isLikelyCached && !hasLocalDetailData) {
-        const hasCache = await hasOfflineCacheForRoute(href);
-        if (hasCache) {
-          router.push(href, options);
-          return;
-        }
+      const hasRouteCache = await hasOfflineCacheForRoute(href);
 
+      if (!isLikelyCached && !hasLocalDetailData && !hasRouteCache) {
         showToast({
           message: "オフラインのため、このページへは移動できません",
           variant: "danger",
@@ -115,13 +155,25 @@ export function useSafeRouter() {
         return;
       }
 
-      if (
-        (href.startsWith("/collections/") || href.startsWith("/users/")) &&
-        !hasLocalDetailData
-      ) {
+      if ((isCollectionDetail || isUserDetail || isUserFavorites) && !hasLocalDetailData) {
         showToast({
           message:
             "このページのオフラインデータが不足しています。オンラインで一度開いて保存してください",
+          variant: "warning",
+        });
+        return;
+      }
+
+      // 一覧系はキャッシュ未準備なら事前にブロックして、ブラウザの ERR_FAILED を避ける
+      if (
+        (pathname === "/collections/search" ||
+          pathname === "/users" ||
+          pathname.startsWith("/collection-sets/")) &&
+        !hasRouteCache
+      ) {
+        showToast({
+          message:
+            "このページはまだオフライン準備できていません。オンラインで一度開いてください",
           variant: "warning",
         });
         return;

@@ -1,5 +1,6 @@
 import { db } from '../db/db';
 import { Collection } from '@/src/entities/collection';
+import { CollectionSet } from '@/src/entities/collection';
 import { UserProfile } from '@/src/entities/user';
 
 /**
@@ -63,6 +64,56 @@ export async function mergePendingProfile(profile: UserProfile | null): Promise<
                 result.isFollowing = false;
                 result.followerCount = Math.max(0, (result.followerCount || 0) - 1);
             }
+        }
+    }
+
+    return result;
+}
+
+/**
+ * コレクションセットにペンディング中のアクションを適用します
+ */
+export async function mergePendingSets(
+    sets: CollectionSet[],
+    userId?: string,
+): Promise<CollectionSet[]> {
+    const pending = await db.pendingActions
+        .where('type').anyOf(['CREATE_SET', 'UPDATE_SET', 'DELETE_SET'])
+        .toArray();
+
+    if (pending.length === 0) return sets;
+
+    let result = [...sets];
+
+    for (const action of pending) {
+        const { type, payload } = action;
+
+        if (type === 'CREATE_SET') {
+            const tempSet = payload?.tempSet as CollectionSet | undefined;
+            if (!tempSet) continue;
+            if (userId && tempSet.userId !== userId) continue;
+
+            const exists = result.some((s) => s.id === tempSet.id);
+            if (!exists) {
+                result = [tempSet, ...result];
+            }
+        } else if (type === 'UPDATE_SET') {
+            const targetId = payload?.id;
+            const data = payload?.data;
+            if (!targetId || !data) continue;
+
+            result = result.map((s) =>
+                s.id === targetId
+                    ? {
+                        ...s,
+                        ...data,
+                        updatedAt: new Date().toISOString(),
+                    }
+                    : s,
+            );
+        } else if (type === 'DELETE_SET') {
+            const targetId = payload?.setId || payload;
+            result = result.filter((s) => s.id !== targetId);
         }
     }
 
