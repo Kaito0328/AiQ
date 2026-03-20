@@ -136,8 +136,10 @@ export function UserContentTabs({
     collectionsWithCachedQuestions.has(c.id),
   );
 
+  const forceOfflineReadyOnly = isCollectionsOffline && isSelectionMode;
+
   const displayedCollections =
-    isCollectionsOffline && showOfflineReadyOnly
+    forceOfflineReadyOnly || (isCollectionsOffline && showOfflineReadyOnly)
       ? offlineReadyCollections
       : visibleCollections;
 
@@ -155,23 +157,37 @@ export function UserContentTabs({
         <View padding="md">
           <Stack gap="lg">
             {(collectionActions || collections.length > 0) && (
-              <Flex justify="between" align="center">
-                <Flex gap="xs" align="center">
-                  <Text variant="detail" color="secondary" weight="bold">
-                    {displayedCollections.length} 個のコレクション
-                  </Text>
-                  {isCollectionsOffline && (
-                    <Text
-                      variant="xs"
-                      color="secondary"
-                      className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full font-bold"
-                    >
-                      Offline
+              <Stack gap="xs">
+                <Flex
+                  justify="between"
+                  align="center"
+                  className="flex-wrap gap-2"
+                >
+                  <Flex gap="xs" align="center">
+                    <Text variant="detail" color="secondary" weight="bold">
+                      {displayedCollections.length} 個のコレクション
                     </Text>
-                  )}
+                    {isCollectionsOffline && (
+                      <Text
+                        variant="xs"
+                        color="secondary"
+                        className="bg-amber-500/10 text-amber-600 px-2 py-0.5 rounded-full font-bold"
+                      >
+                        Offline
+                      </Text>
+                    )}
+                  </Flex>
+                  <Flex gap="xs" align="center">
+                    {collectionActions}
+                  </Flex>
                 </Flex>
-                <Flex gap="xs" align="center">
-                  {isCollectionsOffline && (
+
+                {isCollectionsOffline && !forceOfflineReadyOnly && (
+                  <Flex
+                    justify="start"
+                    align="center"
+                    className="sm:justify-end"
+                  >
                     <Button
                       size="sm"
                       variant={showOfflineReadyOnly ? "solid" : "outline"}
@@ -181,21 +197,22 @@ export function UserContentTabs({
                     >
                       {showOfflineReadyOnly ? "すべて表示" : "利用可能のみ"}
                     </Button>
-                  )}
-                  {collectionActions}
-                </Flex>
-              </Flex>
+                  </Flex>
+                )}
+              </Stack>
             )}
 
-            {isCollectionsOffline && offlineUnavailableCount > 0 && (
-              <Text variant="xs" color="secondary">
-                問題が未キャッシュの {offlineUnavailableCount}{" "}
-                件はオフライン中は開けません。
-                {showOfflineReadyOnly
-                  ? " 現在は利用可能なものだけ表示しています。"
-                  : " 必要なら「利用可能のみ」で絞り込めます。"}
-              </Text>
-            )}
+            {isCollectionsOffline &&
+              !forceOfflineReadyOnly &&
+              offlineUnavailableCount > 0 && (
+                <Text variant="xs" color="secondary">
+                  問題が未キャッシュの {offlineUnavailableCount}{" "}
+                  件はオフライン中は開けません。
+                  {showOfflineReadyOnly
+                    ? " 現在は利用可能なものだけ表示しています。"
+                    : " 必要なら「利用可能のみ」で絞り込めます。"}
+                </Text>
+              )}
 
             {collectionsLoading || isQuestionCacheCheckLoading ? (
               <View padding="xl">

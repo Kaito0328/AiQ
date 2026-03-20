@@ -421,6 +421,7 @@ export default function QuizPage() {
             correctAnswer={currentQuestion.correctAnswers.join(" / ")}
             description={currentQuestion.descriptionText}
             onNext={handleNext}
+            isLastQuestion={currentIndex + 1 === questions.length}
             question={currentQuestion}
             userAnswer={userAnswers[userAnswers.length - 1]?.userAnswer}
             isOwner={ownedCollectionIds.has(currentQuestion.collectionId)}

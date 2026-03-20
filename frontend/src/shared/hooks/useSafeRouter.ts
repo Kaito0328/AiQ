@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 import { useToast } from "@/src/shared/contexts/ToastContext";
+import { db } from "@/src/shared/db/db";
 
 /**
  * Next.js の useRouter をラップし、オフライン時の遷移トラブル（フリーズ等）を防ぐためのフック。
@@ -62,6 +63,29 @@ export function useSafeRouter() {
 
   const safePush = async (href: string, options?: RouterPushOptions) => {
     if (!isOnline) {
+      let hasLocalDetailData = false;
+      if (href.startsWith("/collections/")) {
+        const collectionId = href.split("/")[2]?.split("?")[0];
+        if (collectionId) {
+          const collection = await db.collections.get(collectionId);
+          const questionCount = await db.questions
+            .where("collectionId")
+            .equals(collectionId)
+            .count();
+          hasLocalDetailData = !!collection && questionCount > 0;
+        }
+      } else if (href.startsWith("/users/")) {
+        const userId = href.split("/")[2]?.split("?")[0];
+        if (userId) {
+          const profile = await db.profiles.get(userId);
+          const collectionCount = await db.collections
+            .where("userId")
+            .equals(userId)
+            .count();
+          hasLocalDetailData = !!profile || collectionCount > 0;
+        }
+      }
+
       // オフライン時にキャッシュされている可能性が高いルートの判定
       const isLikelyCached =
         href === "/" ||
@@ -77,7 +101,7 @@ export function useSafeRouter() {
         href === "/settings/sync" ||
         href === "/credits";
 
-      if (!isLikelyCached) {
+      if (!isLikelyCached && !hasLocalDetailData) {
         const hasCache = await hasOfflineCacheForRoute(href);
         if (hasCache) {
           router.push(href, options);
@@ -87,6 +111,18 @@ export function useSafeRouter() {
         showToast({
           message: "オフラインのため、このページへは移動できません",
           variant: "danger",
+        });
+        return;
+      }
+
+      if (
+        (href.startsWith("/collections/") || href.startsWith("/users/")) &&
+        !hasLocalDetailData
+      ) {
+        showToast({
+          message:
+            "このページのオフラインデータが不足しています。オンラインで一度開いて保存してください",
+          variant: "warning",
         });
         return;
       }

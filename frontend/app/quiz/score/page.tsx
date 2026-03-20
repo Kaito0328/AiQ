@@ -45,6 +45,36 @@ export default function QuizScorePage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const storedQuizData = sessionStorage.getItem("quizData");
+    if (storedQuizData) {
+      try {
+        const parsed = JSON.parse(storedQuizData) as {
+          quiz?: { preferredMode?: QuizMode; dummyCharCount?: number };
+          retryOnlyMistakes?: boolean;
+        };
+
+        const mode = parsed.quiz?.preferredMode;
+        if (
+          mode === "text" ||
+          mode === "fourChoice" ||
+          mode === "chips" ||
+          mode === "fuzzy"
+        ) {
+          setPreferredMode(mode);
+        }
+
+        if (typeof parsed.quiz?.dummyCharCount === "number") {
+          setDummyCharCount(parsed.quiz.dummyCharCount);
+        }
+
+        if (typeof parsed.retryOnlyMistakes === "boolean") {
+          setRetryOnlyMistakes(parsed.retryOnlyMistakes);
+        }
+      } catch {
+        // ignore invalid session data
+      }
+    }
+
     const storedResult = sessionStorage.getItem("quizResult");
     if (storedResult) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -58,7 +88,7 @@ export default function QuizScorePage() {
     }
   }, []);
 
-  const openRetryOptions = (onlyMistakes = false) => {
+  const openRetryOptions = (onlyMistakes = retryOnlyMistakes) => {
     setRetryOnlyMistakes(onlyMistakes);
     setIsOptionsModalOpen(true);
   };
@@ -73,6 +103,7 @@ export default function QuizScorePage() {
     const quizData = {
       questions: retryQuestions,
       isRetry: true,
+      retryOnlyMistakes,
       quiz: {
         preferredMode,
         dummyCharCount,
@@ -167,7 +198,7 @@ export default function QuizScorePage() {
                   <Button
                     variant="solid"
                     color="primary"
-                    onClick={() => openRetryOptions(false)}
+                    onClick={() => openRetryOptions()}
                     className="gap-1.5 w-full"
                   >
                     <RefreshCcw size={16} />
