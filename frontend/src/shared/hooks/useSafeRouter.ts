@@ -27,13 +27,6 @@ export function useSafeRouter() {
       const targetUrl = new URL(href, window.location.origin);
       const targetPath = targetUrl.pathname;
       const targetPathWithoutSlash = targetPath.replace(/^\//, "");
-      const uuidLike = "[0-9a-fA-F-]{36}";
-      const isDynamicUserPath = new RegExp(
-        `^/users/${uuidLike}(/favorites)?$`,
-      ).test(targetPath);
-      const isDynamicCollectionPath = new RegExp(
-        `^/collections/${uuidLike}(/ranking)?$`,
-      ).test(targetPath);
       const cacheNames = await caches.keys();
 
       for (const cacheName of cacheNames) {
@@ -60,24 +53,6 @@ export function useSafeRouter() {
             return true;
           }
 
-          // 動的ルートは別IDのキャッシュでも App Router の起動に使える場合がある
-          if (
-            isDynamicUserPath &&
-            new RegExp(`^/users/${uuidLike}(/favorites)?$`).test(
-              reqUrl.pathname,
-            )
-          ) {
-            return true;
-          }
-
-          if (
-            isDynamicCollectionPath &&
-            new RegExp(`^/collections/${uuidLike}(/ranking)?$`).test(
-              reqUrl.pathname,
-            )
-          ) {
-            return true;
-          }
         }
       }
     } catch {
@@ -162,6 +137,20 @@ export function useSafeRouter() {
         showToast({
           message:
             "このページのオフラインデータが不足しています。オンラインで一度開いて保存してください",
+          variant: "warning",
+        });
+        return;
+      }
+
+      // 動的詳細ページは、ローカルデータだけでなくルートキャッシュも必要。
+      // （別IDのキャッシュ流用で誤ページへ遷移する事象を防ぐ）
+      if (
+        (isCollectionDetail || isCollectionRanking || isUserDetail || isUserFavorites) &&
+        !hasRouteCache
+      ) {
+        showToast({
+          message:
+            "この詳細ページはまだオフライン準備できていません。オンラインで一度開いてください",
           variant: "warning",
         });
         return;

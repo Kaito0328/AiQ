@@ -68,37 +68,6 @@ self.addEventListener("fetch", (event: FetchEvent) => {
           }
         }
 
-        // 動的ルート（/users/:id, /collections/:id）は、別IDのキャッシュを流用して
-        // App Router の起動を優先し、ページ内のIndexedDBフォールバックへつなぐ。
-        const targetPath = new URL(request.url).pathname;
-        const userDynamic = /^\/users\/[0-9a-fA-F-]{36}(\/favorites)?$/;
-        const collectionDynamic =
-          /^\/collections\/[0-9a-fA-F-]{36}(\/ranking)?$/;
-
-        if (
-          userDynamic.test(targetPath) ||
-          collectionDynamic.test(targetPath)
-        ) {
-          for (const cacheName of allCaches) {
-            const cache = await caches.open(cacheName);
-            const keys = await cache.keys();
-
-            for (const key of keys) {
-              const keyPath = new URL(key.url).pathname;
-              if (
-                (userDynamic.test(targetPath) && userDynamic.test(keyPath)) ||
-                (collectionDynamic.test(targetPath) &&
-                  collectionDynamic.test(keyPath))
-              ) {
-                const match = await cache.match(key);
-                if (match) {
-                  return match;
-                }
-              }
-            }
-          }
-        }
-
         // キャッシュにもない場合、ハングを防ぐために空のレスポンスを返す
         if (isNavigation) {
           // ナビゲーションの場合はオフラインフォールバックページを返す

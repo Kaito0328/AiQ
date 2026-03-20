@@ -60,10 +60,19 @@ export function CollectionBrowser({
       setLoadingOfficial(false);
       // オフライン時はキャッシュされたコレクションからユーザーを抽出
       getAllOfflineCollections(false).then(async (cols) => {
+        const cachedQuestionCollectionIds = new Set(
+          (await db.questions.toArray()).map((q) => q.collectionId),
+        );
         const usersMap = new Map<string, string>();
+        const usableCollectionCountByUser = new Map<string, number>();
         cols.forEach((c) => {
-          if (c.userId && c.authorName) {
+          const isUsable = cachedQuestionCollectionIds.has(c.id);
+          if (c.userId && c.authorName && isUsable) {
             usersMap.set(c.userId, c.authorName);
+            usableCollectionCountByUser.set(
+              c.userId,
+              (usableCollectionCountByUser.get(c.userId) || 0) + 1,
+            );
           }
         });
 
@@ -93,6 +102,7 @@ export function CollectionBrowser({
           .map(([id, name]) => ({ id, name }))
           .filter(
             (u) =>
+              (usableCollectionCountByUser.get(u.id) || 0) > 0 &&
               u.id !== user?.id &&
               u.id !== (cachedOfficialId || officialUserId),
           );
