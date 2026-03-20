@@ -53,6 +53,14 @@ self.addEventListener("fetch", (event: FetchEvent) => {
           return cachedResponse;
         }
 
+        // クエリ差分を無視して同一パスのキャッシュを探す
+        const cachedIgnoringSearch = await caches.match(request, {
+          ignoreSearch: true,
+        });
+        if (cachedIgnoringSearch) {
+          return cachedIgnoringSearch;
+        }
+
         // URL のクエリパラメータを除去してキャッシュを再検索
         // (RSC のキャッシュバスターパラメータが異なる場合への対応)
         const urlWithoutQuery = request.url.split("?")[0];

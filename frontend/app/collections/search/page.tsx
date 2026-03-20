@@ -459,226 +459,222 @@ function CollectionSearchPageContent() {
   return (
     <View className="min-h-screen bg-surface-muted pt-4 pb-20 sm:py-8">
       <Container className="px-3 sm:px-6 lg:px-8">
-          <Stack gap="md">
-            <Stack gap="xs">
-              <Flex gap="sm" align="center">
-                <Text variant="h4" weight="bold" className="tracking-tight">
-                  コレクション検索
-                </Text>
-                {showOfflineCacheBadge && (
-                  <Flex
-                    gap="xs"
-                    align="center"
-                    className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
-                  >
-                    <WifiOff size={12} />
-                    <Text variant="xs" weight="bold" className="text-amber-700">
-                      オフライン
-                    </Text>
-                  </Flex>
-                )}
-              </Flex>
-            </Stack>
-
-            <Stack gap="xs">
-              <Flex gap="xs" align="center">
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="例: #英語 単語"
-                  className="w-full !text-sm !py-2"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleSearch();
-                    }
-                  }}
-                />
-                <Button
-                  onClick={handleSearch}
-                  className="h-10 w-10 min-w-10 p-0"
-                  color="primary"
-                  title="検索"
-                  aria-label="検索"
-                >
-                  <Search size={16} />
-                </Button>
-              </Flex>
-
-              <View className="overflow-x-auto -mx-1 px-1">
-                <Flex
-                  gap="xs"
-                  align="center"
-                  className="min-w-max flex-nowrap py-0.5"
-                >
-                  <View className="text-secondary shrink-0">
-                    <ArrowUpDown size={16} />
-                  </View>
-                  <Select
-                    value={sort}
-                    onChange={(e) =>
-                      setSort(
-                        e.target.value as
-                          | "new"
-                          | "popular"
-                          | "difficultyAsc"
-                          | "difficultyDesc",
-                      )
-                    }
-                    className="!text-sm !py-2"
-                  >
-                    <option value="popular">人気</option>
-                    <option value="new">新着</option>
-                    <option value="difficultyAsc">易→難</option>
-                    <option value="difficultyDesc">難→易</option>
-                  </Select>
-                  <View className="w-2 shrink-0" />
-                  <View className="text-secondary shrink-0">
-                    <SlidersHorizontal size={16} />
-                  </View>
-                  <Select
-                    value={difficultyLevel}
-                    onChange={(e) => setDifficultyLevel(e.target.value)}
-                    className="min-w-[94px] flex-1 !text-sm !py-2"
-                  >
-                    <option value="1">Lv1</option>
-                    <option value="2">Lv2</option>
-                    <option value="3">Lv3</option>
-                    <option value="4">Lv4</option>
-                    <option value="5">Lv5</option>
-                  </Select>
-                  <Select
-                    value={difficultyMode}
-                    onChange={(e) =>
-                      setDifficultyMode(
-                        e.target.value as
-                          | "none"
-                          | "exact"
-                          | "atLeast"
-                          | "atMost",
-                      )
-                    }
-                    className="min-w-[94px] flex-1 !text-sm !py-2"
-                  >
-                    <option value="none">指定なし</option>
-                    <option value="exact">一致</option>
-                    <option value="atLeast">以上</option>
-                    <option value="atMost">以下</option>
-                  </Select>
-                </Flex>
-              </View>
-            </Stack>
-
-            <Flex justify="between" align="center" className="pt-1">
-              <Text variant="detail" color="secondary" weight="bold">
-                表示中 {results.length} 件
+        <Stack gap="md">
+          <Stack gap="xs">
+            <Flex gap="sm" align="center">
+              <Text variant="h4" weight="bold" className="tracking-tight">
+                コレクション検索
               </Text>
-              <Flex gap="sm" align="center">
+              {showOfflineCacheBadge && (
                 <Flex
                   gap="xs"
                   align="center"
-                  className="bg-surface-muted/50 p-1 rounded-lg border border-surface-muted"
+                  className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "w-8 h-8 p-0 transition-all",
-                      viewMode === "grid"
-                        ? "bg-surface-base shadow-sm text-brand-primary"
-                        : "text-secondary",
-                    )}
-                    onClick={() => handleViewModeChange("grid")}
-                    title="グリッド表示"
-                  >
-                    <LayoutGrid size={16} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                      "w-8 h-8 p-0 transition-all",
-                      viewMode === "list"
-                        ? "bg-surface-base shadow-sm text-brand-primary"
-                        : "text-secondary",
-                    )}
-                    onClick={() => handleViewModeChange("list")}
-                    title="インライン表示"
-                  >
-                    <List size={16} />
-                  </Button>
+                  <WifiOff size={12} />
+                  <Text variant="xs" weight="bold" className="text-amber-700">
+                    オフライン
+                  </Text>
                 </Flex>
-              </Flex>
+              )}
+            </Flex>
+          </Stack>
+
+          <Stack gap="xs">
+            <Flex gap="xs" align="center">
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="例: #英語 単語"
+                className="w-full !text-sm !py-2"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleSearch();
+                  }
+                }}
+              />
+              <Button
+                onClick={handleSearch}
+                className="h-10 w-10 min-w-10 p-0"
+                color="primary"
+                title="検索"
+                aria-label="検索"
+              >
+                <Search size={16} />
+              </Button>
             </Flex>
 
-            {loading && results.length === 0 ? (
-              <View className="py-10 flex justify-center">
-                <Spinner size="lg" />
-              </View>
-            ) : error && results.length === 0 ? (
-              <Card border="danger" bg="card">
-                <Text color="danger" align="center">
-                  {error}
-                </Text>
-              </Card>
-            ) : results.length === 0 ? (
-              <Card border="base" bg="card">
-                <Text color="secondary" align="center">
-                  条件に一致するコレクションがありません
-                </Text>
-              </Card>
-            ) : viewMode === "list" ? (
-              <Stack
-                gap="none"
-                className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5"
+            <View className="overflow-x-auto -mx-1 px-1">
+              <Flex
+                gap="xs"
+                align="center"
+                className="min-w-max flex-nowrap py-0.5"
               >
-                {results.map((collection) => (
-                  <CollectionCard
-                    key={collection.id}
-                    collection={collection}
-                    displayMode="list"
-                  />
-                ))}
-              </Stack>
-            ) : (
-              <Grid cols={{ base: 1, md: 2, lg: 2, xl: 3 }} gap="md">
-                {results.map((collection) => (
-                  <CollectionCard
-                    key={collection.id}
-                    collection={collection}
-                    displayMode="grid"
-                  />
-                ))}
-              </Grid>
-            )}
-
-            {results.length > 0 ? (
-              <Stack gap="xs" className="pt-2">
-                {loadMoreError ? (
-                  <Text variant="detail" color="danger" align="center">
-                    {loadMoreError}
-                  </Text>
-                ) : null}
-
-                {hasMore ? (
-                  <Flex justify="center">
-                    <Button
-                      variant="outline"
-                      color="secondary"
-                      onClick={handleLoadMore}
-                      disabled={loadingMore}
-                    >
-                      {loadingMore ? "読み込み中..." : "もっと見る"}
-                    </Button>
-                  </Flex>
-                ) : (
-                  <Text variant="detail" color="secondary" align="center">
-                    すべて表示しました
-                  </Text>
-                )}
-              </Stack>
-            ) : null}
+                <View className="text-secondary shrink-0">
+                  <ArrowUpDown size={16} />
+                </View>
+                <Select
+                  value={sort}
+                  onChange={(e) =>
+                    setSort(
+                      e.target.value as
+                        | "new"
+                        | "popular"
+                        | "difficultyAsc"
+                        | "difficultyDesc",
+                    )
+                  }
+                  className="!text-sm !py-2"
+                >
+                  <option value="popular">人気</option>
+                  <option value="new">新着</option>
+                  <option value="difficultyAsc">易→難</option>
+                  <option value="difficultyDesc">難→易</option>
+                </Select>
+                <View className="w-2 shrink-0" />
+                <View className="text-secondary shrink-0">
+                  <SlidersHorizontal size={16} />
+                </View>
+                <Select
+                  value={difficultyLevel}
+                  onChange={(e) => setDifficultyLevel(e.target.value)}
+                  className="min-w-[94px] flex-1 !text-sm !py-2"
+                >
+                  <option value="1">Lv1</option>
+                  <option value="2">Lv2</option>
+                  <option value="3">Lv3</option>
+                  <option value="4">Lv4</option>
+                  <option value="5">Lv5</option>
+                </Select>
+                <Select
+                  value={difficultyMode}
+                  onChange={(e) =>
+                    setDifficultyMode(
+                      e.target.value as "none" | "exact" | "atLeast" | "atMost",
+                    )
+                  }
+                  className="min-w-[94px] flex-1 !text-sm !py-2"
+                >
+                  <option value="none">指定なし</option>
+                  <option value="exact">一致</option>
+                  <option value="atLeast">以上</option>
+                  <option value="atMost">以下</option>
+                </Select>
+              </Flex>
+            </View>
           </Stack>
+
+          <Flex justify="between" align="center" className="pt-1">
+            <Text variant="detail" color="secondary" weight="bold">
+              表示中 {results.length} 件
+            </Text>
+            <Flex gap="sm" align="center">
+              <Flex
+                gap="xs"
+                align="center"
+                className="bg-surface-muted/50 p-1 rounded-lg border border-surface-muted"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "w-8 h-8 p-0 transition-all",
+                    viewMode === "grid"
+                      ? "bg-surface-base shadow-sm text-brand-primary"
+                      : "text-secondary",
+                  )}
+                  onClick={() => handleViewModeChange("grid")}
+                  title="グリッド表示"
+                >
+                  <LayoutGrid size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "w-8 h-8 p-0 transition-all",
+                    viewMode === "list"
+                      ? "bg-surface-base shadow-sm text-brand-primary"
+                      : "text-secondary",
+                  )}
+                  onClick={() => handleViewModeChange("list")}
+                  title="インライン表示"
+                >
+                  <List size={16} />
+                </Button>
+              </Flex>
+            </Flex>
+          </Flex>
+
+          {loading && results.length === 0 ? (
+            <View className="py-10 flex justify-center">
+              <Spinner size="lg" />
+            </View>
+          ) : error && results.length === 0 ? (
+            <Card border="danger" bg="card">
+              <Text color="danger" align="center">
+                {error}
+              </Text>
+            </Card>
+          ) : results.length === 0 ? (
+            <Card border="base" bg="card">
+              <Text color="secondary" align="center">
+                条件に一致するコレクションがありません
+              </Text>
+            </Card>
+          ) : viewMode === "list" ? (
+            <Stack
+              gap="none"
+              className="border border-surface-muted/30 rounded-xl overflow-hidden bg-surface-muted/5"
+            >
+              {results.map((collection) => (
+                <CollectionCard
+                  key={collection.id}
+                  collection={collection}
+                  displayMode="list"
+                />
+              ))}
+            </Stack>
+          ) : (
+            <Grid cols={{ base: 1, md: 2, lg: 2, xl: 3 }} gap="md">
+              {results.map((collection) => (
+                <CollectionCard
+                  key={collection.id}
+                  collection={collection}
+                  displayMode="grid"
+                />
+              ))}
+            </Grid>
+          )}
+
+          {results.length > 0 ? (
+            <Stack gap="xs" className="pt-2">
+              {loadMoreError ? (
+                <Text variant="detail" color="danger" align="center">
+                  {loadMoreError}
+                </Text>
+              ) : null}
+
+              {hasMore ? (
+                <Flex justify="center">
+                  <Button
+                    variant="outline"
+                    color="secondary"
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? "読み込み中..." : "もっと見る"}
+                  </Button>
+                </Flex>
+              ) : (
+                <Text variant="detail" color="secondary" align="center">
+                  すべて表示しました
+                </Text>
+              )}
+            </Stack>
+          ) : null}
+        </Stack>
       </Container>
     </View>
   );
