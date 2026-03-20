@@ -213,7 +213,11 @@ export function useSafeRouter() {
       (localStorage.getItem("aiq_manual_offline") === "true" ||
         !navigator.onLine);
 
-    if ((!isOnline || isRuntimeOffline) && !href.startsWith("/home") && href !== "/") {
+    if (
+      (!isOnline || isRuntimeOffline) &&
+      !href.startsWith("/home") &&
+      href !== "/"
+    ) {
       showToast({
         message: "オフラインのため、遷移を制限しています",
         variant: "danger",

@@ -38,7 +38,9 @@ interface UserProfilePageContentProps {
   userId: string;
 }
 
-export function UserProfilePageContent({ userId }: UserProfilePageContentProps) {
+export function UserProfilePageContent({
+  userId,
+}: UserProfilePageContentProps) {
   const router = useRouter();
   const { user } = useAuth();
 
