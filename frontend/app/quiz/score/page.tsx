@@ -123,6 +123,14 @@ export default function QuizScorePage() {
   const percentage =
     totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
   const score = rankingResult?.score;
+  const hasMistakeButton = answers.some((a) => !a.correct);
+  const hasRankingButton = !!rankingResult;
+  const actionButtonCount =
+    3 + (hasMistakeButton ? 1 : 0) + (hasRankingButton ? 1 : 0);
+  const actionGridClass =
+    actionButtonCount === 4
+      ? "grid grid-cols-2 gap-2 sm:gap-3"
+      : "grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3";
 
   if (!rankingResult && answers.length === 0) {
     return (
@@ -194,7 +202,7 @@ export default function QuizScorePage() {
               </View>
 
               <View className="w-full max-w-2xl">
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+                <div className={actionGridClass}>
                   <Button
                     variant="solid"
                     color="primary"
@@ -204,7 +212,7 @@ export default function QuizScorePage() {
                     <RefreshCcw size={16} />
                     再挑戦
                   </Button>
-                  {answers.some((a) => !a.correct) && (
+                  {hasMistakeButton && (
                     <Button
                       variant="outline"
                       color="primary"
@@ -215,7 +223,7 @@ export default function QuizScorePage() {
                       ミスのみ
                     </Button>
                   )}
-                  {rankingResult && (
+                  {hasRankingButton && (
                     <Button
                       variant="solid"
                       color="secondary"
