@@ -17,6 +17,7 @@ import { Question } from "@/src/entities/question";
 import { CasualQuiz, AnswerHistory } from "@/src/entities/quiz";
 import { useAuth } from "@/src/shared/auth/useAuth";
 import { useAiqScorer } from "@/src/features/quiz/hooks/useAiqScorer";
+import { cn } from "@/src/shared/utils/cn";
 
 import { BackButton } from "@/src/shared/components/Navigation/BackButton";
 import { X, ArrowRight } from "lucide-react";
@@ -352,8 +353,8 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-surface-muted overflow-y-auto overflow-x-hidden">
-      <div className="sticky top-0 left-0 right-0 z-50 bg-surface-muted/90 backdrop-blur-md border-b border-surface-muted/50 overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-surface-muted overflow-hidden">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-surface-muted/90 backdrop-blur-md border-b border-surface-muted/50 overflow-hidden">
         <div className="p-4 flex justify-between items-center relative">
           <Button
             variant="ghost"
@@ -408,7 +409,12 @@ export default function QuizPage() {
           />
         </div>
       </div>
-      <View className="flex-1 flex items-center justify-center px-4 py-2">
+      <View
+        className={cn(
+          "flex-1 overflow-y-auto px-4 pb-4 pt-[88px] flex justify-center",
+          isCorrect !== null ? "items-start" : "items-center",
+        )}
+      >
         {isCorrect !== null ? (
           <Result
             isCorrect={isCorrect}

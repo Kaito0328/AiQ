@@ -16,7 +16,6 @@ import { CollectionHeader } from "@/src/features/collections/components/Collecti
 import { QuestionList } from "@/src/features/questions/components/QuestionList";
 import { QuestionForm } from "@/src/features/questions/components/QuestionForm";
 import { EditRequestReviewList } from "@/src/features/questions/components/EditRequestReviewList";
-import { BackButton } from "@/src/shared/components/Navigation/BackButton";
 import { useAuth } from "@/src/shared/auth/useAuth";
 import { Plus } from "lucide-react";
 import { AiGenerationModal } from "@/src/features/collections/components/AiGenerationModal";
@@ -26,10 +25,9 @@ import { AiQuickBar } from "@/src/features/collections/components/AiQuickBar";
 import { CollectionEditModal } from "@/src/features/collections/components/CollectionEditModal";
 import { useToast } from "@/src/shared/contexts/ToastContext";
 import { exportCsv } from "@/src/features/collections/api";
-import { FileUp, Download } from "lucide-react";
 import { Flex } from "@/src/design/primitives/Flex";
 import { View } from "@/src/design/primitives/View";
-import { ArrowUp, ArrowDown, Gamepad2, WifiOff } from "lucide-react";
+import { ArrowUp, Gamepad2 } from "lucide-react";
 import { isOfflineError as isOfflineErr } from "@/src/shared/api/isOfflineError";
 import {
   getOfflineCollection,
@@ -62,35 +60,19 @@ export default function CollectionDetailPage() {
   const [isEditMode, setIsEditMode] = useState(false);
 
   const [isOffline, setIsOffline] = useState(false);
-  const [isStale, setIsStale] = useState(false);
+  const [showScrollTopButton, setShowScrollTopButton] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setIsOffline(false);
 
-    // Step 1: キャッシュファースト — Dexie から即座に表示
-    try {
-      const cachedCol = await getOfflineCollection(collectionId);
-      if (cachedCol) {
-        setCollection(cachedCol);
-        const cachedQs = await getOfflineQuestions(collectionId);
-        setQuestions(cachedQs);
-        setIsOwner(!!(user && user.id === cachedCol.userId));
-        setIsStale(true);
-        setLoading(false);
-      }
-    } catch {
-      // キャッシュ読み取りエラーは無視
-    }
-
-    // Step 2: APIからリバリデーション
     try {
       const data = await getCollection(collectionId);
       setCollection(data);
       const qList = await getCollectionQuestions(collectionId);
       setQuestions(qList);
       setIsOwner(!!(user && user.id === data.userId));
-      setIsStale(false);
       // 自動キャッシュを保存
       syncCollectionToOffline(data, qList, false).catch((err) =>
         logger.error("Auto-cache failed", err),
@@ -117,6 +99,31 @@ export default function CollectionDetailPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    let scrollIdleTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const onScroll = () => {
+      const y = window.scrollY || document.documentElement.scrollTop;
+      setShowScrollTopButton(y > 320);
+      setIsUserScrolling(true);
+
+      if (scrollIdleTimer) {
+        clearTimeout(scrollIdleTimer);
+      }
+      scrollIdleTimer = setTimeout(() => setIsUserScrolling(false), 180);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (scrollIdleTimer) {
+        clearTimeout(scrollIdleTimer);
+      }
+    };
+  }, []);
 
   const handleQuestionDeleted = (id: string) => {
     setQuestions((prev) => prev.filter((q) => q.id !== id));
@@ -185,8 +192,8 @@ export default function CollectionDetailPage() {
 
   return (
     <View className="min-h-screen bg-surface-muted">
-      <Container className="pt-6 pb-12">
-        <Stack gap="xl">
+      <Container className="pt-6 pb-40">
+        <Stack gap="xl" className="gap-5 sm:gap-10">
           <CollectionHeader
             collection={collection}
             isOwner={isOwner}
@@ -217,6 +224,7 @@ export default function CollectionDetailPage() {
             onImportCsv={() => setIsCsvModalOpen(true)}
             onSuccess={handleQuestionSaved}
             collectionId={collectionId}
+            collectionDifficulty={collection.difficultyLevel ?? 3}
             onOpenAdvanced={(prompt, count) => {
               setAiModalPrompt(prompt);
               setAiModalCount(count);
@@ -226,56 +234,50 @@ export default function CollectionDetailPage() {
         </Stack>
       </Container>
 
-      {/* Floating Scroll Buttons */}
-      <View className="fixed bottom-24 right-4 sm:right-8 z-40 flex flex-col gap-2">
-        <Button
-          variant="solid"
-          color="primary"
-          className="p-3 h-auto rounded-full shadow-brand-lg active:scale-90 transition-transform"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          title="一番上へ"
-        >
-          <ArrowUp size={20} className="text-white" strokeWidth={3} />
-        </Button>
-        <Button
-          variant="solid"
-          color="primary"
-          className="p-3 h-auto rounded-full shadow-brand-lg active:scale-90 transition-transform"
-          onClick={() =>
-            window.scrollTo({
-              top: document.body.scrollHeight,
-              behavior: "smooth",
-            })
-          }
-          title="一番下へ"
-        >
-          <ArrowDown size={20} className="text-white" strokeWidth={3} />
-        </Button>
-      </View>
+      {/* Floating Scroll Button */}
+      {showScrollTopButton && (
+        <View className="fixed bottom-28 right-4 sm:right-8 z-40">
+          <Button
+            variant="solid"
+            color="primary"
+            className={
+              isUserScrolling
+                ? "p-2.5 h-auto rounded-full shadow-brand-lg active:scale-90 transition-all opacity-95"
+                : "p-2.5 h-auto rounded-full shadow-brand-lg active:scale-90 transition-all opacity-70"
+            }
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            title="一番上へ"
+          >
+            <ArrowUp size={18} className="text-white" strokeWidth={3} />
+          </Button>
+        </View>
+      )}
 
       {/* Bottom Fixed Quiz Action */}
       <View className="fixed bottom-0 left-0 right-0 p-4 pb-6 bg-gradient-to-t from-surface-muted via-surface-muted/95 to-transparent z-[30]">
         <Container>
-          <Button
-            variant="solid"
-            color="primary"
-            rounded="full"
-            size="lg"
-            className="w-full py-4 shadow-brand-lg group active:scale-[0.98] transition-all"
-            onClick={() =>
-              router.push(`/quiz/start?collectionId=${collectionId}`)
-            }
-          >
-            <Flex gap="sm" align="center">
-              <Gamepad2
-                size={24}
-                className="group-hover:rotate-12 transition-transform"
-              />
-              <Text variant="detail" weight="bold">
-                このコレクションでクイズを開始
-              </Text>
-            </Flex>
-          </Button>
+          <Flex justify="center">
+            <Button
+              variant="solid"
+              color="primary"
+              rounded="full"
+              size="md"
+              className="min-w-[170px] px-6 py-2.5 shadow-brand-lg group active:scale-[0.98] transition-all"
+              onClick={() =>
+                router.push(`/quiz/start?collectionId=${collectionId}`)
+              }
+            >
+              <Flex gap="sm" align="center">
+                <Gamepad2
+                  size={18}
+                  className="group-hover:rotate-12 transition-transform"
+                />
+                <Text variant="detail" weight="bold">
+                  クイズ開始
+                </Text>
+              </Flex>
+            </Button>
+          </Flex>
         </Container>
       </View>
 
@@ -285,10 +287,6 @@ export default function CollectionDetailPage() {
           onUpdated={(updated) => {
             setCollection(updated);
             setShowCollectionModal(false);
-            showToast({
-              message: "コレクションを更新しました",
-              variant: "success",
-            });
           }}
           onCancel={() => setShowCollectionModal(false)}
         />
@@ -313,6 +311,7 @@ export default function CollectionDetailPage() {
           setAiModalPrompt("");
         }}
         collectionId={collectionId}
+        collectionDifficulty={collection.difficultyLevel ?? 3}
         onSuccess={handleQuestionSaved}
         initialPrompt={aiModalPrompt}
         initialCount={aiModalCount}
@@ -322,6 +321,7 @@ export default function CollectionDetailPage() {
         isOpen={isPdfModalOpen}
         onClose={() => setIsPdfModalOpen(false)}
         collectionId={collectionId}
+        collectionDifficulty={collection.difficultyLevel ?? 3}
         onSuccess={handleQuestionSaved}
       />
 

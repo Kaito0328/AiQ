@@ -1,33 +1,35 @@
-import { DefaultCollectionMode } from './quiz';
+import { DefaultCollectionMode } from "./quiz";
 
 export interface Collection {
-    id: string; // Uuid
-    userId: string; // Uuid
-    name: string;
-    descriptionText?: string;
-    isOpen: boolean;
-    defaultMode: DefaultCollectionMode;
-    createdAt: string; // ISO String
-    updatedAt: string; // ISO String
-    authorName?: string;
-    authorIconUrl?: string;
-    isOfficial: boolean;
-    favoriteCount?: number;
-    questionCount?: number;
-    isFavorited?: boolean;
-    userRank?: number;
+  id: string; // Uuid
+  userId: string; // Uuid
+  name: string;
+  descriptionText?: string;
+  isOpen: boolean;
+  defaultMode: DefaultCollectionMode;
+  createdAt: string; // ISO String
+  updatedAt: string; // ISO String
+  authorName?: string;
+  authorIconUrl?: string;
+  isOfficial: boolean;
+  favoriteCount?: number;
+  questionCount?: number;
+  isFavorited?: boolean;
+  userRank?: number;
+  difficultyLevel?: number;
+  tags?: string[];
 }
 export interface CollectionSet {
-    id: string; // Uuid
-    userId: string; // Uuid
-    name: string;
-    descriptionText?: string;
-    isOpen: boolean;
-    createdAt: string; // ISO String
-    updatedAt: string; // ISO String
+  id: string; // Uuid
+  userId: string; // Uuid
+  name: string;
+  descriptionText?: string;
+  isOpen: boolean;
+  createdAt: string; // ISO String
+  updatedAt: string; // ISO String
 }
 
 export interface CollectionSetResponse {
-    set: CollectionSet;
-    collections: Collection[];
+  set: CollectionSet;
+  collections: Collection[];
 }

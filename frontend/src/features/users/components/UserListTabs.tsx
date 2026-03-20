@@ -10,15 +10,16 @@ import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { Tabs, TabItem } from "@/src/design/baseComponents/Tabs";
 import { Input } from "@/src/design/baseComponents/Input";
 import { Select } from "@/src/design/baseComponents/Select";
+import { Button } from "@/src/design/baseComponents/Button";
 import { UserCard } from "@/src/features/users/components/UserCard";
-import { Search, Filter, WifiOff } from "lucide-react";
+import { Search, ArrowUpDown } from "lucide-react";
 import { getUsers } from "@/src/features/auth/api";
 import { getFollowers, getFollowees } from "@/src/features/follow/api";
 import { useAuth } from "@/src/shared/auth/useAuth";
-import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 import { db } from "@/src/shared/db/db";
 import { saveOfflineProfile } from "@/src/shared/api/offlineApi";
 import { User } from "@/src/entities/user";
+import { isOfflineError } from "@/src/shared/api/isOfflineError";
 
 interface UserListTabsProps {
   onUserClick?: (user: User) => void;
@@ -26,73 +27,71 @@ interface UserListTabsProps {
 
 export function UserListTabs({ onUserClick }: UserListTabsProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
-  const { isOnline } = useNetworkStatus();
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [followers, setFollowers] = useState<User[]>([]);
   const [followees, setFollowees] = useState<User[]>([]);
 
   // Search and Sort states
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [appliedQuery, setAppliedQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
   const [loadingAll, setLoadingAll] = useState(true);
   const [loadingFollowers, setLoadingFollowers] = useState(false);
   const [loadingFollowees, setLoadingFollowees] = useState(false);
 
-  // Initial fetch for all users with search/sort (SWR pattern)
+  // Network-first fetch for all users with search/sort
   useEffect(() => {
     let cancelled = false;
 
     const fetchAll = async () => {
       setLoadingAll(true);
-
-      // Step 1: キャッシュファースト — Dexie からキャッシュ済みプロフィールを即表示
-      try {
-        let cached = await db.profiles.toArray();
-        if (searchQuery) {
-          const q = searchQuery.toLowerCase();
-          cached = cached.filter(
-            (u) =>
-              u.username.toLowerCase().includes(q) ||
-              (u.displayName && u.displayName.toLowerCase().includes(q)),
-          );
-        }
-        if (cached.length > 0 && !cancelled) {
-          setAllUsers(cached);
-          setLoadingAll(false);
-        }
-      } catch {
-        // キャッシュ読み取りエラーは無視
-      }
-
-      // Step 2: APIからリバリデーション
       try {
         const users = await getUsers({
-          q: searchQuery || undefined,
+          q: appliedQuery || undefined,
           sort: sortBy === "newest" ? "created_at" : "followers",
         });
         if (cancelled) return;
         setAllUsers(users);
 
-        // オフラインで他ユーザープロフィールに入れるよう、一覧取得時にプロフィールを保存
+        // オフラインで他ユーザープロフィールに入れるよう、一覧取得時に保存
         Promise.allSettled(users.map((u) => saveOfflineProfile(u)));
       } catch (err) {
-        // APIエラー時はキャッシュデータを維持
-        logger.error("ユーザー一覧の取得に失敗しました", err);
+        if (!cancelled) {
+          try {
+            let cached = await db.profiles.toArray();
+            if (appliedQuery) {
+              const q = appliedQuery.toLowerCase();
+              cached = cached.filter(
+                (u) =>
+                  u.username.toLowerCase().includes(q) ||
+                  (u.displayName && u.displayName.toLowerCase().includes(q)),
+              );
+            }
+            setAllUsers(cached);
+          } catch {
+            // ignore cache read error on fallback
+          }
+        }
+
+        if (!isOfflineError(err)) {
+          logger.error("ユーザー一覧の取得に失敗しました", err);
+        }
       } finally {
         if (!cancelled) setLoadingAll(false);
       }
     };
 
-    const timer = setTimeout(() => {
-      fetchAll();
-    }, 300);
+    void fetchAll();
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
     };
-  }, [searchQuery, sortBy]);
+  }, [appliedQuery, sortBy]);
+
+  const handleSearch = () => {
+    setAppliedQuery(searchInput.trim());
+  };
 
   useEffect(() => {
     if (!isAuthenticated || !currentUser) return;
@@ -187,25 +186,51 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
 
   return (
     <Stack gap="lg">
-      <Flex gap="md" className="flex-col sm:flex-row">
-        <View className="relative flex-1">
-          <View className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none">
-            <Search size={18} />
-          </View>
+      <Stack gap="xs">
+        <Flex gap="xs" align="center">
           <Input
-            placeholder="ユーザーを検索..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            placeholder="ユーザー名・表示名で検索"
+            className="w-full !text-sm !py-2"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleSearch();
+              }
+            }}
           />
+          <Button
+            onClick={handleSearch}
+            className="h-10 w-10 min-w-10 p-0"
+            color="primary"
+            title="検索"
+            aria-label="検索"
+          >
+            <Search size={16} />
+          </Button>
+        </Flex>
+
+        <View className="overflow-x-auto -mx-1 px-1">
+          <Flex
+            gap="xs"
+            align="center"
+            className="min-w-max flex-nowrap py-0.5"
+          >
+            <View className="text-secondary shrink-0">
+              <ArrowUpDown size={16} />
+            </View>
+            <Select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="min-w-[148px] !text-sm !py-2"
+            >
+              <option value="newest">登録が新しい順</option>
+              <option value="followers">フォロワー数順</option>
+            </Select>
+          </Flex>
         </View>
-        <View className="w-full sm:w-48">
-          <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="newest">登録が新しい順</option>
-            <option value="followers">フォロワー数順</option>
-          </Select>
-        </View>
-      </Flex>
+      </Stack>
 
       <Tabs items={items} defaultTab="all" fitted />
     </Stack>

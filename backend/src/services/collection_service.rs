@@ -8,6 +8,33 @@ use crate::repositories::collection::CollectionRepository;
 pub struct CollectionService;
 
 impl CollectionService {
+    fn normalize_tags(tags: Option<Vec<String>>) -> Vec<String> {
+        let mut normalized = Vec::new();
+        for raw in tags.unwrap_or_default() {
+            let trimmed = raw.trim().trim_start_matches('#').to_lowercase();
+            if trimmed.is_empty() {
+                continue;
+            }
+
+            // タグ長を10文字に揃える
+            let short: String = trimmed.chars().take(10).collect();
+            if short.is_empty() {
+                continue;
+            }
+            if !normalized.iter().any(|t| t == &short) {
+                normalized.push(short);
+            }
+            if normalized.len() >= 10 {
+                break;
+            }
+        }
+        normalized
+    }
+
+    fn normalize_difficulty(level: Option<i16>) -> i16 {
+        level.unwrap_or(3).clamp(1, 5)
+    }
+
     /// 新規問題集の作成
     pub async fn create_collection(
         pool: &PgPool,
@@ -118,5 +145,61 @@ impl CollectionService {
         requester_id: Option<Uuid>,
     ) -> Result<Vec<crate::dtos::collection_dto::CollectionResponse>, sqlx::Error> {
         CollectionRepository::find_recent_collections(pool, limit, offset, requester_id).await
+    }
+
+    pub async fn upsert_search_metadata(
+        pool: &PgPool,
+        collection_id: Uuid,
+        user_id: Uuid,
+        req: crate::dtos::collection_dto::UpsertCollectionSearchMetadataRequest,
+    ) -> Result<bool, sqlx::Error> {
+        let difficulty_level = Self::normalize_difficulty(req.difficulty_level);
+        let tags = Self::normalize_tags(req.tags);
+
+        CollectionRepository::upsert_search_metadata(
+            pool,
+            collection_id,
+            user_id,
+            difficulty_level,
+            tags,
+        )
+        .await
+    }
+
+    pub async fn search_collections(
+        pool: &PgPool,
+        query: Option<String>,
+        tags: Vec<String>,
+        difficulty_min: Option<i16>,
+        difficulty_max: Option<i16>,
+        sort: &str,
+        limit: i64,
+        offset: i64,
+        requester_id: Option<Uuid>,
+    ) -> Result<Vec<crate::dtos::collection_dto::CollectionSearchResponse>, sqlx::Error> {
+        let normalized_tags = Self::normalize_tags(Some(tags));
+        let normalized_difficulty_min = difficulty_min.map(|v| v.clamp(1, 5));
+        let normalized_difficulty_max = difficulty_max.map(|v| v.clamp(1, 5));
+
+        CollectionRepository::search_open_collections(
+            pool,
+            query,
+            normalized_tags,
+            normalized_difficulty_min,
+            normalized_difficulty_max,
+            sort,
+            limit,
+            offset,
+            requester_id,
+        )
+        .await
+    }
+
+    pub async fn get_popular_tags(
+        pool: &PgPool,
+        limit: i64,
+        query: Option<String>,
+    ) -> Result<Vec<crate::dtos::collection_dto::PopularTagResponse>, sqlx::Error> {
+        CollectionRepository::get_popular_tags(pool, limit.max(1).min(30), query).await
     }
 }

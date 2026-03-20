@@ -21,6 +21,7 @@ import {
   Cloud,
   AlertTriangle,
   WifiOff,
+  Star,
 } from "lucide-react";
 import { useSafeRouter } from "@/src/shared/hooks/useSafeRouter";
 import { Checkbox } from "@/src/design/baseComponents/Checkbox";
@@ -32,6 +33,8 @@ import { useEffect, useState } from "react";
 import { useSyncStatus } from "@/src/shared/hooks/useSyncStatus";
 import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 import { syncManager } from "@/src/shared/api/SyncManager";
+import { useCollectionMutations } from "../hooks/useCollectionMutations";
+import { useToast } from "@/src/shared/contexts/ToastContext";
 
 interface CollectionCardProps {
   collection: Collection;
@@ -46,6 +49,8 @@ interface CollectionCardProps {
   onClick?: () => void;
   hideExtras?: boolean; // New prop to hide Fav/Ranking/Set buttons
   displayMode?: "grid" | "list";
+  isInteractionDisabled?: boolean;
+  disabledReason?: string;
 }
 
 export function CollectionCard({
@@ -61,14 +66,20 @@ export function CollectionCard({
   onClick,
   hideExtras = false,
   displayMode = "list",
+  isInteractionDisabled = false,
+  disabledReason,
 }: CollectionCardProps) {
   const router = useSafeRouter();
   const { isAuthenticated, user } = useAuth();
   const { isOnline } = useNetworkStatus();
+  const { showToast } = useToast();
+  const { updateCollection: doUpdateCollection } = useCollectionMutations();
   const [isFavoritedOverride, setIsFavoritedOverride] = useState<
     boolean | null
   >(null);
   const [favCountOverride, setFavCountOverride] = useState<number | null>(null);
+  const [isOpenOverride, setIsOpenOverride] = useState<boolean | null>(null);
+  const [isTogglingOpen, setIsTogglingOpen] = useState(false);
   const syncStatus = useSyncStatus(collection.id);
   const isPending = syncStatus?.isPending;
   const hasError = syncStatus?.hasError;
@@ -78,6 +89,36 @@ export function CollectionCard({
   const isOwner = user?.id === collection.userId;
   const isFavorited = isFavoritedOverride ?? (collection.isFavorited || false);
   const favCount = favCountOverride ?? (collection.favoriteCount || 0);
+  const isOpen = isOpenOverride ?? collection.isOpen;
+  const tags = collection.tags || [];
+  const difficulty = collection.difficultyLevel ?? 3;
+  const normalizedDifficulty = Math.max(1, Math.min(5, difficulty));
+
+  const renderDifficultyStars = (size: number = 12) => {
+    return (
+      <Flex
+        gap="none"
+        align="center"
+        title={`難易度 ${normalizedDifficulty}/5`}
+      >
+        {Array.from({ length: 5 }).map((_, index) => {
+          const filled = index < normalizedDifficulty;
+          return (
+            <Star
+              key={`star-${index}`}
+              size={size}
+              className={cn(
+                "transition-colors",
+                filled
+                  ? "text-amber-400 fill-amber-400"
+                  : "text-slate-300 dark:text-slate-600",
+              )}
+            />
+          );
+        })}
+      </Flex>
+    );
+  };
 
   // オフライン遷移のためにルートをプリフェッチ
   useEffect(() => {
@@ -86,6 +127,10 @@ export function CollectionCard({
     router.prefetch(`/collections/${collection.id}`);
     router.prefetch(`/collections/${collection.id}/ranking`);
   }, [router, collection.id, isOnline]);
+
+  useEffect(() => {
+    setIsOpenOverride(null);
+  }, [collection.id, collection.isOpen]);
 
   const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -121,6 +166,47 @@ export function CollectionCard({
     }
   };
 
+  const handleTagClick = (e: React.MouseEvent, tag: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    router.push(`/collections/search?q=${encodeURIComponent(`#${tag}`)}`);
+  };
+
+  const handleToggleVisibility = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isOwner || isTogglingOpen) {
+      return;
+    }
+
+    const nextIsOpen = !isOpen;
+    setIsTogglingOpen(true);
+    try {
+      await doUpdateCollection(collection.id, {
+        name: collection.name,
+        descriptionText: collection.descriptionText,
+        isOpen: nextIsOpen,
+        defaultMode: collection.defaultMode,
+      });
+      setIsOpenOverride(nextIsOpen);
+      showToast({
+        message: nextIsOpen
+          ? isOnline
+            ? "公開に変更しました"
+            : "オフラインで公開設定を保存しました"
+          : isOnline
+            ? "非公開に変更しました"
+            : "オフラインで非公開設定を保存しました",
+        variant: "success",
+      });
+    } catch (err) {
+      logger.error("公開状態の更新に失敗しました", err);
+      showToast({ message: "公開設定の更新に失敗しました", variant: "danger" });
+    } finally {
+      setIsTogglingOpen(false);
+    }
+  };
+
   const handleCardClick = (e: React.MouseEvent) => {
     if (isSelectionMode) {
       e.preventDefault();
@@ -136,6 +222,14 @@ export function CollectionCard({
         onClick={(e) => {
           handleCardClick(e);
           if (isSelectionMode) return;
+          if (isInteractionDisabled) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (disabledReason) {
+              showToast({ message: disabledReason, variant: "warning" });
+            }
+            return;
+          }
 
           if (onClick) {
             onClick();
@@ -143,7 +237,11 @@ export function CollectionCard({
             router.push(`/collections/${collection.id}`);
           }
         }}
-        className={cn("h-full", !isSelectionMode && "cursor-pointer")}
+        className={cn(
+          "h-full",
+          !isSelectionMode && !isInteractionDisabled && "cursor-pointer",
+          !isSelectionMode && isInteractionDisabled && "cursor-not-allowed",
+        )}
       >
         <Card
           border={
@@ -162,10 +260,12 @@ export function CollectionCard({
           className={cn(
             "h-full transition-all duration-500 overflow-hidden relative",
             displayMode !== "list" &&
+              !isInteractionDisabled &&
               "group-hover:shadow-lg group-hover:border-brand-primary/60 group-hover:-translate-y-0.5",
             selected &&
               displayMode !== "list" &&
               "ring-2 ring-brand-primary/20",
+            isInteractionDisabled && "opacity-70",
             isPending &&
               !hasError &&
               "border-dashed border-amber-400/60 animate-pulse-subtle",
@@ -232,21 +332,30 @@ export function CollectionCard({
               className="absolute top-3 right-3 flex gap-2 items-center"
             >
               {isOwner && (
-                <View
+                <Button
+                  size="sm"
+                  variant="soft"
+                  rounded="full"
                   className={cn(
                     "p-2 rounded-full shadow-sm flex items-center justify-center border transition-colors",
-                    collection.isOpen
+                    isOpen
                       ? "bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20"
                       : "bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
                   )}
-                  title={collection.isOpen ? "公開中" : "非公開"}
+                  title={
+                    isOpen
+                      ? "公開中（タップで非公開）"
+                      : "非公開（タップで公開）"
+                  }
+                  onClick={handleToggleVisibility}
+                  disabled={isTogglingOpen}
                 >
-                  {collection.isOpen ? (
+                  {isOpen ? (
                     <Unlock size={14} strokeWidth={2.5} />
                   ) : (
                     <Lock size={14} strokeWidth={2.5} />
                   )}
-                </View>
+                </Button>
               )}
               {onEdit && isOwner && (
                 <Button
@@ -331,25 +440,39 @@ export function CollectionCard({
                     )}
                   />
                 )}
-                <Text
-                  weight={selected ? "bold" : "medium"}
-                  variant="detail"
-                  color={selected ? "primary" : "primary"}
-                  className="truncate flex-1"
-                >
-                  {collection.name}
-                </Text>
+                <Stack gap="xs" className="flex-1 min-w-0">
+                  <Text
+                    weight={selected ? "bold" : "medium"}
+                    variant="detail"
+                    color={selected ? "primary" : "primary"}
+                    className="truncate"
+                  >
+                    {collection.name}
+                  </Text>
+                  {tags.length > 0 && (
+                    <Flex gap="xs" align="center" className="min-w-0">
+                      {tags.slice(0, 2).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="info"
+                          className="px-2 py-0 cursor-pointer"
+                          onClick={(e) => handleTagClick(e, tag)}
+                          title={`#${tag} で検索`}
+                        >
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </Flex>
+                  )}
+                  {isInteractionDisabled && disabledReason && (
+                    <Text variant="xs" color="warning" className="truncate">
+                      オフライン未保存
+                    </Text>
+                  )}
+                </Stack>
               </Flex>
 
               <Flex gap="md" align="center" className="shrink-0">
-                <Flex gap="xs" align="center" className="opacity-70">
-                  <Book size={12} className="text-brand-primary" />
-                  <Text variant="xs" color="secondary">
-                    {collection.questionCount || 0}
-                  </Text>
-                </Flex>
-
-                {/* List mode actions (Edit/Delete) in compact view */}
                 {!hideExtras && isOwner && (
                   <Flex
                     gap="xs"
@@ -371,6 +494,21 @@ export function CollectionCard({
                     )}
                   </Flex>
                 )}
+
+                <Flex className="w-[76px] justify-end">
+                  {renderDifficultyStars(11)}
+                </Flex>
+                <Flex
+                  gap="xs"
+                  align="center"
+                  justify="end"
+                  className="opacity-70 w-[58px]"
+                >
+                  <Book size={12} className="text-brand-primary" />
+                  <Text variant="xs" color="secondary" className="tabular-nums">
+                    {collection.questionCount || 0}
+                  </Text>
+                </Flex>
               </Flex>
             </Flex>
           ) : (
@@ -403,7 +541,7 @@ export function CollectionCard({
                   className={cn(
                     "flex-1 min-w-0",
                     (onEdit || onDelete || (onAddToSet && !hideExtras)) &&
-                      "pr-24",
+                      "pr-32 sm:pr-40",
                   )}
                 >
                   <Text
@@ -414,20 +552,42 @@ export function CollectionCard({
                   >
                     {collection.name}
                   </Text>
-                  <Flex gap="xs" align="center">
-                    <Text
-                      variant="xs"
-                      color="secondary"
-                      className="font-medium opacity-80 truncate"
-                    >
-                      by {collection.authorName || "匿名"}
-                    </Text>
-                    {collection.isOfficial && (
-                      <Badge variant="primary" className="px-2 py-0">
-                        Official
-                      </Badge>
-                    )}
+                  <Flex align="center" justify="between" className="min-w-0">
+                    <Flex gap="xs" align="center" className="min-w-0">
+                      <Text
+                        variant="xs"
+                        color="secondary"
+                        className="font-medium opacity-80 truncate"
+                      >
+                        by {collection.authorName || "匿名"}
+                      </Text>
+                      {collection.isOfficial && (
+                        <Badge variant="primary" className="px-2 py-0">
+                          Official
+                        </Badge>
+                      )}
+                      {isInteractionDisabled && (
+                        <Badge variant="warning" className="px-2 py-0">
+                          オフライン未保存
+                        </Badge>
+                      )}
+                    </Flex>
                   </Flex>
+                  {tags.length > 0 && (
+                    <Flex gap="xs" align="center" className="min-w-0 flex-wrap">
+                      {tags.slice(0, 3).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="info"
+                          className="px-2 py-0 cursor-pointer"
+                          onClick={(e) => handleTagClick(e, tag)}
+                          title={`#${tag} で検索`}
+                        >
+                          #{tag}
+                        </Badge>
+                      ))}
+                    </Flex>
+                  )}
                 </Stack>
               </Flex>
 
@@ -446,7 +606,7 @@ export function CollectionCard({
                 align="center"
                 className="mt-auto pt-3 border-t border-surface-muted/50"
               >
-                <Flex gap="lg">
+                <Flex gap="lg" align="center">
                   <Flex gap="xs" align="center" title="問題数">
                     <Book
                       size={16}
@@ -484,21 +644,10 @@ export function CollectionCard({
                       {favCount}
                     </Text>
                   </Flex>
-                  {collection.userRank && (
-                    <Flex
-                      gap="xs"
-                      align="center"
-                      className="px-2 py-0.5 rounded-full bg-brand-primary/10"
-                    >
-                      <Trophy size={14} className="text-brand-primary" />
-                      <Text variant="xs" weight="bold" color="primary">
-                        {collection.userRank}位
-                      </Text>
-                    </Flex>
-                  )}
+                  <View className="shrink-0">{renderDifficultyStars(11)}</View>
                 </Flex>
 
-                <Flex gap="xs">
+                <Flex gap="sm" align="center">
                   <Button
                     size="sm"
                     variant="ghost"
@@ -523,6 +672,16 @@ export function CollectionCard({
                       <WifiOff size={18} />
                     )}
                   </Button>
+                  {collection.userRank && (
+                    <Text
+                      variant="xs"
+                      weight="bold"
+                      color="primary"
+                      title="あなたのランキング順位"
+                    >
+                      {collection.userRank}位
+                    </Text>
+                  )}
                 </Flex>
               </Flex>
             </Stack>

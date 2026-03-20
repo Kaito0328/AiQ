@@ -29,7 +29,6 @@ import {
   History,
   Users,
   Swords,
-  WifiOff,
   Cloud,
   ChevronRight,
 } from "lucide-react";
@@ -41,7 +40,6 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@/src/shared/db/db";
 import { createMatchRoom } from "@/src/features/battle/api";
 import { MatchActionCard } from "@/src/features/battle/components/MatchActionCard";
-import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 
 import { Tabs, TabItem } from "@/src/design/baseComponents/Tabs";
 import { useSearchParams } from "next/navigation";
@@ -55,8 +53,6 @@ function HomeContent() {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
 
   const currentTab = searchParams.get("tab") || "dashboard";
-  const { isOnline } = useNetworkStatus();
-
   const { collections, loading, isOffline } = useRecentCollections();
 
   const pendingCount =
@@ -112,19 +108,6 @@ function HomeContent() {
           </Flex>
         </Card>
       )}
-      {isOffline && (
-        <View className="bg-amber-500/10 p-4 rounded-lg border border-amber-500/20 mb-4">
-          <Flex align="center" gap="sm">
-            <WifiOff size={18} className="text-amber-500" />
-            <Text variant="body" color="secondary">
-              {isOnline
-                ? "サーバーに接続できないため、キャッシュ済みのコンテンツを表示しています。"
-                : "オフラインモードです。キャッシュ済みのコンテンツのみを表示しています。"}
-            </Text>
-          </Flex>
-        </View>
-      )}
-
       {pendingCount > 0 && (
         <Card
           border="primary"
@@ -153,7 +136,7 @@ function HomeContent() {
         <SectionHeader
           icon={LayoutGrid}
           title="クイックアクセス"
-          description="クイズの作成や公式問題集の確認はこちらから"
+          description="クイズ開始や問題集ページへの移動はこちらから"
         />
         <NavCards />
       </Stack>

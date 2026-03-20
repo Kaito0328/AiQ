@@ -33,6 +33,7 @@ import {
   useUserCollectionSets,
 } from "@/src/features/collections/hooks/useCollections";
 import { usePrefetchCollections } from "@/src/shared/hooks/usePrefetchCollections";
+import { useToast } from "@/src/shared/contexts/ToastContext";
 
 export default function UserPage() {
   const params = useParams();
@@ -57,6 +58,7 @@ export default function UserPage() {
     loading: setsLoading,
     refresh: refreshSets,
   } = useUserCollectionSets(userId);
+  const { showToast } = useToast();
 
   // 空間的局所性: コレクション一覧取得後、バックグラウンドで問題をプリフェッチ
   usePrefetchCollections(
@@ -76,6 +78,7 @@ export default function UserPage() {
   );
   const [isAddToSetModalOpen, setIsAddToSetModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [hiddenCollectionIds, setHiddenCollectionIds] = useState<string[]>([]);
 
   const isOwnProfile = !!(user && user.id === userId);
 
@@ -97,17 +100,16 @@ export default function UserPage() {
   };
 
   const handleDeleteCollection = async (id: string) => {
-    if (
-      !confirm(
-        "本当にこのコレクションを削除しますか？内の問題もすべて削除されます。",
-      )
-    )
-      return;
     try {
       await deleteCollection(id);
+      setHiddenCollectionIds((prev) =>
+        prev.includes(id) ? prev : [...prev, id],
+      );
+      showToast({ message: "コレクションを削除しました", variant: "success" });
       await refreshCollections();
     } catch (err) {
       logger.error("Failed to delete collection", err);
+      showToast({ message: "削除に失敗しました", variant: "danger" });
     }
   };
 
@@ -145,7 +147,7 @@ export default function UserPage() {
   if (isOffline && !profile) {
     return (
       <div className="min-h-screen bg-surface-muted pt-6">
-        <Container className="max-w-4xl">
+        <Container>
           <OfflinePlaceholder
             title="ユーザー情報はオフラインです"
             message="このユーザーのプロフィールを表示するにはオンラインである必要があります。自分のプロフィールはキャッシュされている場合があります。"
@@ -168,7 +170,7 @@ export default function UserPage() {
 
   return (
     <div className="min-h-screen bg-surface-muted pb-12 transition-all duration-300">
-      <Container className="w-full max-w-4xl pt-6">
+      <Container className="pt-6">
         <Stack gap="xl">
           <UserHeader profile={profile} />
 
@@ -185,6 +187,7 @@ export default function UserPage() {
             onAddToSet={handleOpenAddToSet} // Available for all collections
             onDeleteSet={isOwnProfile ? handleDeleteSet : undefined}
             onEditSet={isOwnProfile ? handleEditSet : undefined}
+            hiddenCollectionIds={hiddenCollectionIds}
             collectionActions={
               <Flex gap="xs" align="center">
                 {isOwnProfile && (

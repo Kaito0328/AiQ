@@ -88,6 +88,7 @@ async fn handle_ws(
         user_id,
         &req.prompt,
         count,
+        req.collection_difficulty,
         req.pdf_data.as_deref(),
         req.pdf_page_count,
         req.question_format.as_deref(),
@@ -203,6 +204,7 @@ pub async fn complete_ai_questions(
         req.question_format,
         req.answer_format,
         req.explanation_language,
+        req.collection_difficulty,
     )
     .await?;
     Ok(axum::Json(questions))

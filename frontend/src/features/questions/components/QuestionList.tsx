@@ -1,822 +1,1060 @@
-"use client"
-import { logger } from '@/src/shared/utils/logger';
+"use client";
+import { logger } from "@/src/shared/utils/logger";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card } from '@/src/design/baseComponents/Card';
-import { Stack } from '@/src/design/primitives/Stack';
-import { Flex } from '@/src/design/primitives/Flex';
-import { Text } from '@/src/design/baseComponents/Text';
-import { Button } from '@/src/design/baseComponents/Button';
-import { View } from '@/src/design/primitives/View';
-import { Input } from '@/src/design/baseComponents/Input';
-import { TextArea } from '@/src/design/baseComponents/TextArea';
-import { Question } from '@/src/entities/question';
-import { Eye, EyeOff, Trash2, Edit, Plus, Sparkles, FileUp, Save, X, RotateCcw, Settings, MessageSquare, Loader2, WifiOff, Cloud, AlertTriangle } from 'lucide-react';
-import { useSyncStatus } from '@/src/shared/hooks/useSyncStatus';
-import { deleteQuestion, batchQuestions, completeQuestions } from '@/src/features/questions/api';
-import { useQuestionMutations } from '../hooks/useQuestionMutations';
-import { cn } from '@/src/shared/utils/cn';
-import { useToast } from '@/src/shared/contexts/ToastContext';
-import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
-import { AiQuickBar } from '@/src/features/collections/components/AiQuickBar';
-import { EditRequestModal } from './EditRequestModal';
-import { AiSettingsModal } from './AiSettingsModal';
+import React, { useState, useEffect, useCallback } from "react";
+import { Card } from "@/src/design/baseComponents/Card";
+import { Stack } from "@/src/design/primitives/Stack";
+import { Flex } from "@/src/design/primitives/Flex";
+import { Text } from "@/src/design/baseComponents/Text";
+import { Button } from "@/src/design/baseComponents/Button";
+import { View } from "@/src/design/primitives/View";
+import { Input } from "@/src/design/baseComponents/Input";
+import { TextArea } from "@/src/design/baseComponents/TextArea";
+import { Question } from "@/src/entities/question";
+import {
+  Eye,
+  EyeOff,
+  Trash2,
+  Edit,
+  Plus,
+  Sparkles,
+  FileUp,
+  Save,
+  X,
+  RotateCcw,
+  Settings,
+  MessageSquare,
+  Loader2,
+  WifiOff,
+  Cloud,
+  AlertTriangle,
+} from "lucide-react";
+import { useSyncStatus } from "@/src/shared/hooks/useSyncStatus";
+import {
+  deleteQuestion,
+  batchQuestions,
+  completeQuestions,
+} from "@/src/features/questions/api";
+import { useQuestionMutations } from "../hooks/useQuestionMutations";
+import { cn } from "@/src/shared/utils/cn";
+import { useToast } from "@/src/shared/contexts/ToastContext";
+import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
+import { AiQuickBar } from "@/src/features/collections/components/AiQuickBar";
+import { EditRequestModal } from "./EditRequestModal";
+import { AiSettingsModal } from "./AiSettingsModal";
 
 interface QuestionDraft {
-    id: string; // Existing ID or temp ID
-    questionText: string;
-    correctAnswers: string[];
-    answerRubis?: string[];
-    distractors?: string[];
-    descriptionText?: string;
-    isNew?: boolean;
-    isModified?: boolean;
-    aiFields?: Set<string>; // Track which fields were filled by AI
-    modifiedFields?: Set<string>; // Track manually modified fields
+  id: string; // Existing ID or temp ID
+  questionText: string;
+  correctAnswers: string[];
+  answerRubis?: string[];
+  distractors?: string[];
+  descriptionText?: string;
+  isNew?: boolean;
+  isModified?: boolean;
+  aiFields?: Set<string>; // Track which fields were filled by AI
+  modifiedFields?: Set<string>; // Track manually modified fields
 }
 
 interface QuestionListProps {
-    questions: Question[];
-    isOwner: boolean;
-    isEditMode: boolean;
-    onToggleEditMode: () => void;
-    onQuestionDeleted: (questionId: string) => void;
-    onEditQuestion: (question: Question) => void;
-    onAddQuestion: () => void;
-    onImportCsv: () => void;
-    onSuccess: () => void;
-    onOpenAdvanced?: (prompt: string, count: number) => void;
-    collectionId?: string;
+  questions: Question[];
+  isOwner: boolean;
+  isEditMode: boolean;
+  onToggleEditMode: () => void;
+  onQuestionDeleted: (questionId: string) => void;
+  onEditQuestion: (question: Question) => void;
+  onAddQuestion: () => void;
+  onImportCsv: () => void;
+  onSuccess: () => void;
+  onOpenAdvanced?: (prompt: string, count: number) => void;
+  collectionId?: string;
+  collectionDifficulty?: number;
 }
 
 export function QuestionList({
-    questions,
-    isOwner,
-    isEditMode,
-    onToggleEditMode,
-    onQuestionDeleted,
-    onEditQuestion,
-    onAddQuestion,
-    onImportCsv,
-    onSuccess,
-    onOpenAdvanced,
-    collectionId: propCollectionId,
+  questions,
+  isOwner,
+  isEditMode,
+  onToggleEditMode,
+  onQuestionDeleted,
+  onEditQuestion,
+  onAddQuestion,
+  onImportCsv,
+  onSuccess,
+  onOpenAdvanced,
+  collectionId: propCollectionId,
+  collectionDifficulty,
 }: QuestionListProps) {
-    const { showToast } = useToast();
-    const { isOnline } = useNetworkStatus();
-    const { batchQuestions: doBatchQuestions, deleteQuestion: doDeleteQuestion } = useQuestionMutations();
-    const [visibleAnswers, setVisibleAnswers] = useState<Set<string>>(new Set());
-    const [allVisible, setAllVisible] = useState(false);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
-    const [drafts, setDrafts] = useState<QuestionDraft[]>([]);
-    const [isSaving, setIsSaving] = useState(false);
-    const [isAutoFilling, setIsAutoFilling] = useState(false);
-    const [shouldCompleteDescription, setShouldCompleteDescription] = useState(true);
-    const [deletedIds, setDeletedIds] = useState<string[]>([]);
-    const [questionFormat, setQuestionFormat] = useState('');
-    const [answerFormat, setAnswerFormat] = useState('');
-    const [explanationLanguage, setExplanationLanguage] = useState('');
-    const [isAiSettingsModalOpen, setIsAiSettingsModalOpen] = useState(false);
-    const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-    // Initialize drafts when entering edit mode
-    useEffect(() => {
-        if (isEditMode) {
-            setDeletedIds([]);
-            setDrafts(questions.map(q => ({
-                id: q.id,
-                questionText: q.questionText,
-                correctAnswers: q.correctAnswers,
-                answerRubis: q.answerRubis,
-                distractors: q.distractors,
-                descriptionText: q.descriptionText,
-                isNew: false,
-                isModified: false,
-                aiFields: new Set(),
-                modifiedFields: new Set(),
-            })));
-        }
-    }, [isEditMode, questions]);
-
-    const handleBatchSave = async () => {
-        setIsSaving(true);
-        try {
-            const collectionId = questions[0]?.collectionId || propCollectionId || (window.location.pathname.split('/').pop() as string);
-            const upsertItems = drafts.map(d => ({
-                id: d.isNew ? undefined : d.id,
-                questionText: d.questionText,
-                correctAnswers: d.correctAnswers,
-                answerRubis: d.answerRubis,
-                distractors: d.distractors,
-                descriptionText: d.descriptionText || null,
-            }));
-
-            await doBatchQuestions(collectionId, { upsertItems, deleteIds: deletedIds });
-            showToast({ message: '一括保存が完了しました', variant: 'success' });
-            onToggleEditMode();
-            onSuccess();
-        } catch (err) {
-            logger.error('一括保存に失敗しました', err);
-            showToast({ message: '保存に失敗しました', variant: 'danger' });
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-    const handleAutoFill = async (settings?: {
-        questionFormat: string;
-        answerFormat: string;
-        explanationLanguage: string;
-        shouldCompleteDescription: boolean;
-    }) => {
-        if (drafts.length === 0) return;
-        setIsAutoFilling(true);
-
-        const qFmt = settings ? settings.questionFormat : questionFormat;
-        const aFmt = settings ? settings.answerFormat : answerFormat;
-        const eLang = settings ? settings.explanationLanguage : explanationLanguage;
-        const cDesc = settings ? settings.shouldCompleteDescription : shouldCompleteDescription;
-
-        // Update states if settings provided from modal
-        if (settings) {
-            setQuestionFormat(settings.questionFormat);
-            setAnswerFormat(settings.answerFormat);
-            setExplanationLanguage(settings.explanationLanguage);
-            setShouldCompleteDescription(settings.shouldCompleteDescription);
-        }
-
-        try {
-            const payload = {
-                items: drafts.map(d => ({
-                    id: d.id,
-                    questionText: (d.questionText && d.questionText.trim() !== '') ? d.questionText : null,
-                    correctAnswers: (d.correctAnswers && d.correctAnswers.length > 0 && d.correctAnswers[0].trim() !== '') ? d.correctAnswers : null,
-                    distractors: (d.distractors && d.distractors.length > 0) ? d.distractors : null,
-                    descriptionText: (d.descriptionText && d.descriptionText.trim() !== '') ? d.descriptionText : null,
-                })),
-                completeDescription: cDesc,
-                questionFormat: qFmt,
-                answerFormat: aFmt,
-                explanationLanguage: eLang || undefined
-            };
-
-            const completed = await completeQuestions(payload) as any[];
-
-            // Merge back into drafts using ID to ensure correct rows
-            setDrafts(prev => prev.map((d) => {
-                const comp = completed.find(c => c.id === d.id);
-                if (!comp) return d;
-
-                const isQuestionEmpty = !d.questionText || d.questionText.trim() === '';
-                const areAnswersEmpty = !d.correctAnswers || d.correctAnswers.length === 0 || (d.correctAnswers.length === 1 && d.correctAnswers[0].trim() === '');
-                const areDistractorsEmpty = !d.distractors || d.distractors.length === 0 || (d.distractors.length === 1 && d.distractors[0].trim() === '');
-                const isDescriptionEmpty = !d.descriptionText || d.descriptionText.trim() === '';
-
-                const newQuestion = comp.questionText;
-                const newAnswers = comp.correctAnswers;
-                const newDistractors = comp.distractors;
-                const newDescription = comp.descriptionText;
-
-                const hasChanges = (isQuestionEmpty && newQuestion) ||
-                    (areAnswersEmpty && newAnswers) ||
-                    (areDistractorsEmpty && newDistractors) ||
-                    (isDescriptionEmpty && newDescription);
-
-                if (!hasChanges) return d;
-
-                const newAiFields = new Set(d.aiFields || []);
-                if (isQuestionEmpty && newQuestion) newAiFields.add('questionText');
-                if (areAnswersEmpty && newAnswers) newAiFields.add('correctAnswers');
-                if (areDistractorsEmpty && newDistractors) newAiFields.add('distractors');
-                if (isDescriptionEmpty && newDescription) newAiFields.add('descriptionText');
-
-                const newModifiedFields = new Set(d.modifiedFields || []);
-
-                return {
-                    ...d,
-                    questionText: isQuestionEmpty ? (newQuestion || d.questionText) : d.questionText,
-                    correctAnswers: areAnswersEmpty ? (newAnswers || d.correctAnswers) : d.correctAnswers,
-                    distractors: areDistractorsEmpty ? (newDistractors || d.distractors) : d.distractors,
-                    descriptionText: isDescriptionEmpty ? (newDescription || d.descriptionText) : d.descriptionText,
-                    isModified: true,
-                    aiFields: newAiFields,
-                    modifiedFields: newModifiedFields
-                };
-            }));
-
-            showToast({ message: 'AIによる補完が完了しました', variant: 'success' });
-        } catch (err) {
-            logger.error('AI補完に失敗しました', err);
-            showToast({ message: '補完に失敗しました', variant: 'danger' });
-        } finally {
-            setIsAutoFilling(false);
-        }
-    };
-
-    const addEmptyRow = () => {
-        const newId = `new-${Date.now()}`;
-        setDrafts(prev => [...prev, {
-            id: newId,
-            questionText: '',
-            correctAnswers: [''],
-            answerRubis: [''],
-            distractors: ['', '', ''],
-            descriptionText: '',
-            isNew: true,
-            isModified: true,
-            aiFields: new Set(),
-            modifiedFields: new Set(['questionText', 'correctAnswers', 'answerRubis', 'distractors', 'descriptionText']),
-        }]);
-    };
-
-    const updateDraft = (id: string, field: keyof QuestionDraft, value: any) => {
-        setDrafts(prev => prev.map(d => {
-            if (d.id === id) {
-                let finalValue = value;
-                // 解答欄・ルビ欄・誤答欄の場合、セミコロンで分割
-                if ((field === 'correctAnswers' || field === 'answerRubis' || field === 'distractors') && typeof value === 'string') {
-                    finalValue = value.split(';').map(s => s.trim());
-                }
-
-                // AI補完フラグを削除、手動変更フラグを追加
-                const newAiFields = new Set(d.aiFields);
-                newAiFields.delete(field as string);
-
-                const newModifiedFields = new Set(d.modifiedFields);
-                newModifiedFields.add(field as string);
-
-                return {
-                    ...d,
-                    [field]: finalValue,
-                    isModified: true,
-                    aiFields: newAiFields,
-                    modifiedFields: newModifiedFields
-                };
-            }
-            return d;
-        }));
-    };
-
-    const removeDraft = (id: string) => {
-        const draftToRemove = drafts.find(d => d.id === id);
-        if (draftToRemove && !draftToRemove.isNew) {
-            setDeletedIds(prev => [...prev, id]);
-        }
-        setDrafts(prev => prev.filter(d => d.id !== id));
-    };
-
-    const toggleAnswer = (id: string) => {
-        setVisibleAnswers(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) {
-                next.delete(id);
-            } else {
-                next.add(id);
-            }
-            return next;
-        });
-    };
-
-    const toggleAllAnswers = () => {
-        if (allVisible) {
-            setVisibleAnswers(new Set());
-        } else {
-            setVisibleAnswers(new Set(questions.map(q => q.id)));
-        }
-        setAllVisible(!allVisible);
-    };
-
-    const handleDelete = async (questionId: string) => {
-        if (!confirm('この問題を削除してもよろしいですか？')) return;
-        setDeletingId(questionId);
-        try {
-            await doDeleteQuestion(questionId);
-            onQuestionDeleted(questionId);
-        } catch (err) {
-            logger.error('問題の削除に失敗しました', err);
-        } finally {
-            setDeletingId(null);
-        }
-    };
-
+  const { showToast } = useToast();
+  const { isOnline } = useNetworkStatus();
+  const { batchQuestions: doBatchQuestions, deleteQuestion: doDeleteQuestion } =
+    useQuestionMutations();
+  const [visibleAnswers, setVisibleAnswers] = useState<Set<string>>(new Set());
+  const [allVisible, setAllVisible] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<QuestionDraft[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isAutoFilling, setIsAutoFilling] = useState(false);
+  const [shouldCompleteDescription, setShouldCompleteDescription] =
+    useState(true);
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+  const [questionFormat, setQuestionFormat] = useState("");
+  const [answerFormat, setAnswerFormat] = useState("");
+  const [explanationLanguage, setExplanationLanguage] = useState("");
+  const [isAiSettingsModalOpen, setIsAiSettingsModalOpen] = useState(false);
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(
+    null,
+  );
+  // Initialize drafts when entering edit mode
+  useEffect(() => {
     if (isEditMode) {
-        return (
-            <Stack gap="lg">
-                <Flex justify="between" align="start" className="flex-col md:flex-row gap-4">
-                    <Stack gap="xs">
-                        <Text variant="h3" weight="bold">一括編集モード</Text>
-                        <Text variant="xs" color="secondary">変更は「保存」ボタンを押すまで確定されません。</Text>
-                    </Stack>
-                    <Flex gap="sm" align="center" className="flex-wrap justify-start md:justify-end w-full md:w-auto">
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={() => setIsAiSettingsModalOpen(true)}
-                            className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5 h-8 flex-1 sm:flex-none"
-                            loading={isAutoFilling}
-                            disabled={isSaving || !isOnline}
-                            title={!isOnline ? "オフライン中は利用できません" : ""}
-                        >
-                            {isOnline ? <Sparkles size={14} /> : <WifiOff size={14} />}
-                            <Text variant="xs" weight="bold">{isOnline ? "AIで補完" : "オフライン"}</Text>
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            size="lg"
-                            onClick={onToggleEditMode}
-                            className="gap-1.5 h-8 flex-1 sm:flex-none"
-                            disabled={isSaving || isAutoFilling}
-                        >
-                            <X size={14} />
-                            <Text variant="xs" weight="bold">キャンセル</Text>
-                        </Button>
-                        <Button
-                            variant="solid"
-                            color="primary"
-                            size="lg"
-                            onClick={handleBatchSave}
-                            className="gap-1.5 h-8 font-bold flex-1 sm:flex-none"
-                            loading={isSaving}
-                        >
-                            <Save size={14} />
-                            <Text variant="xs" weight="bold">保存</Text>
-                        </Button>
-                    </Flex>
-                </Flex>
+      setDeletedIds([]);
+      setDrafts(
+        questions.map((q) => ({
+          id: q.id,
+          questionText: q.questionText,
+          correctAnswers: q.correctAnswers,
+          answerRubis: q.answerRubis,
+          distractors: q.distractors,
+          descriptionText: q.descriptionText,
+          isNew: false,
+          isModified: false,
+          aiFields: new Set(),
+          modifiedFields: new Set(),
+        })),
+      );
+    }
+  }, [isEditMode, questions]);
 
-                <Card padding="none" border="primary" className="overflow-hidden">
-                    <View className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-brand-primary/5 border-b border-brand-primary/10">
-                                    <th className="p-3 text-xs font-bold text-secondary w-12 text-center">#</th>
-                                    <th className="p-3 text-xs font-bold text-secondary min-w-[300px]">問題文</th>
-                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">解答 (セミコロン区切り)</th>
-                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">読み (セミコロン区切り)</th>
-                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">誤答 (セミコロン区切り)</th>
-                                    <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">解説 (任意)</th>
-                                    <th className="p-3 text-xs font-bold text-secondary w-12"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {drafts.map((draft, index) => (
-                                    <tr key={draft.id} className={cn(
-                                        "border-b border-gray-100 hover:bg-gray-50/50 transition-colors",
-                                        (draft.isModified || draft.isNew) && "bg-brand-primary/[0.02]"
-                                    )}>
-                                        <td className="p-3 text-center">
-                                            <Flex gap="xs" align="center" justify="center">
-                                                <Text
-                                                    variant="xs"
-                                                    weight="bold"
-                                                    className={cn(
-                                                        (draft.isModified || draft.isNew) ? "text-brand-primary" : "text-secondary"
-                                                    )}
-                                                >
-                                                    {index + 1}
-                                                </Text>
-                                                {(draft.isModified || draft.isNew) && (
-                                                    <Text variant="xs" color="primary" weight="bold">*</Text>
-                                                )}
-                                            </Flex>
-                                        </td>
-                                        <td className={cn(
-                                            "p-2 relative group",
-                                            draft.aiFields?.has('questionText') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('questionText') ? "bg-gray-200" : "")
-                                        )}>
-                                            <TextArea
-                                                value={draft.questionText}
-                                                onChange={(e) => updateDraft(draft.id, 'questionText', e.target.value)}
-                                                placeholder="問題を入力..."
-                                                className="min-h-[60px] text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
-                                            />
-                                            {draft.aiFields?.has('questionText') && (
-                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Sparkles size={12} className="text-brand-primary" />
-                                                </View>
-                                            )}
-                                        </td>
-                                        <td className={cn(
-                                            "p-2 relative group",
-                                            draft.aiFields?.has('correctAnswers') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('correctAnswers') ? "bg-gray-200" : "")
-                                        )}>
-                                            <Input
-                                                value={(draft.correctAnswers || []).join(';')}
-                                                onChange={(e) => updateDraft(draft.id, 'correctAnswers', e.target.value)}
-                                                placeholder="解答を入力..."
-                                                className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
-                                            />
-                                            {draft.aiFields?.has('correctAnswers') && (
-                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Sparkles size={12} className="text-brand-primary" />
-                                                </View>
-                                            )}
-                                        </td>
-                                        <td className={cn(
-                                            "p-2 relative group",
-                                            draft.aiFields?.has('answerRubis') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('answerRubis') ? "bg-gray-200" : "")
-                                        )}>
-                                            <Input
-                                                value={(draft.answerRubis || []).join(';')}
-                                                onChange={(e) => updateDraft(draft.id, 'answerRubis', e.target.value)}
-                                                placeholder="読みを入力..."
-                                                className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
-                                            />
-                                            {draft.aiFields?.has('answerRubis') && (
-                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Sparkles size={12} className="text-brand-primary" />
-                                                </View>
-                                            )}
-                                        </td>
-                                        <td className={cn(
-                                            "p-2 relative group",
-                                            draft.aiFields?.has('distractors') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('distractors') ? "bg-gray-200" : "")
-                                        )}>
-                                            <Input
-                                                value={(draft.distractors || []).join(';')}
-                                                onChange={(e) => updateDraft(draft.id, 'distractors', e.target.value)}
-                                                placeholder="誤解答を3つ入力..."
-                                                className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
-                                            />
-                                            {draft.aiFields?.has('distractors') && (
-                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Sparkles size={12} className="text-brand-primary" />
-                                                </View>
-                                            )}
-                                        </td>
-                                        <td className={cn(
-                                            "p-2 relative group",
-                                            draft.aiFields?.has('descriptionText') ? "bg-brand-primary/10" : (draft.modifiedFields?.has('descriptionText') ? "bg-gray-200" : "")
-                                        )}>
-                                            <TextArea
-                                                value={draft.descriptionText || ''}
-                                                onChange={(e) => updateDraft(draft.id, 'descriptionText', e.target.value)}
-                                                placeholder="解説を入力..."
-                                                className="min-h-[60px] text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
-                                            />
-                                            {draft.aiFields?.has('descriptionText') && (
-                                                <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Sparkles size={12} className="text-brand-primary" />
-                                                </View>
-                                            )}
-                                        </td>
-                                        <td className="p-2">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => removeDraft(draft.id)}
-                                                className="text-brand-danger hover:bg-brand-danger/10"
-                                            >
-                                                <Trash2 size={16} />
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </View>
-                    <View padding="md" className="bg-gray-50/50 border-t border-gray-100">
-                        <Button
-                            variant="ghost"
-                            size="md"
-                            onClick={addEmptyRow}
-                            className="w-full border border-dashed border-gray-300 hover:border-brand-primary/50 text-secondary hover:text-brand-primary gap-2"
-                        >
-                            <Plus size={16} />
-                            新しい行を追加
-                        </Button>
-                    </View>
-                </Card>
-                <AiSettingsModal
-                    isOpen={isAiSettingsModalOpen}
-                    onClose={() => setIsAiSettingsModalOpen(false)}
-                    initialSettings={{
-                        questionFormat,
-                        answerFormat,
-                        explanationLanguage,
-                        shouldCompleteDescription
-                    }}
-                    onConfirm={handleAutoFill}
-                />
-            </Stack >
-        );
+  const handleBatchSave = async () => {
+    setIsSaving(true);
+    try {
+      const collectionId =
+        questions[0]?.collectionId ||
+        propCollectionId ||
+        (window.location.pathname.split("/").pop() as string);
+      const upsertItems = drafts.map((d) => ({
+        id: d.isNew ? undefined : d.id,
+        questionText: d.questionText,
+        correctAnswers: d.correctAnswers,
+        answerRubis: d.answerRubis,
+        distractors: d.distractors,
+        descriptionText: d.descriptionText || null,
+      }));
+
+      await doBatchQuestions(collectionId, {
+        upsertItems,
+        deleteIds: deletedIds,
+      });
+      showToast({ message: "一括保存が完了しました", variant: "success" });
+      onToggleEditMode();
+      onSuccess();
+    } catch (err) {
+      logger.error("一括保存に失敗しました", err);
+      showToast({ message: "保存に失敗しました", variant: "danger" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAutoFill = async (settings?: {
+    questionFormat: string;
+    answerFormat: string;
+    explanationLanguage: string;
+    shouldCompleteDescription: boolean;
+  }) => {
+    if (drafts.length === 0) return;
+    setIsAutoFilling(true);
+
+    const qFmt = settings ? settings.questionFormat : questionFormat;
+    const aFmt = settings ? settings.answerFormat : answerFormat;
+    const eLang = settings ? settings.explanationLanguage : explanationLanguage;
+    const cDesc = settings
+      ? settings.shouldCompleteDescription
+      : shouldCompleteDescription;
+
+    // Update states if settings provided from modal
+    if (settings) {
+      setQuestionFormat(settings.questionFormat);
+      setAnswerFormat(settings.answerFormat);
+      setExplanationLanguage(settings.explanationLanguage);
+      setShouldCompleteDescription(settings.shouldCompleteDescription);
     }
 
+    try {
+      const payload = {
+        items: drafts.map((d) => ({
+          id: d.id,
+          questionText:
+            d.questionText && d.questionText.trim() !== ""
+              ? d.questionText
+              : null,
+          correctAnswers:
+            d.correctAnswers &&
+            d.correctAnswers.length > 0 &&
+            d.correctAnswers[0].trim() !== ""
+              ? d.correctAnswers
+              : null,
+          distractors:
+            d.distractors && d.distractors.length > 0 ? d.distractors : null,
+          descriptionText:
+            d.descriptionText && d.descriptionText.trim() !== ""
+              ? d.descriptionText
+              : null,
+        })),
+        completeDescription: cDesc,
+        questionFormat: qFmt,
+        answerFormat: aFmt,
+        explanationLanguage: eLang || undefined,
+        collectionDifficulty: collectionDifficulty ?? 3,
+      };
+
+      const completed = (await completeQuestions(payload)) as any[];
+
+      // Merge back into drafts using ID to ensure correct rows
+      setDrafts((prev) =>
+        prev.map((d) => {
+          const comp = completed.find((c) => c.id === d.id);
+          if (!comp) return d;
+
+          const isQuestionEmpty =
+            !d.questionText || d.questionText.trim() === "";
+          const areAnswersEmpty =
+            !d.correctAnswers ||
+            d.correctAnswers.length === 0 ||
+            (d.correctAnswers.length === 1 &&
+              d.correctAnswers[0].trim() === "");
+          const areDistractorsEmpty =
+            !d.distractors ||
+            d.distractors.length === 0 ||
+            (d.distractors.length === 1 && d.distractors[0].trim() === "");
+          const isDescriptionEmpty =
+            !d.descriptionText || d.descriptionText.trim() === "";
+
+          const newQuestion = comp.questionText;
+          const newAnswers = comp.correctAnswers;
+          const newDistractors = comp.distractors;
+          const newDescription = comp.descriptionText;
+
+          const hasChanges =
+            (isQuestionEmpty && newQuestion) ||
+            (areAnswersEmpty && newAnswers) ||
+            (areDistractorsEmpty && newDistractors) ||
+            (isDescriptionEmpty && newDescription);
+
+          if (!hasChanges) return d;
+
+          const newAiFields = new Set(d.aiFields || []);
+          if (isQuestionEmpty && newQuestion) newAiFields.add("questionText");
+          if (areAnswersEmpty && newAnswers) newAiFields.add("correctAnswers");
+          if (areDistractorsEmpty && newDistractors)
+            newAiFields.add("distractors");
+          if (isDescriptionEmpty && newDescription)
+            newAiFields.add("descriptionText");
+
+          const newModifiedFields = new Set(d.modifiedFields || []);
+
+          return {
+            ...d,
+            questionText: isQuestionEmpty
+              ? newQuestion || d.questionText
+              : d.questionText,
+            correctAnswers: areAnswersEmpty
+              ? newAnswers || d.correctAnswers
+              : d.correctAnswers,
+            distractors: areDistractorsEmpty
+              ? newDistractors || d.distractors
+              : d.distractors,
+            descriptionText: isDescriptionEmpty
+              ? newDescription || d.descriptionText
+              : d.descriptionText,
+            isModified: true,
+            aiFields: newAiFields,
+            modifiedFields: newModifiedFields,
+          };
+        }),
+      );
+
+      showToast({ message: "AIによる補完が完了しました", variant: "success" });
+    } catch (err) {
+      logger.error("AI補完に失敗しました", err);
+      showToast({ message: "補完に失敗しました", variant: "danger" });
+    } finally {
+      setIsAutoFilling(false);
+    }
+  };
+
+  const addEmptyRow = () => {
+    const newId = `new-${Date.now()}`;
+    setDrafts((prev) => [
+      ...prev,
+      {
+        id: newId,
+        questionText: "",
+        correctAnswers: [""],
+        answerRubis: [""],
+        distractors: ["", "", ""],
+        descriptionText: "",
+        isNew: true,
+        isModified: true,
+        aiFields: new Set(),
+        modifiedFields: new Set([
+          "questionText",
+          "correctAnswers",
+          "answerRubis",
+          "distractors",
+          "descriptionText",
+        ]),
+      },
+    ]);
+  };
+
+  const updateDraft = (id: string, field: keyof QuestionDraft, value: any) => {
+    setDrafts((prev) =>
+      prev.map((d) => {
+        if (d.id === id) {
+          let finalValue = value;
+          // 解答欄・ルビ欄・誤答欄の場合、セミコロンで分割
+          if (
+            (field === "correctAnswers" ||
+              field === "answerRubis" ||
+              field === "distractors") &&
+            typeof value === "string"
+          ) {
+            finalValue = value.split(";").map((s) => s.trim());
+          }
+
+          // AI補完フラグを削除、手動変更フラグを追加
+          const newAiFields = new Set(d.aiFields);
+          newAiFields.delete(field as string);
+
+          const newModifiedFields = new Set(d.modifiedFields);
+          newModifiedFields.add(field as string);
+
+          return {
+            ...d,
+            [field]: finalValue,
+            isModified: true,
+            aiFields: newAiFields,
+            modifiedFields: newModifiedFields,
+          };
+        }
+        return d;
+      }),
+    );
+  };
+
+  const removeDraft = (id: string) => {
+    const draftToRemove = drafts.find((d) => d.id === id);
+    if (draftToRemove && !draftToRemove.isNew) {
+      setDeletedIds((prev) => [...prev, id]);
+    }
+    setDrafts((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  const toggleAnswer = (id: string) => {
+    setVisibleAnswers((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleAllAnswers = () => {
+    if (allVisible) {
+      setVisibleAnswers(new Set());
+    } else {
+      setVisibleAnswers(new Set(questions.map((q) => q.id)));
+    }
+    setAllVisible(!allVisible);
+  };
+
+  const handleDelete = async (questionId: string) => {
+    if (!confirm("この問題を削除してもよろしいですか？")) return;
+    setDeletingId(questionId);
+    try {
+      await doDeleteQuestion(questionId);
+      onQuestionDeleted(questionId);
+    } catch (err) {
+      logger.error("問題の削除に失敗しました", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  if (isEditMode) {
     return (
-        <Stack gap="lg">
-            <Flex justify="between" align="start" className="flex-col sm:flex-row gap-4">
-                <Text variant="h3" weight="bold" className="shrink-0">問題一覧 ({questions.length})</Text>
-                <Flex gap="sm" className="flex-wrap justify-start sm:justify-end w-full">
-                    <Button
+      <Stack gap="lg">
+        <Flex
+          justify="between"
+          align="start"
+          className="flex-col md:flex-row gap-4"
+        >
+          <Stack gap="xs">
+            <Text variant="h3" weight="bold">
+              一括編集モード
+            </Text>
+            <Text variant="xs" color="secondary">
+              変更は「保存」ボタンを押すまで確定されません。
+            </Text>
+          </Stack>
+          <Flex
+            gap="sm"
+            align="center"
+            className="flex-wrap justify-start md:justify-end w-full md:w-auto"
+          >
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => setIsAiSettingsModalOpen(true)}
+              className="gap-1.5 border-brand-primary/30 text-brand-primary hover:bg-brand-primary/5 h-8 flex-1 sm:flex-none"
+              loading={isAutoFilling}
+              disabled={isSaving || !isOnline}
+              title={!isOnline ? "オフライン中は利用できません" : ""}
+            >
+              {isOnline ? <Sparkles size={14} /> : <WifiOff size={14} />}
+              <Text variant="xs" weight="bold">
+                {isOnline ? "AIで補完" : "オフライン"}
+              </Text>
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={onToggleEditMode}
+              className="gap-1.5 h-8 flex-1 sm:flex-none"
+              disabled={isSaving || isAutoFilling}
+            >
+              <X size={14} />
+              <Text variant="xs" weight="bold">
+                キャンセル
+              </Text>
+            </Button>
+            <Button
+              variant="solid"
+              color="primary"
+              size="lg"
+              onClick={handleBatchSave}
+              className="gap-1.5 h-8 font-bold flex-1 sm:flex-none"
+              loading={isSaving}
+            >
+              <Save size={14} />
+              <Text variant="xs" weight="bold">
+                保存
+              </Text>
+            </Button>
+          </Flex>
+        </Flex>
+
+        <Card padding="none" border="primary" className="overflow-hidden">
+          <View className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-brand-primary/5 border-b border-brand-primary/10">
+                  <th className="p-3 text-xs font-bold text-secondary w-12 text-center">
+                    #
+                  </th>
+                  <th className="p-3 text-xs font-bold text-secondary min-w-[300px]">
+                    問題文
+                  </th>
+                  <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">
+                    解答 (セミコロン区切り)
+                  </th>
+                  <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">
+                    読み (セミコロン区切り)
+                  </th>
+                  <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">
+                    誤答 (セミコロン区切り)
+                  </th>
+                  <th className="p-3 text-xs font-bold text-secondary min-w-[200px]">
+                    解説 (任意)
+                  </th>
+                  <th className="p-3 text-xs font-bold text-secondary w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {drafts.map((draft, index) => (
+                  <tr
+                    key={draft.id}
+                    className={cn(
+                      "border-b border-gray-100 hover:bg-gray-50/50 transition-colors",
+                      (draft.isModified || draft.isNew) &&
+                        "bg-brand-primary/[0.02]",
+                    )}
+                  >
+                    <td className="p-3 text-center">
+                      <Flex gap="xs" align="center" justify="center">
+                        <Text
+                          variant="xs"
+                          weight="bold"
+                          className={cn(
+                            draft.isModified || draft.isNew
+                              ? "text-brand-primary"
+                              : "text-secondary",
+                          )}
+                        >
+                          {index + 1}
+                        </Text>
+                        {(draft.isModified || draft.isNew) && (
+                          <Text variant="xs" color="primary" weight="bold">
+                            *
+                          </Text>
+                        )}
+                      </Flex>
+                    </td>
+                    <td
+                      className={cn(
+                        "p-2 relative group",
+                        draft.aiFields?.has("questionText")
+                          ? "bg-brand-primary/10"
+                          : draft.modifiedFields?.has("questionText")
+                            ? "bg-gray-200"
+                            : "",
+                      )}
+                    >
+                      <TextArea
+                        value={draft.questionText}
+                        onChange={(e) =>
+                          updateDraft(draft.id, "questionText", e.target.value)
+                        }
+                        placeholder="問題を入力..."
+                        className="min-h-[60px] text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                      />
+                      {draft.aiFields?.has("questionText") && (
+                        <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Sparkles size={12} className="text-brand-primary" />
+                        </View>
+                      )}
+                    </td>
+                    <td
+                      className={cn(
+                        "p-2 relative group",
+                        draft.aiFields?.has("correctAnswers")
+                          ? "bg-brand-primary/10"
+                          : draft.modifiedFields?.has("correctAnswers")
+                            ? "bg-gray-200"
+                            : "",
+                      )}
+                    >
+                      <Input
+                        value={(draft.correctAnswers || []).join(";")}
+                        onChange={(e) =>
+                          updateDraft(
+                            draft.id,
+                            "correctAnswers",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="解答を入力..."
+                        className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                      />
+                      {draft.aiFields?.has("correctAnswers") && (
+                        <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Sparkles size={12} className="text-brand-primary" />
+                        </View>
+                      )}
+                    </td>
+                    <td
+                      className={cn(
+                        "p-2 relative group",
+                        draft.aiFields?.has("answerRubis")
+                          ? "bg-brand-primary/10"
+                          : draft.modifiedFields?.has("answerRubis")
+                            ? "bg-gray-200"
+                            : "",
+                      )}
+                    >
+                      <Input
+                        value={(draft.answerRubis || []).join(";")}
+                        onChange={(e) =>
+                          updateDraft(draft.id, "answerRubis", e.target.value)
+                        }
+                        placeholder="読みを入力..."
+                        className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                      />
+                      {draft.aiFields?.has("answerRubis") && (
+                        <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Sparkles size={12} className="text-brand-primary" />
+                        </View>
+                      )}
+                    </td>
+                    <td
+                      className={cn(
+                        "p-2 relative group",
+                        draft.aiFields?.has("distractors")
+                          ? "bg-brand-primary/10"
+                          : draft.modifiedFields?.has("distractors")
+                            ? "bg-gray-200"
+                            : "",
+                      )}
+                    >
+                      <Input
+                        value={(draft.distractors || []).join(";")}
+                        onChange={(e) =>
+                          updateDraft(draft.id, "distractors", e.target.value)
+                        }
+                        placeholder="誤解答を3つ入力..."
+                        className="text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                      />
+                      {draft.aiFields?.has("distractors") && (
+                        <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Sparkles size={12} className="text-brand-primary" />
+                        </View>
+                      )}
+                    </td>
+                    <td
+                      className={cn(
+                        "p-2 relative group",
+                        draft.aiFields?.has("descriptionText")
+                          ? "bg-brand-primary/10"
+                          : draft.modifiedFields?.has("descriptionText")
+                            ? "bg-gray-200"
+                            : "",
+                      )}
+                    >
+                      <TextArea
+                        value={draft.descriptionText || ""}
+                        onChange={(e) =>
+                          updateDraft(
+                            draft.id,
+                            "descriptionText",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="解説を入力..."
+                        className="min-h-[60px] text-sm border-transparent hover:border-gray-200 focus:border-brand-primary/30 bg-transparent"
+                      />
+                      {draft.aiFields?.has("descriptionText") && (
+                        <View className="absolute bottom-1 right-1 pointer-events-none opacity-40 group-hover:opacity-100 transition-opacity">
+                          <Sparkles size={12} className="text-brand-primary" />
+                        </View>
+                      )}
+                    </td>
+                    <td className="p-2">
+                      <Button
                         variant="ghost"
                         size="sm"
-                        onClick={toggleAllAnswers}
-                        className="gap-1.5 text-foreground/60 h-9"
-                    >
-                        {allVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                        <Text variant="xs" weight="bold">{allVisible ? '全て隠す' : '全て表示'}</Text>
-                    </Button>
-                    {isOwner && (
-                        <>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={onToggleEditMode}
-                                className="gap-1.5 h-9"
-                            >
-                                <Edit size={16} />
-                                <Text variant="xs" weight="bold">編集モード</Text>
-                            </Button>
-                            <Button
-                                variant="solid" color="primary"
-                                size="sm"
-                                onClick={onAddQuestion}
-                                className="gap-1.5 h-9"
-                            >
-                                <Plus size={16} />
-                                <Text variant="xs" weight="bold">問題を追加</Text>
-                            </Button>
-                        </>
-                    )}
-                </Flex>
-            </Flex>
-
-            {isOwner && !isEditMode && propCollectionId && (
-                <AiQuickBar
-                    collectionId={propCollectionId}
-                    onSuccess={onSuccess}
-                    onOpenAdvanced={onOpenAdvanced}
-                />
-            )}
-
-            {questions.length === 0 ? (
-                <Card border="base" bg="muted" className="border-dashed">
-                    <View padding="xl" className="py-10 text-center">
-                        <Stack gap="lg" align="center">
-                            <View padding="md" rounded="lg" className="bg-brand-primary/10">
-                                <Sparkles size={48} className="text-brand-primary animate-pulse" />
-                            </View>
-
-                            <Stack gap="sm">
-                                <Text variant="h2" weight="bold">コレクションはまだ空です</Text>
-                                <Text color="secondary" className="max-w-sm mx-auto">
-                                    上のバーを使ってAIに問題を生成させるか、下のボタンから手動で追加してください。
-                                </Text>
-                            </Stack>
-
-                            {isOwner && (
-                                <Flex gap="md" className="w-full max-w-xs justify-center flex-col sm:flex-row">
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={onAddQuestion}
-                                        className="gap-2 w-full sm:w-auto"
-                                    >
-                                        <Plus size={18} />
-                                        手動で追加
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={onToggleEditMode}
-                                        className="gap-2 w-full sm:w-auto"
-                                    >
-                                        <Edit size={18} />
-                                        編集モード
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={onImportCsv}
-                                        className="gap-2 w-full sm:w-auto"
-                                    >
-                                        <FileUp size={18} />
-                                        CSV
-                                    </Button>
-                                </Flex>
-                            )}
-                        </Stack>
-                    </View>
-                </Card>
-            ) : (
-                <Stack gap="md">
-                    {questions.map((question, index) => (
-                        <QuestionListItem
-                            key={question.id}
-                            question={question}
-                            index={index}
-                            isOwner={isOwner}
-                            isVisible={visibleAnswers.has(question.id)}
-                            isDeleting={deletingId === question.id}
-                            onToggleVisible={() => toggleAnswer(question.id)}
-                            onEdit={() => onEditQuestion(question)}
-                            onDelete={() => handleDelete(question.id)}
-                            onSuggestEdit={() => setSelectedQuestion(question)}
-                        />
-                    ))}
-                </Stack>
-            )}
-
-            {selectedQuestion && (
-                <EditRequestModal
-                    question={selectedQuestion}
-                    onClose={() => setSelectedQuestion(null)}
-                />
-            )}
-        </Stack>
+                        onClick={() => removeDraft(draft.id)}
+                        className="text-brand-danger hover:bg-brand-danger/10"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </View>
+          <View padding="md" className="bg-gray-50/50 border-t border-gray-100">
+            <Button
+              variant="ghost"
+              size="md"
+              onClick={addEmptyRow}
+              className="w-full border border-dashed border-gray-300 hover:border-brand-primary/50 text-secondary hover:text-brand-primary gap-2"
+            >
+              <Plus size={16} />
+              新しい行を追加
+            </Button>
+          </View>
+        </Card>
+        <AiSettingsModal
+          isOpen={isAiSettingsModalOpen}
+          onClose={() => setIsAiSettingsModalOpen(false)}
+          initialSettings={{
+            questionFormat,
+            answerFormat,
+            explanationLanguage,
+            shouldCompleteDescription,
+          }}
+          onConfirm={handleAutoFill}
+        />
+      </Stack>
     );
+  }
+
+  return (
+    <Stack gap="lg">
+      <Flex
+        justify="between"
+        align="start"
+        className="flex-col sm:flex-row gap-4"
+      >
+        <Text variant="h3" weight="bold" className="shrink-0">
+          問題一覧 ({questions.length})
+        </Text>
+        <Flex
+          gap="sm"
+          className="flex-wrap justify-start sm:justify-end w-full"
+        >
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleAllAnswers}
+            className="gap-1.5 text-foreground/60 h-9"
+          >
+            {allVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+            <Text variant="xs" weight="bold">
+              {allVisible ? "全て隠す" : "全て表示"}
+            </Text>
+          </Button>
+          {isOwner && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onToggleEditMode}
+                className="gap-1.5 h-9"
+              >
+                <Edit size={16} />
+                <Text variant="xs" weight="bold">
+                  編集モード
+                </Text>
+              </Button>
+              <Button
+                variant="solid"
+                color="primary"
+                size="sm"
+                onClick={onAddQuestion}
+                className="gap-1.5 h-9"
+              >
+                <Plus size={16} />
+                <Text variant="xs" weight="bold">
+                  問題を追加
+                </Text>
+              </Button>
+            </>
+          )}
+        </Flex>
+      </Flex>
+
+      {isOwner && !isEditMode && propCollectionId && (
+        <AiQuickBar
+          collectionId={propCollectionId}
+          collectionDifficulty={collectionDifficulty}
+          onSuccess={onSuccess}
+          onOpenAdvanced={onOpenAdvanced}
+        />
+      )}
+
+      {questions.length === 0 ? (
+        <Card border="base" bg="muted" className="border-dashed">
+          <View padding="xl" className="py-10 text-center">
+            <Stack gap="lg" align="center">
+              <View padding="md" rounded="lg" className="bg-brand-primary/10">
+                <Sparkles
+                  size={48}
+                  className="text-brand-primary animate-pulse"
+                />
+              </View>
+
+              <Stack gap="sm">
+                <Text variant="h2" weight="bold">
+                  コレクションはまだ空です
+                </Text>
+                <Text color="secondary" className="max-w-sm mx-auto">
+                  上のバーを使ってAIに問題を生成させるか、下のボタンから手動で追加してください。
+                </Text>
+              </Stack>
+
+              {isOwner && (
+                <Flex
+                  gap="md"
+                  className="w-full max-w-xs justify-center flex-col sm:flex-row"
+                >
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onAddQuestion}
+                    className="gap-2 w-full sm:w-auto"
+                  >
+                    <Plus size={18} />
+                    手動で追加
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onToggleEditMode}
+                    className="gap-2 w-full sm:w-auto"
+                  >
+                    <Edit size={18} />
+                    編集モード
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={onImportCsv}
+                    className="gap-2 w-full sm:w-auto"
+                  >
+                    <FileUp size={18} />
+                    CSV
+                  </Button>
+                </Flex>
+              )}
+            </Stack>
+          </View>
+        </Card>
+      ) : (
+        <Stack gap="md">
+          {questions.map((question, index) => (
+            <QuestionListItem
+              key={question.id}
+              question={question}
+              index={index}
+              isOwner={isOwner}
+              isVisible={visibleAnswers.has(question.id)}
+              isDeleting={deletingId === question.id}
+              onToggleVisible={() => toggleAnswer(question.id)}
+              onEdit={() => onEditQuestion(question)}
+              onDelete={() => handleDelete(question.id)}
+              onSuggestEdit={() => setSelectedQuestion(question)}
+            />
+          ))}
+        </Stack>
+      )}
+
+      {selectedQuestion && (
+        <EditRequestModal
+          question={selectedQuestion}
+          onClose={() => setSelectedQuestion(null)}
+        />
+      )}
+    </Stack>
+  );
 }
 
 // Sub-component for individual question items to allow hook usage per item
 function QuestionListItem({
-    question,
-    index,
-    isOwner,
-    isVisible,
-    isDeleting,
-    onToggleVisible,
-    onEdit,
-    onDelete,
-    onSuggestEdit,
+  question,
+  index,
+  isOwner,
+  isVisible,
+  isDeleting,
+  onToggleVisible,
+  onEdit,
+  onDelete,
+  onSuggestEdit,
 }: {
-    question: Question;
-    index: number;
-    isOwner: boolean;
-    isVisible: boolean;
-    isDeleting: boolean;
-    onToggleVisible: () => void;
-    onEdit: () => void;
-    onDelete: () => void;
-    onSuggestEdit: () => void;
+  question: Question;
+  index: number;
+  isOwner: boolean;
+  isVisible: boolean;
+  isDeleting: boolean;
+  onToggleVisible: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  onSuggestEdit: () => void;
 }) {
-    const { isPending, hasError, error, actionId } = useSyncStatus(question.id);
-    const { syncManager } = require('@/src/shared/api/SyncManager');
+  const { isPending, hasError, error, actionId } = useSyncStatus(question.id);
+  const { syncManager } = require("@/src/shared/api/SyncManager");
 
-    return (
-        <Card
-            padding="md"
-            border={hasError ? 'danger' : (isPending ? 'warning' : 'base')}
+  return (
+    <Card
+      padding="md"
+      border={hasError ? "danger" : isPending ? "warning" : "base"}
+      className={cn(
+        "transition-all relative overflow-hidden",
+        isDeleting && "opacity-50",
+        isPending && !hasError && "border-dashed border-amber-400/60",
+        hasError && "border-red-500/60 shadow-red-100/10",
+      )}
+    >
+      {/* Sync Status Header */}
+      {(isPending || hasError) && (
+        <View className="absolute top-0 left-0 right-0 h-1 bg-transparent pointer-events-none">
+          <View
             className={cn(
-                "transition-all relative overflow-hidden",
-                isDeleting && "opacity-50",
-                isPending && !hasError && "border-dashed border-amber-400/60",
-                hasError && "border-red-500/60 shadow-red-100/10"
+              "h-full transition-all duration-1000",
+              hasError ? "bg-red-500/50" : "bg-amber-400/50 animate-pulse",
             )}
-        >
-            {/* Sync Status Header */}
-            {(isPending || hasError) && (
-                <View className="absolute top-0 left-0 right-0 h-1 bg-transparent pointer-events-none">
-                     <View className={cn(
-                        "h-full transition-all duration-1000",
-                        hasError ? "bg-red-500/50" : "bg-amber-400/50 animate-pulse"
-                     )} />
-                </View>
-            )}
+          />
+        </View>
+      )}
 
-            <Stack gap="md">
-                <Flex justify="between" align="start">
-                    <Flex gap="sm" align="start" className="flex-1">
-                        <View className="relative">
-                            <Text
-                                variant="xs"
-                                weight="bold"
-                                className={cn(
-                                    "rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
-                                    hasError ? "bg-red-500 text-white" : "bg-brand-primary text-white"
-                                )}
-                            >
-                                {index + 1}
-                            </Text>
-                            {isPending && !hasError && (
-                                <View className="absolute -top-1 -right-1 bg-amber-100 rounded-full p-0.5 text-amber-600 border border-white">
-                                    <Cloud size={10} className="animate-bounce-subtle" />
-                                </View>
-                            )}
-                            {hasError && (
-                                <View className="absolute -top-1 -right-1 bg-red-100 rounded-full p-0.5 text-red-600 border border-white">
-                                    <AlertTriangle size={10} />
-                                </View>
-                            )}
-                        </View>
-                        <Text weight="medium" className="flex-1">
-                            {question.questionText}
-                        </Text>
-                    </Flex>
-
-                    <Flex gap="xs" className="shrink-0 ml-2">
-                        {hasError && actionId && (
-                             <Flex gap="xs" className="mr-2 border-r pr-2 border-surface-muted-border">
-                                <Button 
-                                    size="sm" variant="solid" color="primary" className="h-7 px-2 text-[10px] py-0"
-                                    onClick={() => syncManager.retryAction(actionId)}
-                                >
-                                    再試行
-                                </Button>
-                                <Button 
-                                    size="sm" variant="ghost" className="h-7 px-2 text-[10px] py-0 text-secondary"
-                                    onClick={() => syncManager.discardAction(actionId)}
-                                >
-                                    破棄
-                                </Button>
-                            </Flex>
-                        )}
-
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onToggleVisible}
-                            className="p-1.5 h-auto text-foreground/50"
-                            title={isVisible ? '答えを隠す' : '答えを表示'}
-                        >
-                            {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                        </Button>
-                        {!isOwner && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={onSuggestEdit}
-                                className="p-1.5 h-auto text-brand-primary"
-                                title="修正を提案"
-                            >
-                                <MessageSquare size={16} />
-                            </Button>
-                        )}
-                        {isOwner && (
-                            <>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={onEdit}
-                                    className="p-1.5 h-auto text-brand-primary"
-                                    title="編集"
-                                >
-                                    <Edit size={16} />
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={onDelete}
-                                    className="p-1.5 h-auto text-brand-danger"
-                                    title="削除"
-                                    disabled={isDeleting}
-                                >
-                                    <Trash2 size={16} />
-                                </Button>
-                            </>
-                        )}
-                    </Flex>
-                </Flex>
-
-                {isVisible && (
-                    <View className="border-t border-surface-muted-border pt-3">
-                        <Stack gap="xs">
-                            {hasError && (
-                                <View className="mb-2 p-2 bg-red-50 dark:bg-red-500/10 rounded border border-red-100 dark:border-red-500/20">
-                                    <Text variant="xs" color="danger" weight="bold">同期エラー:</Text>
-                                    <Text variant="xs" className="text-red-700 dark:text-red-300">{error}</Text>
-                                </View>
-                            )}
-                            <Flex gap="sm" align="start">
-                                <Text variant="xs" weight="bold" color="primary" className="shrink-0">
-                                    答え:
-                                </Text>
-                                <Text variant="detail" weight="bold" color="primary">
-                                    {(question.correctAnswers || []).join(' / ')}
-                                </Text>
-                            </Flex>
-                            {question.answerRubis && question.answerRubis.length > 0 && question.answerRubis.some(r => r && r.trim() !== "") && (
-                                <Flex gap="sm" align="start">
-                                    <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
-                                        読み:
-                                    </Text>
-                                    <Text variant="xs" color="secondary">
-                                        {question.answerRubis.join(" / ")}
-                                    </Text>
-                                </Flex>
-                            )}
-                            {question.distractors && question.distractors.length > 0 && (
-                                <Flex gap="sm" align="start">
-                                    <Text variant="xs" weight="bold" color="secondary" className="shrink-0">
-                                        選択肢:
-                                    </Text>
-                                    <Text variant="xs" color="secondary">
-                                        {[question.correctAnswers[0], ...question.distractors].join(' / ')}
-                                    </Text>
-                                </Flex>
-                            )}
-                            {question.descriptionText && (
-                                <Flex gap="sm" align="start">
-                                    <Text variant="xs" color="secondary" className="shrink-0">
-                                        解説:
-                                    </Text>
-                                    <Text variant="xs" color="secondary" className="leading-relaxed">
-                                        {question.descriptionText}
-                                    </Text>
-                                </Flex>
-                            )}
-                        </Stack>
-                    </View>
+      <Stack gap="md">
+        <Flex justify="between" align="start">
+          <Flex gap="sm" align="start" className="flex-1">
+            <View className="relative">
+              <Text
+                variant="xs"
+                weight="bold"
+                className={cn(
+                  "rounded-full w-7 h-7 flex items-center justify-center shrink-0 mt-0.5 transition-colors",
+                  hasError
+                    ? "bg-red-500 text-white"
+                    : "bg-brand-primary text-white",
                 )}
+              >
+                {index + 1}
+              </Text>
+              {isPending && !hasError && (
+                <View className="absolute -top-1 -right-1 bg-amber-100 rounded-full p-0.5 text-amber-600 border border-white">
+                  <Cloud size={10} className="animate-bounce-subtle" />
+                </View>
+              )}
+              {hasError && (
+                <View className="absolute -top-1 -right-1 bg-red-100 rounded-full p-0.5 text-red-600 border border-white">
+                  <AlertTriangle size={10} />
+                </View>
+              )}
+            </View>
+            <Text weight="medium" className="flex-1">
+              {question.questionText}
+            </Text>
+          </Flex>
+
+          <Flex gap="xs" className="shrink-0 ml-2">
+            {hasError && actionId && (
+              <Flex
+                gap="xs"
+                className="mr-2 border-r pr-2 border-surface-muted-border"
+              >
+                <Button
+                  size="sm"
+                  variant="solid"
+                  color="primary"
+                  className="h-7 px-2 text-[10px] py-0"
+                  onClick={() => syncManager.retryAction(actionId)}
+                >
+                  再試行
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 px-2 text-[10px] py-0 text-secondary"
+                  onClick={() => syncManager.discardAction(actionId)}
+                >
+                  破棄
+                </Button>
+              </Flex>
+            )}
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleVisible}
+              className="p-1.5 h-auto text-foreground/50"
+              title={isVisible ? "答えを隠す" : "答えを表示"}
+            >
+              {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+            </Button>
+            {!isOwner && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onSuggestEdit}
+                className="p-1.5 h-auto text-brand-primary"
+                title="修正を提案"
+              >
+                <MessageSquare size={16} />
+              </Button>
+            )}
+            {isOwner && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onEdit}
+                  className="p-1.5 h-auto text-brand-primary"
+                  title="編集"
+                >
+                  <Edit size={16} />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onDelete}
+                  className="p-1.5 h-auto text-brand-danger"
+                  title="削除"
+                  disabled={isDeleting}
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </>
+            )}
+          </Flex>
+        </Flex>
+
+        {isVisible && (
+          <View className="border-t border-surface-muted-border pt-3">
+            <Stack gap="xs">
+              {hasError && (
+                <View className="mb-2 p-2 bg-red-50 dark:bg-red-500/10 rounded border border-red-100 dark:border-red-500/20">
+                  <Text variant="xs" color="danger" weight="bold">
+                    同期エラー:
+                  </Text>
+                  <Text variant="xs" className="text-red-700 dark:text-red-300">
+                    {error}
+                  </Text>
+                </View>
+              )}
+              <Flex gap="sm" align="start">
+                <Text
+                  variant="xs"
+                  weight="bold"
+                  color="primary"
+                  className="shrink-0"
+                >
+                  答え:
+                </Text>
+                <Text variant="detail" weight="bold" color="primary">
+                  {(question.correctAnswers || []).join(" / ")}
+                </Text>
+              </Flex>
+              {question.answerRubis &&
+                question.answerRubis.length > 0 &&
+                question.answerRubis.some((r) => r && r.trim() !== "") && (
+                  <Flex gap="sm" align="start">
+                    <Text
+                      variant="xs"
+                      weight="bold"
+                      color="secondary"
+                      className="shrink-0"
+                    >
+                      読み:
+                    </Text>
+                    <Text variant="xs" color="secondary">
+                      {question.answerRubis.join(" / ")}
+                    </Text>
+                  </Flex>
+                )}
+              {question.distractors && question.distractors.length > 0 && (
+                <Flex gap="sm" align="start">
+                  <Text
+                    variant="xs"
+                    weight="bold"
+                    color="secondary"
+                    className="shrink-0"
+                  >
+                    選択肢:
+                  </Text>
+                  <Text variant="xs" color="secondary">
+                    {[question.correctAnswers[0], ...question.distractors].join(
+                      " / ",
+                    )}
+                  </Text>
+                </Flex>
+              )}
+              {question.descriptionText && (
+                <Flex gap="sm" align="start">
+                  <Text variant="xs" color="secondary" className="shrink-0">
+                    解説:
+                  </Text>
+                  <Text
+                    variant="xs"
+                    color="secondary"
+                    className="leading-relaxed"
+                  >
+                    {question.descriptionText}
+                  </Text>
+                </Flex>
+              )}
             </Stack>
-        </Card>
-    );
+          </View>
+        )}
+      </Stack>
+    </Card>
+  );
 }

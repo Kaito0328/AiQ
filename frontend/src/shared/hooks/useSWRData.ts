@@ -11,11 +11,6 @@ interface SWROptions<T> {
   cacheWriter: (data: T) => Promise<void>;
   /** フックを有効にする条件（false で実行しない） */
   enabled?: boolean;
-  /**
-   * キャッシュを表示するまでの待機時間（ミリ秒、デフォルト 200ms）。
-   * APIがこの時間内に完了した場合はキャッシュを表示せず、チラつきを防止します。
-   */
-  displayThreshold?: number;
   /** 依存配列 — 変更されたら再フェッチ */
   deps?: unknown[];
 }
@@ -38,12 +33,11 @@ interface SWRResult<T> {
 }
 
 /**
- * Stale-While-Revalidate パターンの汎用フック。
+ * Network-First + Offline Fallback パターンの汎用フック。
  *
  * 1. 非同期で fetcher() を開始
- * 2. displayThreshold 待機し、まだ API が未完了なら cacheReader() の値を表示
- * 3. API 成功時: cacheWriter() でキャッシュ更新 + UI 更新
- * 4. 失敗時: キャッシュデータを維持
+ * 2. API 成功時: cacheWriter() でキャッシュ更新 + UI 更新
+ * 3. オフライン/ネットワーク失敗時のみ cacheReader() でフォールバック表示
  */
 export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
   const {
@@ -51,7 +45,6 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
     fetcher,
     cacheWriter,
     enabled = true,
-    displayThreshold = 200,
     deps = [],
   } = options;
 
@@ -69,115 +62,59 @@ export function useSWRData<T>(options: SWROptions<T>): SWRResult<T> {
   cacheReaderRef.current = cacheReader;
   const cacheWriterRef = useRef(cacheWriter);
   cacheWriterRef.current = cacheWriter;
+  const dataRef = useRef<T | null>(null);
+  dataRef.current = data;
 
   const refresh = useCallback(async () => {
     if (!enabled) return;
 
-    let isApiDone = false;
-    let hasShownCache = false;
-    let hasFreshData = false;
-    let hasAnyData = data != null;
+    let hasAnyData = dataRef.current != null;
 
     // Step 1: APIからの取得を開始（バックグラウンド）
     setIsRevalidating(true);
     setIsOffline(false);
     setError(null);
 
-    const apiPromise = (async () => {
-      try {
-        const freshData = await fetcherRef.current();
-        isApiDone = true;
-        hasFreshData = true;
-        hasAnyData = true;
-        setData(freshData);
-        setIsStale(false);
-        setError(null);
-        setIsOffline(false);
+    try {
+      const freshData = await fetcherRef.current();
+      hasAnyData = true;
+      setData(freshData);
+      setIsStale(false);
+      setError(null);
+      setIsOffline(false);
 
-        // キャッシュ更新
-        cacheWriterRef
-          .current(freshData)
-          .catch((e) => logger.error("SWR: キャッシュ書き込みエラー", e));
-      } catch (err) {
-        isApiDone = true;
-        if (isOfflineError(err)) {
-          setIsOffline(true);
-          // キャッシュが未表示なら表示を試みる（オフラインなら即座に表示して良い）
-          if (!hasAnyData) {
-            try {
-              const cached = await cacheReaderRef.current();
-              if (cached != null) {
-                hasAnyData = true;
-                setData(cached);
-                setIsStale(true);
-              } else {
-                setError(
-                  "ネットワークまたはサーバーに接続できません。データを利用するには一度正常接続で読み込む必要があります。",
-                );
-              }
-            } catch {
-              setError("ネットワークまたはサーバーに接続できません。");
-            }
-          }
-        } else {
-          // APIエラー時もキャッシュがあれば表示を維持
-          if (!hasAnyData) {
-            setError(
-              err instanceof Error ? err.message : "データの取得に失敗しました",
-            );
-          }
-        }
-      } finally {
-        setIsRevalidating(false);
-        setLoading(false);
-      }
-    })();
-
-    // Step 2: 少し待機してからキャッシュを表示（チラつき防止）
-    // オフラインでない（接続中）と思われる場合のみ待機
-    if (typeof navigator !== "undefined" && navigator.onLine) {
-      setTimeout(async () => {
-        if (!isApiDone && !hasShownCache) {
+      cacheWriterRef
+        .current(freshData)
+        .catch((e) => logger.error("SWR: キャッシュ書き込みエラー", e));
+    } catch (err) {
+      if (isOfflineError(err)) {
+        setIsOffline(true);
+        if (!hasAnyData) {
           try {
             const cached = await cacheReaderRef.current();
-            if (cached != null && !hasFreshData && !hasShownCache) {
-              hasAnyData = true;
+            if (cached != null) {
               setData(cached);
               setIsStale(true);
-              setLoading(false);
-              hasShownCache = true;
+              setError(null);
+            } else {
+              setError(
+                "ネットワークまたはサーバーに接続できず、キャッシュもないためデータを表示できません。",
+              );
             }
-          } catch (err) {
-            logger.error("SWR: キャッシュ読み込みエラー", err);
+          } catch {
+            setError("ネットワークまたはサーバーに接続できません。");
           }
         }
-      }, displayThreshold);
-    } else {
-      // オフライン時は即座にキャッシュ表示を試みる
-      try {
-        const cached = await cacheReaderRef.current();
-        if (cached != null && !hasFreshData && !hasShownCache) {
-          hasAnyData = true;
-          setData(cached);
-          setIsStale(true);
-          setLoading(false);
-          hasShownCache = true;
-        } else {
-          // キャッシュもない場合は即座にロード中を解除しオフラインエラー
-          setLoading(false);
-          setError(
-            "ネットワークまたはサーバーに接続できず、キャッシュもないためデータを表示できません。",
-          );
-          setIsOffline(true);
-        }
-      } catch (e) {
-        setLoading(false);
-        setIsOffline(true);
+      } else if (!hasAnyData) {
+        setError(
+          err instanceof Error ? err.message : "データの取得に失敗しました",
+        );
       }
+    } finally {
+      setIsRevalidating(false);
+      setLoading(false);
     }
-
-    await apiPromise;
-  }, [enabled, displayThreshold, ...deps]);
+  }, [enabled, ...deps]);
 
   useEffect(() => {
     if (enabled) {
