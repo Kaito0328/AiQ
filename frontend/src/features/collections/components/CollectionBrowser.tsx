@@ -209,6 +209,7 @@ export function CollectionBrowser({
           </Stack>
         ) : (
           <UserListTabs
+            hideZeroCollectionUsers
             onUserClick={(u) => {
               setBrowsingUserId(u.id);
               setBrowsingUsername(u.username);

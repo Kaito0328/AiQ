@@ -23,9 +23,13 @@ import { isOfflineError } from "@/src/shared/api/isOfflineError";
 
 interface UserListTabsProps {
   onUserClick?: (user: User) => void;
+  hideZeroCollectionUsers?: boolean;
 }
 
-export function UserListTabs({ onUserClick }: UserListTabsProps) {
+export function UserListTabs({
+  onUserClick,
+  hideZeroCollectionUsers = false,
+}: UserListTabsProps) {
   const { user: currentUser, isAuthenticated } = useAuth();
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [followers, setFollowers] = useState<User[]>([]);
@@ -124,6 +128,10 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
     loading: boolean,
     emptyMessage: string,
   ) => {
+    const visibleUsers = hideZeroCollectionUsers
+      ? users.filter((u) => (u.collectionCount ?? 0) > 0)
+      : users;
+
     if (loading) {
       return (
         <View padding="xl">
@@ -134,7 +142,7 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
       );
     }
 
-    if (users.length === 0) {
+    if (visibleUsers.length === 0) {
       return (
         <View padding="xl">
           <Text align="center" color="secondary">
@@ -146,7 +154,7 @@ export function UserListTabs({ onUserClick }: UserListTabsProps) {
 
     return (
       <Stack gap="sm" className="p-1">
-        {users.map((u) => (
+        {visibleUsers.map((u) => (
           <UserCard key={u.id} user={u} onClick={onUserClick} />
         ))}
       </Stack>

@@ -15,12 +15,15 @@ import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { CollectionCard } from "@/src/features/collections/components/CollectionCard";
 import { searchCollections } from "@/src/features/collections/api";
 import { Collection } from "@/src/entities/collection";
+import { getAllOfflineCollections } from "@/src/shared/api/offlineApi";
+import { isOfflineError } from "@/src/shared/api/isOfflineError";
 import {
   Search,
   LayoutGrid,
   List,
   SlidersHorizontal,
   ArrowUpDown,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@/src/shared/utils/cn";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -135,6 +138,73 @@ function parseQuery(raw: string): { textQuery?: string; tagTerms?: string[] } {
   };
 }
 
+function applyOfflineFilters(
+  collections: Collection[],
+  params: {
+    textQuery?: string;
+    tagTerms?: string[];
+    sort: SortOption;
+    difficultyMode: DifficultyMode;
+    difficultyLevel: number;
+  },
+): Collection[] {
+  let filtered = collections;
+
+  if (params.textQuery) {
+    const q = params.textQuery.toLowerCase();
+    filtered = filtered.filter((c) => {
+      const haystacks = [
+        c.name,
+        c.descriptionText,
+        c.authorName,
+        ...(c.tags || []),
+      ]
+        .filter(Boolean)
+        .map((v) => v!.toLowerCase());
+      return haystacks.some((v) => v.includes(q));
+    });
+  }
+
+  if (params.tagTerms && params.tagTerms.length > 0) {
+    filtered = filtered.filter((c) => {
+      const tags = (c.tags || []).map((tag) => tag.toLowerCase());
+      return params.tagTerms!.every((t) => tags.includes(t));
+    });
+  }
+
+  if (params.difficultyMode !== "none") {
+    filtered = filtered.filter((c) => {
+      const level = c.difficultyLevel;
+      if (typeof level !== "number") return false;
+
+      if (params.difficultyMode === "exact") {
+        return level === params.difficultyLevel;
+      }
+      if (params.difficultyMode === "atLeast") {
+        return level >= params.difficultyLevel;
+      }
+      return level <= params.difficultyLevel;
+    });
+  }
+
+  const sorted = [...filtered];
+  if (params.sort === "popular") {
+    sorted.sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0));
+  } else if (params.sort === "new") {
+    sorted.sort(
+      (a, b) =>
+        new Date(b.updatedAt || b.createdAt).getTime() -
+        new Date(a.updatedAt || a.createdAt).getTime(),
+    );
+  } else if (params.sort === "difficultyAsc") {
+    sorted.sort((a, b) => (a.difficultyLevel || 3) - (b.difficultyLevel || 3));
+  } else if (params.sort === "difficultyDesc") {
+    sorted.sort((a, b) => (b.difficultyLevel || 3) - (a.difficultyLevel || 3));
+  }
+
+  return sorted;
+}
+
 function CollectionSearchPageContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -166,6 +236,7 @@ function CollectionSearchPageContent() {
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
+  const [showOfflineCacheBadge, setShowOfflineCacheBadge] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [appliedSearch, setAppliedSearch] = useState<AppliedSearch>({
     rawQuery: initialQuery,
@@ -224,18 +295,52 @@ function CollectionSearchPageContent() {
         });
 
         setHasMore(data.length === PAGE_SIZE);
+        setShowOfflineCacheBadge(false);
         if (params.append) {
           setResults((prev) => [...prev, ...data]);
         } else {
           setResults(data);
         }
-      } catch {
+      } catch (err) {
+        try {
+          const offlineCollections = await getAllOfflineCollections(false);
+          const filteredOffline = applyOfflineFilters(offlineCollections, {
+            textQuery,
+            tagTerms,
+            sort: params.sortValue,
+            difficultyMode: params.difficultyModeValue,
+            difficultyLevel: Number(params.difficultyLevelValue),
+          });
+
+          const sliced = filteredOffline.slice(
+            params.offset,
+            params.offset + PAGE_SIZE,
+          );
+
+          setHasMore(params.offset + PAGE_SIZE < filteredOffline.length);
+          setShowOfflineCacheBadge(true);
+          if (params.append) {
+            setResults((prev) => [...prev, ...sliced]);
+          } else {
+            setResults(sliced);
+            setError(null);
+          }
+          return;
+        } catch {
+          // keep original error handling below
+        }
+
         if (params.append) {
           setLoadMoreError("追加読み込みに失敗しました。再試行してください。");
         } else {
-          setError("検索に失敗しました。時間をおいて再試行してください。");
+          setError(
+            isOfflineError(err)
+              ? "オフラインのため検索できません。"
+              : "検索に失敗しました。時間をおいて再試行してください。",
+          );
           setResults([]);
           setHasMore(false);
+          setShowOfflineCacheBadge(false);
         }
       } finally {
         if (params.append) {
@@ -350,9 +455,23 @@ function CollectionSearchPageContent() {
       <Container className="px-3 sm:px-6 lg:px-8">
         <Stack gap="md">
           <Stack gap="xs">
-            <Text variant="h4" weight="bold" className="tracking-tight">
-              コレクション検索
-            </Text>
+            <Flex gap="sm" align="center">
+              <Text variant="h4" weight="bold" className="tracking-tight">
+                コレクション検索
+              </Text>
+              {showOfflineCacheBadge && (
+                <Flex
+                  gap="xs"
+                  align="center"
+                  className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
+                >
+                  <WifiOff size={12} />
+                  <Text variant="xs" weight="bold" className="text-amber-700">
+                    オフライン
+                  </Text>
+                </Flex>
+              )}
+            </Flex>
           </Stack>
 
           <Stack gap="xs">
