@@ -136,8 +136,22 @@ export function useSafeRouter() {
       const hasRouteCache = await hasOfflineCacheForRoute(href);
       const hasVisitedTarget = await hasVisitedPath(pathname);
 
-      // ホーム遷移は常に許可し、未キャッシュ判定で止めない
-      if (pathname === "/" || pathname === "/home") {
+      // ホーム遷移は /home を優先し、/ への強制フォールバックはしない
+      if (pathname === "/home") {
+        if (!hasRouteCache) {
+          showToast({
+            message:
+              "ホームはまだオフライン準備できていません。オンラインで一度開いてください",
+            variant: "warning",
+          });
+          return;
+        }
+
+        router.push("/home", options);
+        return;
+      }
+
+      if (pathname === "/") {
         router.push("/", options);
         return;
       }
