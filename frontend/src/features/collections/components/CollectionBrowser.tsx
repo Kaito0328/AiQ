@@ -51,6 +51,12 @@ export function CollectionBrowser({
   >([]);
 
   useEffect(() => {
+    if (!user && source === "my-collections") {
+      setSource("official");
+    }
+  }, [source, user]);
+
+  useEffect(() => {
     const cachedOfficialId = localStorage.getItem("aiq_official_user_id");
     if (cachedOfficialId) {
       setOfficialUserId(cachedOfficialId);
@@ -238,7 +244,11 @@ export function CollectionBrowser({
       {/* Header with Source Toggles and View Mode Toggle */}
       <Flex justify="between" align="center" className="flex-wrap gap-y-3">
         <Flex gap="xs" className="bg-surface-muted p-1 rounded-xl w-fit">
-          {(["official", "my-collections", "search"] as const).map((type) => (
+          {(
+            user
+              ? (["official", "my-collections", "search"] as const)
+              : (["official", "search"] as const)
+          ).map((type) => (
             <Button
               key={type}
               size="sm"
