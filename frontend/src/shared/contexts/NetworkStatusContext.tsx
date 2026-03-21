@@ -45,8 +45,32 @@ export const NetworkStatusProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     setNavigatorOnline(navigator.onLine);
 
-    const handleOnline = () => setNavigatorOnline(true);
-    const handleOffline = () => setNavigatorOnline(false);
+    const handleOnline = () => {
+      setNavigatorOnline(true);
+      try {
+        sessionStorage.removeItem("aiq_offline_auto_reload_ts");
+      } catch {
+        // ignore session storage error
+      }
+    };
+
+    const handleOffline = () => {
+      setNavigatorOnline(false);
+
+      // ネットワーク断時に1回だけ自動リロードして、RSC状態をリセットする
+      try {
+        const now = Date.now();
+        const lastReloadAt = Number(
+          sessionStorage.getItem("aiq_offline_auto_reload_ts") || "0",
+        );
+        if (now - lastReloadAt > 5000) {
+          sessionStorage.setItem("aiq_offline_auto_reload_ts", String(now));
+          window.location.reload();
+        }
+      } catch {
+        // ignore session storage error
+      }
+    };
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);

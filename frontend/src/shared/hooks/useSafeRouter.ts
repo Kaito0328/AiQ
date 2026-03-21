@@ -132,19 +132,12 @@ export function useSafeRouter() {
       const hasRouteCache = await hasOfflineCacheForRoute(href);
       const hasVisitedTarget = await hasVisitedPath(pathname);
 
-      if (pathname === "/home" && !hasRouteCache) {
-        const hasRootCache = await hasOfflineCacheForRoute("/");
-        if (hasRootCache) {
-          router.push("/", options);
-          return;
-        }
-      }
-
-      // /home が未キャッシュでも、start-url (/) があればホーム相当へ戻れるようにする
-      if (pathname === "/home" && !hasRouteCache) {
-        const hasRootCache = await hasOfflineCacheForRoute("/");
-        if (hasRootCache) {
-          router.push("/", options);
+      // ホーム系は / と /home のどちらかがキャッシュ済みならフォールバックさせる
+      if ((pathname === "/" || pathname === "/home") && !hasRouteCache) {
+        const fallbackPath = pathname === "/home" ? "/" : "/home";
+        const hasFallbackCache = await hasOfflineCacheForRoute(fallbackPath);
+        if (hasFallbackCache) {
+          router.push(fallbackPath, options);
           return;
         }
 
