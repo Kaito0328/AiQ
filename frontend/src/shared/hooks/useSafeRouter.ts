@@ -45,17 +45,21 @@ export function useSafeRouter() {
             return true;
           }
 
-          const full = req.url;
-          if (full.includes(targetPath)) {
-            return true;
-          }
-
           if (
             reqUrl.pathname.includes("/_next/data/") &&
-            reqUrl.pathname.endsWith(".json") &&
-            reqUrl.pathname.includes(targetPathWithoutSlash)
+            reqUrl.pathname.endsWith(".json")
           ) {
-            return true;
+            const fileName = reqUrl.pathname.split("/").pop() || "";
+            const normalizedTarget =
+              targetPathWithoutSlash.length === 0
+                ? "index"
+                : targetPathWithoutSlash;
+            if (
+              fileName === `${normalizedTarget}.json` ||
+              reqUrl.pathname.includes(`/${normalizedTarget}/`)
+            ) {
+              return true;
+            }
           }
         }
       }
@@ -132,20 +136,9 @@ export function useSafeRouter() {
       const hasRouteCache = await hasOfflineCacheForRoute(href);
       const hasVisitedTarget = await hasVisitedPath(pathname);
 
-      // ホーム系は / と /home のどちらかがキャッシュ済みならフォールバックさせる
-      if ((pathname === "/" || pathname === "/home") && !hasRouteCache) {
-        const fallbackPath = pathname === "/home" ? "/" : "/home";
-        const hasFallbackCache = await hasOfflineCacheForRoute(fallbackPath);
-        if (hasFallbackCache) {
-          router.push(fallbackPath, options);
-          return;
-        }
-
-        showToast({
-          message:
-            "ホームはまだオフライン準備できていません。オンラインで一度開いてください",
-          variant: "warning",
-        });
+      // ホーム遷移は常に許可し、未キャッシュ判定で止めない
+      if (pathname === "/" || pathname === "/home") {
+        router.push("/", options);
         return;
       }
 
