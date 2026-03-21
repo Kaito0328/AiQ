@@ -67,16 +67,11 @@ export function Header() {
   }, [pathname]);
 
   const cameFromHome = previousPath === "/home" || previousPath === "/";
-  const isDeepPage =
-    (pathname.startsWith("/collections/") && pathname !== "/collections/search") ||
-    pathname.startsWith("/users/") ||
-    pathname.startsWith("/collection-sets/") ||
-    pathname.startsWith("/settings") ||
-    (pathname.startsWith("/quiz/") && pathname !== "/quiz/start") ||
-    (pathname.startsWith("/battle/") && pathname !== "/battle/lobby");
-
   const showBackButton =
-    pathname !== "/" && pathname !== "/home" && (isDeepPage || cameFromHome);
+    pathname !== "/" &&
+    pathname !== "/home" &&
+    previousPath !== null &&
+    !cameFromHome;
 
   const [isBattlePlaying, setIsBattlePlaying] = useState(false);
 

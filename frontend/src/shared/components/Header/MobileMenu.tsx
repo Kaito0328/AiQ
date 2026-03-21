@@ -45,7 +45,8 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     React.useState(false);
   const [canOpenSyncOffline, setCanOpenSyncOffline] = React.useState(false);
   const [canOpenResumeOffline, setCanOpenResumeOffline] = React.useState(false);
-  const [canOpenCreditsOffline, setCanOpenCreditsOffline] = React.useState(false);
+  const [canOpenCreditsOffline, setCanOpenCreditsOffline] =
+    React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
