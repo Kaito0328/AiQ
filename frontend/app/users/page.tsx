@@ -20,8 +20,9 @@ function getOfflineUserIdFromHash(): string | null {
 
 function UsersPageContent() {
   const searchParams = useSearchParams();
-  const [offlineUserIdFromHash, setOfflineUserIdFromHash] =
-    React.useState<string | null>(null);
+  const [offlineUserIdFromHash, setOfflineUserIdFromHash] = React.useState<
+    string | null
+  >(() => getOfflineUserIdFromHash());
 
   React.useEffect(() => {
     const syncFromHash = () => {

@@ -18,6 +18,7 @@ import { Collection } from "@/src/entities/collection";
 import { getAllOfflineCollections } from "@/src/shared/api/offlineApi";
 import { isOfflineError } from "@/src/shared/api/isOfflineError";
 import { CollectionDetailPageContent } from "@/src/features/collections/components/CollectionDetailPageContent";
+import { db } from "@/src/shared/db/db";
 import {
   Search,
   LayoutGrid,
@@ -206,23 +207,24 @@ function applyOfflineFilters(
   return sorted;
 }
 
+function getOfflineCollectionIdFromHash(): string | null {
+  if (typeof window === "undefined") return null;
+  const hash = window.location.hash;
+  if (!hash.startsWith("#")) return null;
+  const params = new URLSearchParams(hash.slice(1));
+  return params.get("offlineCollectionId");
+}
+
 function CollectionSearchPageContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const [offlineCollectionIdFromHash, setOfflineCollectionIdFromHash] =
-    useState<string | null>(null);
+    useState<string | null>(() => getOfflineCollectionIdFromHash());
 
   useEffect(() => {
     const syncFromHash = () => {
-      if (typeof window === "undefined") return;
-      const hash = window.location.hash;
-      if (!hash.startsWith("#")) {
-        setOfflineCollectionIdFromHash(null);
-        return;
-      }
-      const params = new URLSearchParams(hash.slice(1));
-      setOfflineCollectionIdFromHash(params.get("offlineCollectionId"));
+      setOfflineCollectionIdFromHash(getOfflineCollectionIdFromHash());
     };
 
     syncFromHash();
@@ -264,6 +266,11 @@ function CollectionSearchPageContent() {
   const [error, setError] = useState<string | null>(null);
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
   const [showOfflineCacheBadge, setShowOfflineCacheBadge] = useState(false);
+  const [showOfflineReadyOnly, setShowOfflineReadyOnly] = useState(true);
+  const [offlineReadyCollectionIds, setOfflineReadyCollectionIds] = useState<
+    Set<string>
+  >(new Set());
+  const [offlineUnavailableCount, setOfflineUnavailableCount] = useState(0);
   const [initialized, setInitialized] = useState(false);
   const [appliedSearch, setAppliedSearch] = useState<AppliedSearch>({
     rawQuery: initialQuery,
@@ -281,6 +288,7 @@ function CollectionSearchPageContent() {
       offset: number;
       append: boolean;
       updateUrl: boolean;
+      offlineReadyOnlyOverride?: boolean;
     }) => {
       const { textQuery, tagTerms } = parseQuery(params.rawQuery);
 
@@ -323,6 +331,8 @@ function CollectionSearchPageContent() {
 
         setHasMore(data.length === PAGE_SIZE);
         setShowOfflineCacheBadge(false);
+        setOfflineReadyCollectionIds(new Set());
+        setOfflineUnavailableCount(0);
         if (params.append) {
           setResults((prev) => [...prev, ...data]);
         } else {
@@ -339,13 +349,31 @@ function CollectionSearchPageContent() {
             difficultyLevel: Number(params.difficultyLevelValue),
           });
 
-          const sliced = filteredOffline.slice(
+          const ids = filteredOffline.map((c) => c.id);
+          const cachedQuestions =
+            ids.length > 0
+              ? await db.questions.where("collectionId").anyOf(ids).toArray()
+              : [];
+          const readyIds = new Set(cachedQuestions.map((q) => q.collectionId));
+          const unavailableCount = filteredOffline.filter(
+            (c) => !readyIds.has(c.id),
+          ).length;
+
+          const showReadyOnly =
+            params.offlineReadyOnlyOverride ?? showOfflineReadyOnly;
+          const effectiveOffline = showReadyOnly
+            ? filteredOffline.filter((c) => readyIds.has(c.id))
+            : filteredOffline;
+
+          const sliced = effectiveOffline.slice(
             params.offset,
             params.offset + PAGE_SIZE,
           );
 
-          setHasMore(params.offset + PAGE_SIZE < filteredOffline.length);
+          setHasMore(params.offset + PAGE_SIZE < effectiveOffline.length);
           setShowOfflineCacheBadge(true);
+          setOfflineReadyCollectionIds(readyIds);
+          setOfflineUnavailableCount(unavailableCount);
           if (params.append) {
             setResults((prev) => [...prev, ...sliced]);
           } else {
@@ -368,6 +396,8 @@ function CollectionSearchPageContent() {
           setResults([]);
           setHasMore(false);
           setShowOfflineCacheBadge(false);
+          setOfflineReadyCollectionIds(new Set());
+          setOfflineUnavailableCount(0);
         }
       } finally {
         if (params.append) {
@@ -377,7 +407,7 @@ function CollectionSearchPageContent() {
         }
       }
     },
-    [pathname, router, viewMode],
+    [pathname, router, showOfflineReadyOnly, viewMode],
   );
 
   useEffect(() => {
@@ -477,6 +507,33 @@ function CollectionSearchPageContent() {
     ],
   );
 
+  const handleToggleOfflineReadyOnly = useCallback(() => {
+    const next = !showOfflineReadyOnly;
+    setShowOfflineReadyOnly(next);
+
+    void executeSearch({
+      rawQuery: appliedSearch.rawQuery,
+      sortValue: appliedSearch.sort,
+      difficultyModeValue: appliedSearch.difficultyMode,
+      difficultyLevelValue: appliedSearch.difficultyLevel,
+      offset: 0,
+      append: false,
+      updateUrl: false,
+      offlineReadyOnlyOverride: next,
+    });
+  }, [
+    appliedSearch.difficultyLevel,
+    appliedSearch.difficultyMode,
+    appliedSearch.rawQuery,
+    appliedSearch.sort,
+    executeSearch,
+    showOfflineReadyOnly,
+  ]);
+
+  if (offlineCollectionId) {
+    return <CollectionDetailPageContent collectionId={offlineCollectionId} />;
+  }
+
   return (
     <View className="min-h-screen bg-surface-muted pt-4 pb-20 sm:py-8">
       <Container className="px-3 sm:px-6 lg:px-8">
@@ -498,8 +555,28 @@ function CollectionSearchPageContent() {
                   </Text>
                 </Flex>
               )}
+              {showOfflineCacheBadge && offlineUnavailableCount > 0 && (
+                <Button
+                  size="sm"
+                  variant={showOfflineReadyOnly ? "solid" : "outline"}
+                  color="primary"
+                  className="h-7 px-2 text-xs"
+                  onClick={handleToggleOfflineReadyOnly}
+                >
+                  {showOfflineReadyOnly ? "すべて表示" : "利用可能のみ"}
+                </Button>
+              )}
             </Flex>
           </Stack>
+
+          {showOfflineCacheBadge && offlineUnavailableCount > 0 && (
+            <Text variant="xs" color="secondary">
+              問題未キャッシュの {offlineUnavailableCount} 件があります。
+              {showOfflineReadyOnly
+                ? " 現在はアクセス可能なコレクションのみ表示しています。"
+                : " 未キャッシュのコレクションはタップできません。"}
+            </Text>
+          )}
 
           <Stack gap="xs">
             <Flex gap="xs" align="center">
@@ -654,6 +731,11 @@ function CollectionSearchPageContent() {
                   key={collection.id}
                   collection={collection}
                   displayMode="list"
+                  isInteractionDisabled={
+                    showOfflineCacheBadge &&
+                    !offlineReadyCollectionIds.has(collection.id)
+                  }
+                  disabledReason="このコレクションの問題は未キャッシュです。オンライン時に詳細を開いて保存してください。"
                 />
               ))}
             </Stack>
@@ -664,6 +746,11 @@ function CollectionSearchPageContent() {
                   key={collection.id}
                   collection={collection}
                   displayMode="grid"
+                  isInteractionDisabled={
+                    showOfflineCacheBadge &&
+                    !offlineReadyCollectionIds.has(collection.id)
+                  }
+                  disabledReason="このコレクションの問題は未キャッシュです。オンライン時に詳細を開いて保存してください。"
                 />
               ))}
             </Grid>
