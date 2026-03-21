@@ -8,16 +8,17 @@ import { Text } from '@/src/design/baseComponents/Text';
 import { Flex } from '@/src/design/primitives/Flex';
 import { Grid } from '@/src/design/primitives/Grid';
 import { MessageSquare, ChevronRight } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { View } from '@/src/design/primitives/View';
 import { Stack } from '@/src/design/primitives/Stack';
 import { useAuth } from '@/src/shared/auth/useAuth';
+import { savePendingEditRequestsCache, loadPendingEditRequestsCache } from '@/src/shared/api/editRequestCache';
+import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 
 export function EditRequestNotification() {
     const { user } = useAuth();
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const router = useRouter();
+    const router = useSafeRouter();
 
     useEffect(() => {
         const fetchRequests = async () => {
@@ -28,7 +29,10 @@ export function EditRequestNotification() {
             try {
                 const data = await getMyPendingRequests();
                 setRequests(data);
+                savePendingEditRequestsCache(data);
             } catch (err: any) {
+                const cached = loadPendingEditRequestsCache();
+                setRequests(cached as any[]);
                 if (err?.status !== 503) {
                     logger.error('Failed to fetch pending requests', err);
                 }

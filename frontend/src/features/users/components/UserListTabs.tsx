@@ -12,7 +12,7 @@ import { Input } from "@/src/design/baseComponents/Input";
 import { Select } from "@/src/design/baseComponents/Select";
 import { Button } from "@/src/design/baseComponents/Button";
 import { UserCard } from "@/src/features/users/components/UserCard";
-import { Search, ArrowUpDown } from "lucide-react";
+import { Search, ArrowUpDown, WifiOff } from "lucide-react";
 import { getUsers } from "@/src/features/auth/api";
 import { getFollowers, getFollowees } from "@/src/features/follow/api";
 import { useAuth } from "@/src/shared/auth/useAuth";
@@ -43,6 +43,27 @@ export function UserListTabs({
   const [loadingAll, setLoadingAll] = useState(true);
   const [loadingFollowers, setLoadingFollowers] = useState(false);
   const [loadingFollowees, setLoadingFollowees] = useState(false);
+  const [showOfflineCacheBadge, setShowOfflineCacheBadge] = useState(false);
+
+  const sortUsers = (users: User[], mode: string): User[] => {
+    const sorted = [...users];
+    if (mode === "followers") {
+      sorted.sort((a, b) => (b.followerCount || 0) - (a.followerCount || 0));
+      return sorted;
+    }
+
+    const getCreatedAt = (u: User) => {
+      const maybeCreatedAt = (u as User & { createdAt?: string }).createdAt;
+      return new Date(maybeCreatedAt || 0).getTime();
+    };
+
+    sorted.sort((a, b) => {
+      const aTime = getCreatedAt(a);
+      const bTime = getCreatedAt(b);
+      return bTime - aTime;
+    });
+    return sorted;
+  };
 
   // Network-first fetch for all users with search/sort
   useEffect(() => {
@@ -57,6 +78,7 @@ export function UserListTabs({
         });
         if (cancelled) return;
         setAllUsers(users);
+        setShowOfflineCacheBadge(false);
 
         // オフラインで他ユーザープロフィールに入れるよう、一覧取得時に保存
         Promise.allSettled(users.map((u) => saveOfflineProfile(u)));
@@ -72,7 +94,8 @@ export function UserListTabs({
                   (u.displayName && u.displayName.toLowerCase().includes(q)),
               );
             }
-            setAllUsers(cached);
+            setAllUsers(sortUsers(cached, sortBy));
+            setShowOfflineCacheBadge(true);
           } catch {
             // ignore cache read error on fallback
           }
@@ -195,6 +218,21 @@ export function UserListTabs({
   return (
     <Stack gap="lg">
       <Stack gap="xs">
+        <Flex gap="xs" align="center" className="flex-wrap">
+          {showOfflineCacheBadge && (
+            <Flex
+              gap="xs"
+              align="center"
+              className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full"
+            >
+              <WifiOff size={12} />
+              <Text variant="xs" weight="bold" className="text-amber-700">
+                オフライン
+              </Text>
+            </Flex>
+          )}
+        </Flex>
+
         <Flex gap="xs" align="center">
           <Input
             value={searchInput}

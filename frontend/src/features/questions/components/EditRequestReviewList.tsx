@@ -17,6 +17,7 @@ import { useToast } from '@/src/shared/contexts/ToastContext';
 import { cn } from '@/src/shared/utils/cn';
 import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 import { ApiError } from '@/src/shared/api/error';
+import { loadPendingEditRequestsCache, savePendingEditRequestsCache } from '@/src/shared/api/editRequestCache';
 
 interface EditRequestReviewListProps {
     collectionId?: string;
@@ -37,6 +38,7 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
     const [loading, setLoading] = useState(true);
     const [editingRequestId, setEditingRequestId] = useState<string | null>(null);
     const [editData, setEditData] = useState<any>(null);
+    const [isShowingCachedData, setIsShowingCachedData] = useState(false);
     const { showToast } = useToast();
     const { isOnline } = useNetworkStatus();
 
@@ -46,6 +48,8 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
             let data;
             if (isGlobal) {
                 data = await getMyPendingRequests();
+                savePendingEditRequestsCache(data);
+                setIsShowingCachedData(false);
             } else if (collectionId) {
                 data = await getEditRequests(collectionId);
                 data = data.filter((r: any) => r.status === 'pending');
@@ -57,6 +61,11 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
             logger.error('Failed to fetch requests', error);
             // オフライン（503/0）の場合はトーストを表示しない
             const isOfflineError = error instanceof ApiError && (error.status === 503 || error.status === 0);
+            if (isGlobal && isOfflineError) {
+                const cached = loadPendingEditRequestsCache();
+                setRequests(cached as any[]);
+                setIsShowingCachedData(true);
+            }
             if (!isOfflineError) {
                 showToast({ message: 'リクエストの取得に失敗しました', variant: 'danger' });
             }
@@ -160,6 +169,11 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
                                             <Badge variant="secondary" className="text-[10px]">
                                                 {REASON_LABELS[request.reasonId] || 'その他'}
                                             </Badge>
+                                            {isShowingCachedData && (
+                                                <Badge variant="warning" className="text-[10px]">
+                                                    キャッシュ表示
+                                                </Badge>
+                                            )}
                                             <Text variant="xs" color="secondary">
                                                 依頼者: {request.requesterName || '匿名ユーザー'}
                                             </Text>
@@ -172,6 +186,7 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
                                             size="sm"
                                             className="h-9 gap-1 text-brand-danger hover:bg-brand-danger/10"
                                             onClick={() => handleReject(request.id)}
+                                            disabled={!isOnline}
                                         >
                                             <X size={16} />
                                             却下
@@ -182,6 +197,7 @@ export function EditRequestReviewList({ collectionId, onActionSuccess, isGlobal 
                                             size="sm"
                                             className="h-9 gap-1 shadow-md shadow-brand-primary/20"
                                             onClick={() => handleApprove(request)}
+                                            disabled={!isOnline}
                                         >
                                             <Check size={16} />
                                             {editingRequestId === request.id ? '修正して承認' : '承認して更新'}
