@@ -11,6 +11,8 @@ import { X, User, LogOut, Heart, Settings, MessageSquare, History, LogIn, FileTe
 import { useSafeRouter } from '@/src/shared/hooks/useSafeRouter';
 import { useAuth } from '@/src/shared/auth/useAuth';
 import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
+import { hasVisitedPath, hasVisitedUserFavorites } from '@/src/shared/api/routeVisit';
+import { hasPendingEditRequestsCache } from '@/src/shared/api/editRequestCache';
 
 interface MobileMenuProps {
     isOpen: boolean;
@@ -21,6 +23,39 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     const router = useSafeRouter();
     const { user, logout, isAuthenticated } = useAuth();
     const { isOnline } = useNetworkStatus();
+    const [canOpenFavoritesOffline, setCanOpenFavoritesOffline] = React.useState(false);
+    const [canOpenEditRequestsOffline, setCanOpenEditRequestsOffline] = React.useState(false);
+
+    React.useEffect(() => {
+        let cancelled = false;
+
+        const hydrateOfflineAccess = async () => {
+            if (!user?.id) {
+                if (!cancelled) {
+                    setCanOpenFavoritesOffline(false);
+                    setCanOpenEditRequestsOffline(hasPendingEditRequestsCache());
+                }
+                return;
+            }
+
+            const [favoritesVisited, editRequestsVisited] = await Promise.all([
+                hasVisitedUserFavorites(user.id),
+                hasVisitedPath('/edit-requests')
+            ]);
+
+            if (!cancelled) {
+                setCanOpenFavoritesOffline(favoritesVisited);
+                setCanOpenEditRequestsOffline(
+                    editRequestsVisited || hasPendingEditRequestsCache()
+                );
+            }
+        };
+
+        void hydrateOfflineAccess();
+        return () => {
+            cancelled = true;
+        };
+    }, [user?.id, isOpen]);
 
     const handleNavigate = (path: string) => {
         router.push(path);
@@ -87,9 +122,19 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
                                 {/* Links Section */}
                                 <Stack gap="xs">
-                                    <MenuLink icon={<User size={20} />} label="プロフィール" onClick={() => handleNavigate(`/users/${user?.id}`)} disabled={!isOnline} />
-                                    <MenuLink icon={<Heart size={20} />} label="お気に入り" onClick={() => handleNavigate(`/users/${user?.id}/favorites`)} disabled={!isOnline} />
-                                    <MenuLink icon={<MessageSquare size={20} />} label="修正依頼の管理" onClick={() => handleNavigate('/edit-requests')} disabled={!isOnline} />
+                                    <MenuLink icon={<User size={20} />} label="プロフィール" onClick={() => handleNavigate(`/users/${user?.id}`)} disabled={!user?.id} />
+                                    <MenuLink
+                                        icon={<Heart size={20} />}
+                                        label="お気に入り"
+                                        onClick={() => handleNavigate(`/users/${user?.id}/favorites`)}
+                                        disabled={!user?.id || (!isOnline && !canOpenFavoritesOffline)}
+                                    />
+                                    <MenuLink
+                                        icon={<MessageSquare size={20} />}
+                                        label="修正依頼の管理"
+                                        onClick={() => handleNavigate('/edit-requests')}
+                                        disabled={!isOnline && !canOpenEditRequestsOffline}
+                                    />
                                     <MenuLink icon={<History size={20} />} label="中断したクイズ" onClick={() => handleNavigate('/quiz/resume')} />
                                     <MenuLink icon={<Cloud size={20} />} label="同期ステータス" onClick={() => handleNavigate('/settings/sync')} />
                                     <MenuLink icon={<Settings size={20} />} label="設定" onClick={() => handleNavigate('/settings')} />

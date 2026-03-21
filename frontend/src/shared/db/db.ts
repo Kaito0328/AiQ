@@ -44,20 +44,47 @@ export interface PendingAction {
   errorMessage?: string;
 }
 
+export interface VisitedPage {
+  path: string;
+  lastVisitedAt: number;
+}
+
 export class AiQDatabase extends Dexie {
   collections!: Table<OfflineCollection>;
   questions!: Table<OfflineQuestion>;
   profiles!: Table<OfflineUserProfile>;
   pendingActions!: Table<PendingAction>;
+  visitedPages!: Table<VisitedPage>;
 
   constructor() {
     super("AiQDatabase");
-    this.version(4).stores({
+    this.version(5).stores({
       collections: "id, userId, name, savedAt, isExplicitlySaved",
       questions: "id, collectionId, questionText, savedAt",
       profiles: "id, username, savedAt",
       pendingActions: "++id, type, timestamp, status",
+      visitedPages: "path, lastVisitedAt",
     });
+  }
+
+  async markPageVisited(path: string) {
+    if (!path) return;
+    await this.visitedPages.put({
+      path,
+      lastVisitedAt: Date.now(),
+    });
+  }
+
+  async hasVisitedPath(path: string) {
+    if (!path) return false;
+    const item = await this.visitedPages.get(path);
+    return !!item;
+  }
+
+  async hasVisitedPrefix(prefix: string) {
+    if (!prefix) return false;
+    const item = await this.visitedPages.where("path").startsWith(prefix).first();
+    return !!item;
   }
 
   /**

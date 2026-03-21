@@ -51,6 +51,7 @@ import { Header } from "@/src/shared/components/Header/Header";
 import { BottomNav } from "@/src/shared/components/Navigation/BottomNav";
 import { NetworkStatusProvider } from "@/src/shared/contexts/NetworkStatusContext";
 import { PwaUpdater } from "@/src/shared/components/Navigation/PwaUpdater";
+import { RouteVisitTracker } from "@/src/shared/components/Navigation/RouteVisitTracker";
 
 export default function RootLayout({
   children,
@@ -68,6 +69,7 @@ export default function RootLayout({
               <AudioProvider>
                 <ToastProvider>
                   <PwaUpdater />
+                  <RouteVisitTracker />
                   <Header />
                   <main className="pb-16 sm:pb-0">{children}</main>
                   <BottomNav />

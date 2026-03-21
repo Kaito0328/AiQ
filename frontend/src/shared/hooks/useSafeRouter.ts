@@ -3,6 +3,11 @@ import { useRouter } from "next/navigation";
 import { useNetworkStatus } from "@/src/shared/contexts/NetworkStatusContext";
 import { useToast } from "@/src/shared/contexts/ToastContext";
 import { db } from "@/src/shared/db/db";
+import {
+  hasVisitedAnyCollectionDetail,
+  hasVisitedPath,
+  hasVisitedUserFavorites,
+} from "@/src/shared/api/routeVisit";
 
 /**
  * Next.js の useRouter をラップし、オフライン時の遷移トラブル（フリーズ等）を防ぐためのフック。
@@ -125,6 +130,15 @@ export function useSafeRouter() {
         isUserFavorites;
 
       const hasRouteCache = await hasOfflineCacheForRoute(href);
+      const hasVisitedTarget = await hasVisitedPath(pathname);
+
+      if (pathname === "/home" && !hasRouteCache) {
+        const hasRootCache = await hasOfflineCacheForRoute("/");
+        if (hasRootCache) {
+          router.push("/", options);
+          return;
+        }
+      }
 
       // /home が未キャッシュでも、start-url (/) があればホーム相当へ戻れるようにする
       if (pathname === "/home" && !hasRouteCache) {
@@ -162,6 +176,33 @@ export function useSafeRouter() {
         return;
       }
 
+      if (isUserFavorites) {
+        const userId = pathname.split("/")[2];
+        if (userId) {
+          const visitedFavorites = await hasVisitedUserFavorites(userId);
+          if (!visitedFavorites && !hasRouteCache) {
+            showToast({
+              message:
+                "お気に入りページはまだオフライン準備できていません。オンラインで一度開いてください",
+              variant: "warning",
+            });
+            return;
+          }
+        }
+      }
+
+      if (isCollectionDetail && !hasRouteCache) {
+        const visitedAnyCollection = await hasVisitedAnyCollectionDetail();
+        if (!visitedAnyCollection && !hasLocalDetailData) {
+          showToast({
+            message:
+              "コレクション詳細はまだオフライン準備できていません。オンラインで一度開いてください",
+            variant: "warning",
+          });
+          return;
+        }
+      }
+
       // オフライン時は詳細ページを固定URL+クエリへ寄せる
       // （未訪問の動的URLでも、キャッシュ済みの固定ページから表示可能にする）
       if (isCollectionDetail && hasLocalDetailData) {
@@ -175,9 +216,18 @@ export function useSafeRouter() {
         }
       }
 
-      if ((isUserDetail || isUserFavorites) && hasLocalDetailData) {
+      if (isUserDetail && hasLocalDetailData) {
         const userId = pathname.split("/")[2];
         if (userId) {
+          router.push(`/users#offlineUserId=${userId}`, options);
+          return;
+        }
+      }
+
+      if (isUserFavorites && !hasRouteCache) {
+        const userId = pathname.split("/")[2];
+        if (userId && hasLocalDetailData) {
+          // favorites が未訪問ならプロフィールへフォールバック
           router.push(`/users#offlineUserId=${userId}`, options);
           return;
         }
@@ -190,7 +240,8 @@ export function useSafeRouter() {
           isCollectionRanking ||
           isUserDetail ||
           isUserFavorites) &&
-        !hasRouteCache
+        !hasRouteCache &&
+        !hasVisitedTarget
       ) {
         showToast({
           message:
