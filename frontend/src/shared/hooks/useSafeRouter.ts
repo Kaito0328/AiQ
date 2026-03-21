@@ -126,6 +126,22 @@ export function useSafeRouter() {
 
       const hasRouteCache = await hasOfflineCacheForRoute(href);
 
+      // /home が未キャッシュでも、start-url (/) があればホーム相当へ戻れるようにする
+      if (pathname === "/home" && !hasRouteCache) {
+        const hasRootCache = await hasOfflineCacheForRoute("/");
+        if (hasRootCache) {
+          router.push("/", options);
+          return;
+        }
+
+        showToast({
+          message:
+            "ホームはまだオフライン準備できていません。オンラインで一度開いてください",
+          variant: "warning",
+        });
+        return;
+      }
+
       if (!isLikelyCached && !hasLocalDetailData && !hasRouteCache) {
         showToast({
           message: "オフラインのため、このページへは移動できません",
