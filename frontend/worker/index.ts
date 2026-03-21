@@ -89,10 +89,23 @@ self.addEventListener("fetch", (event: FetchEvent) => {
           );
         }
 
-        // RSC/データリクエストの場合は空のレスポンスを返す（Next.js がエラーハンドリングする）
+        // RSC/データリクエストは 5xx を避け、空ペイロードで即時復帰する
+        if (isNextData) {
+          return new Response("{}", {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json; charset=utf-8",
+              "X-AiQ-Offline-Fallback": "1",
+            },
+          });
+        }
+
         return new Response("", {
-          status: 504,
-          statusText: "Offline - no cache available",
+          status: 200,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+            "X-AiQ-Offline-Fallback": "1",
+          },
         });
       }
     })(),

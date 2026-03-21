@@ -41,6 +41,11 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     React.useState(false);
   const [canOpenEditRequestsOffline, setCanOpenEditRequestsOffline] =
     React.useState(false);
+  const [canOpenSettingsOffline, setCanOpenSettingsOffline] =
+    React.useState(false);
+  const [canOpenSyncOffline, setCanOpenSyncOffline] = React.useState(false);
+  const [canOpenResumeOffline, setCanOpenResumeOffline] = React.useState(false);
+  const [canOpenCreditsOffline, setCanOpenCreditsOffline] = React.useState(false);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -59,11 +64,23 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         hasVisitedPath("/edit-requests"),
       ]);
 
+      const [settingsVisited, syncVisited, resumeVisited, creditsVisited] =
+        await Promise.all([
+          hasVisitedPath("/settings"),
+          hasVisitedPath("/settings/sync"),
+          hasVisitedPath("/quiz/resume"),
+          hasVisitedPath("/credits"),
+        ]);
+
       if (!cancelled) {
         setCanOpenFavoritesOffline(favoritesVisited);
         setCanOpenEditRequestsOffline(
           editRequestsVisited || hasPendingEditRequestsCache(),
         );
+        setCanOpenSettingsOffline(settingsVisited);
+        setCanOpenSyncOffline(syncVisited);
+        setCanOpenResumeOffline(resumeVisited);
+        setCanOpenCreditsOffline(creditsVisited);
       }
     };
 
@@ -182,21 +199,25 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     icon={<History size={20} />}
                     label="中断したクイズ"
                     onClick={() => handleNavigate("/quiz/resume")}
+                    disabled={!isOnline && !canOpenResumeOffline}
                   />
                   <MenuLink
                     icon={<Cloud size={20} />}
                     label="同期ステータス"
                     onClick={() => handleNavigate("/settings/sync")}
+                    disabled={!isOnline && !canOpenSyncOffline}
                   />
                   <MenuLink
                     icon={<Settings size={20} />}
                     label="設定"
                     onClick={() => handleNavigate("/settings")}
+                    disabled={!isOnline && !canOpenSettingsOffline}
                   />
                   <MenuLink
                     icon={<FileText size={20} />}
                     label="クレジット"
                     onClick={() => handleNavigate("/credits")}
+                    disabled={!isOnline && !canOpenCreditsOffline}
                   />
                 </Stack>
 

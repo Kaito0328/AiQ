@@ -17,9 +17,11 @@ import { QuizMode, FilterNode } from '@/src/entities/quiz';
 import { startCasualQuiz } from '@/src/features/quiz/api';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, WifiOff } from 'lucide-react';
 import { cn } from '@/src/shared/utils/cn';
 import { Button } from '@/src/design/baseComponents/Button';
+import { db } from '@/src/shared/db/db';
+import { useNetworkStatus } from '@/src/shared/contexts/NetworkStatusContext';
 
 interface TimelineListProps {
     type: 'recent' | 'following';
@@ -30,16 +32,67 @@ interface TimelineListProps {
 
 function TimelineList({ type, onAddToSet, viewMode, setViewMode }: TimelineListProps) {
     const { isAuthenticated } = useAuth();
+    const { isOnline } = useNetworkStatus();
     const recent = useRecentCollections(type === 'recent');
     const followee = useFolloweeCollections(isAuthenticated && type === 'following');
 
     const currentData = type === 'following' ? followee : recent;
+    const [cachedCollectionIds, setCachedCollectionIds] = useState<Set<string>>(new Set());
+    const [showOfflineReadyOnly, setShowOfflineReadyOnly] = useState(true);
+
+    React.useEffect(() => {
+        let cancelled = false;
+
+        const checkCache = async () => {
+            const ids = currentData.collections.map((c) => c.id);
+            if (ids.length === 0) {
+                if (!cancelled) setCachedCollectionIds(new Set());
+                return;
+            }
+
+            const questions = await db.questions.where('collectionId').anyOf(ids).toArray();
+            if (!cancelled) {
+                setCachedCollectionIds(new Set(questions.map((q) => q.collectionId)));
+            }
+        };
+
+        void checkCache();
+        return () => {
+            cancelled = true;
+        };
+    }, [currentData.collections]);
+
+    const offlineUnavailableCount = currentData.collections.filter(
+        (c) => !cachedCollectionIds.has(c.id)
+    ).length;
+
+    const displayedCollections =
+        !isOnline && showOfflineReadyOnly
+            ? currentData.collections.filter((c) => cachedCollectionIds.has(c.id))
+            : currentData.collections;
 
     return (
         <Stack gap="md">
             {/* View Mode Toggle Bar */}
-            <Flex justify="end" align="center" className="mb-2">
+            <Flex justify="between" align="center" className="mb-2 flex-wrap gap-2">
+                {!isOnline && (
+                    <Flex gap="xs" align="center" className="text-amber-600 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                        <WifiOff size={12} />
+                        <Text variant="xs" weight="bold" className="text-amber-700">オフライン</Text>
+                    </Flex>
+                )}
                 <Flex gap="xs" align="center" className="bg-surface-muted/50 p-1 rounded-lg border border-surface-muted">
+                    {!isOnline && offlineUnavailableCount > 0 && (
+                        <Button
+                            size="sm"
+                            variant={showOfflineReadyOnly ? 'solid' : 'outline'}
+                            color="primary"
+                            className="h-8 px-2 text-xs"
+                            onClick={() => setShowOfflineReadyOnly((prev) => !prev)}
+                        >
+                            {showOfflineReadyOnly ? 'すべて表示' : '利用可能のみ'}
+                        </Button>
+                    )}
                     <Button
                         variant="ghost"
                         size="sm"
@@ -75,29 +128,35 @@ function TimelineList({ type, onAddToSet, viewMode, setViewMode }: TimelineListP
                 <View className="bg-brand-danger/10" padding="xl" rounded="lg">
                     <Text align="center" color="danger">エラー: {currentData.error}</Text>
                 </View>
-            ) : currentData.collections.length === 0 ? (
+            ) : displayedCollections.length === 0 ? (
                 <View padding="xl">
-                    <Text align="center" color="secondary">投稿がありません</Text>
+                    <Text align="center" color="secondary">
+                        {!isOnline ? 'オフラインで利用可能な投稿がありません' : '投稿がありません'}
+                    </Text>
                 </View>
             ) : viewMode === 'grid' ? (
                 <Grid cols={{ sm: 1, md: 2, lg: 3 }} gap="md" className="grid-cols-1">
-                    {currentData.collections.map((collection) => (
+                    {displayedCollections.map((collection) => (
                         <CollectionCard
                             key={collection.id}
                             collection={collection}
                             displayMode="grid"
                             onAddToSet={isAuthenticated ? onAddToSet : undefined}
+                            isInteractionDisabled={!isOnline && !cachedCollectionIds.has(collection.id)}
+                            disabledReason="このコレクションの問題は未キャッシュです。オンラインで開いて保存してください。"
                         />
                     ))}
                 </Grid>
             ) : (
                 <Stack gap="sm">
-                    {currentData.collections.map((collection) => (
+                    {displayedCollections.map((collection) => (
                         <CollectionCard
                             key={collection.id}
                             collection={collection}
                             displayMode="list"
                             onAddToSet={isAuthenticated ? onAddToSet : undefined}
+                            isInteractionDisabled={!isOnline && !cachedCollectionIds.has(collection.id)}
+                            disabledReason="このコレクションの問題は未キャッシュです。オンラインで開いて保存してください。"
                         />
                     ))}
                 </Stack>

@@ -9,6 +9,17 @@ export function RouteVisitTracker() {
 
   useEffect(() => {
     if (!pathname) return;
+
+    try {
+      const current = sessionStorage.getItem("aiq_current_path");
+      if (current && current !== pathname) {
+        sessionStorage.setItem("aiq_previous_path", current);
+      }
+      sessionStorage.setItem("aiq_current_path", pathname);
+    } catch {
+      // ignore storage errors
+    }
+
     void markCurrentPathVisited(pathname);
   }, [pathname]);
 
