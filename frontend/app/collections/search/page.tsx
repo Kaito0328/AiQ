@@ -210,7 +210,28 @@ function CollectionSearchPageContent() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const offlineCollectionId = searchParams.get("offlineCollectionId");
+  const [offlineCollectionIdFromHash, setOfflineCollectionIdFromHash] =
+    useState<string | null>(null);
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      if (typeof window === "undefined") return;
+      const hash = window.location.hash;
+      if (!hash.startsWith("#")) {
+        setOfflineCollectionIdFromHash(null);
+        return;
+      }
+      const params = new URLSearchParams(hash.slice(1));
+      setOfflineCollectionIdFromHash(params.get("offlineCollectionId"));
+    };
+
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+  }, []);
+
+  const offlineCollectionId =
+    offlineCollectionIdFromHash ?? searchParams.get("offlineCollectionId");
 
   if (offlineCollectionId) {
     return <CollectionDetailPageContent collectionId={offlineCollectionId} />;

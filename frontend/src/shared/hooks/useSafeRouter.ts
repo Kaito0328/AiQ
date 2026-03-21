@@ -152,7 +152,7 @@ export function useSafeRouter() {
         const collectionId = pathname.split("/")[2];
         if (collectionId) {
           router.push(
-            `/collections/search?offlineCollectionId=${collectionId}`,
+            `/collections/search#offlineCollectionId=${collectionId}`,
             options,
           );
           return;
@@ -162,7 +162,7 @@ export function useSafeRouter() {
       if ((isUserDetail || isUserFavorites) && hasLocalDetailData) {
         const userId = pathname.split("/")[2];
         if (userId) {
-          router.push(`/users?offlineUserId=${userId}`, options);
+          router.push(`/users#offlineUserId=${userId}`, options);
           return;
         }
       }

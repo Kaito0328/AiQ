@@ -10,9 +10,31 @@ import { UserListTabs } from "@/src/features/users/components/UserListTabs";
 import { Spinner } from "@/src/design/baseComponents/Spinner";
 import { UserProfilePageContent } from "@/src/features/users/components/UserProfilePageContent";
 
+function getOfflineUserIdFromHash(): string | null {
+  if (typeof window === "undefined") return null;
+  const hash = window.location.hash;
+  if (!hash.startsWith("#")) return null;
+  const params = new URLSearchParams(hash.slice(1));
+  return params.get("offlineUserId");
+}
+
 function UsersPageContent() {
   const searchParams = useSearchParams();
-  const offlineUserId = searchParams.get("offlineUserId");
+  const [offlineUserIdFromHash, setOfflineUserIdFromHash] =
+    React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const syncFromHash = () => {
+      setOfflineUserIdFromHash(getOfflineUserIdFromHash());
+    };
+
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+  }, []);
+
+  const offlineUserId =
+    offlineUserIdFromHash ?? searchParams.get("offlineUserId");
 
   if (offlineUserId) {
     return <UserProfilePageContent userId={offlineUserId} />;
