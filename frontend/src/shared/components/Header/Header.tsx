@@ -31,7 +31,6 @@ import { db } from "@/src/shared/db/db";
 export function Header() {
   const router = useSafeRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [previousPath, setPreviousPath] = useState<string | null>(null);
   const [backTargetPath, setBackTargetPath] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
   const { theme } = useTheme();
@@ -61,21 +60,17 @@ export function Header() {
 
   useEffect(() => {
     try {
-      setPreviousPath(sessionStorage.getItem("aiq_previous_path"));
       setBackTargetPath(sessionStorage.getItem("aiq_back_target_path"));
     } catch {
-      setPreviousPath(null);
       setBackTargetPath(null);
     }
   }, [pathname]);
 
-  const cameFromHome = previousPath === "/home" || previousPath === "/";
   const backGoesHome = backTargetPath === "/home" || backTargetPath === "/";
   const showBackButton =
     pathname !== "/" &&
     pathname !== "/home" &&
-    previousPath !== null &&
-    !cameFromHome &&
+    backTargetPath !== null &&
     !backGoesHome;
 
   const [isBattlePlaying, setIsBattlePlaying] = useState(false);
