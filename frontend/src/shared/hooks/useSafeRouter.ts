@@ -77,10 +77,19 @@ export function useSafeRouter() {
         !navigator.onLine);
 
     if (!isOnline || isRuntimeOffline) {
-      const pathname =
+      const targetUrl =
         typeof window !== "undefined"
-          ? new URL(href, window.location.origin).pathname
-          : href;
+          ? new URL(href, window.location.origin)
+          : null;
+      const pathname = targetUrl ? targetUrl.pathname : href;
+
+      const hardNavigate = () => {
+        if (typeof window !== "undefined") {
+          window.location.assign(targetUrl ? targetUrl.toString() : href);
+        } else {
+          router.push(href, options);
+        }
+      };
       const uuidLike = "[0-9a-fA-F-]{36}";
       const isCollectionDetail = new RegExp(`^/collections/${uuidLike}$`).test(
         pathname,
@@ -136,23 +145,28 @@ export function useSafeRouter() {
       const hasRouteCache = await hasOfflineCacheForRoute(href);
       const hasVisitedTarget = await hasVisitedPath(pathname);
 
-      // ホーム遷移は /home を優先し、/ への強制フォールバックはしない
+      // ホーム遷移はハード遷移にして、オフライン時の no-op を避ける
       if (pathname === "/home") {
-        if (!hasRouteCache) {
-          showToast({
-            message:
-              "ホームはまだオフライン準備できていません。オンラインで一度開いてください",
-            variant: "warning",
-          });
-          return;
-        }
-
-        router.push("/home", options);
+        hardNavigate();
         return;
       }
 
       if (pathname === "/") {
-        router.push("/", options);
+        hardNavigate();
+        return;
+      }
+
+      const shouldUseHardNavigation =
+        pathname === "/users" ||
+        pathname === "/collections/search" ||
+        pathname === "/settings" ||
+        pathname === "/settings/sync" ||
+        pathname === "/settings/cache" ||
+        pathname === "/credits" ||
+        pathname === "/quiz/resume";
+
+      if (shouldUseHardNavigation && !hasRouteCache) {
+        hardNavigate();
         return;
       }
 
@@ -258,11 +272,7 @@ export function useSafeRouter() {
           pathname.startsWith("/collection-sets/")) &&
         !hasRouteCache
       ) {
-        showToast({
-          message:
-            "このページはまだオフライン準備できていません。オンラインで一度開いてください",
-          variant: "warning",
-        });
+        hardNavigate();
         return;
       }
     }
