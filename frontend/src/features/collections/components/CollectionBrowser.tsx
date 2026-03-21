@@ -144,7 +144,11 @@ export function CollectionBrowser({
             <Spinner size="lg" />
           </View>
         ) : officialUserId ? (
-          <UserContentTabs userId={officialUserId} {...commonProps} />
+          <UserContentTabs
+            userId={officialUserId}
+            officialOnly
+            {...commonProps}
+          />
         ) : (
           <View className="py-12 text-center">
             <Text color="secondary">公式コンテンツを読み込めませんでした</Text>

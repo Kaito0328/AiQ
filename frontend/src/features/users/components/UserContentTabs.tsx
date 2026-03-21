@@ -38,6 +38,7 @@ interface UserContentTabsProps {
   hideExtras?: boolean;
   displayMode?: "grid" | "list";
   hiddenCollectionIds?: string[];
+  officialOnly?: boolean;
 }
 
 export function UserContentTabs({
@@ -57,6 +58,7 @@ export function UserContentTabs({
   hideExtras = false,
   displayMode = "list",
   hiddenCollectionIds = [],
+  officialOnly = false,
 }: UserContentTabsProps) {
   const {
     collections,
@@ -129,7 +131,7 @@ export function UserContentTabs({
   );
 
   const visibleCollections = offlineVisibleCollections.filter(
-    (c) => !hiddenIdSet.has(c.id),
+    (c) => !hiddenIdSet.has(c.id) && (!officialOnly || !!c.isOfficial),
   );
 
   const offlineReadyCollections = visibleCollections.filter((c) =>

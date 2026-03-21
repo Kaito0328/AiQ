@@ -31,6 +31,7 @@ import { db } from "@/src/shared/db/db";
 export function Header() {
   const router = useSafeRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [previousPath, setPreviousPath] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
   const { theme } = useTheme();
   const { isMuted, toggleMute } = useAudio();
@@ -57,10 +58,25 @@ export function Header() {
       !isQuizStart) ||
     pathname.includes("/ranking");
 
+  useEffect(() => {
+    try {
+      setPreviousPath(sessionStorage.getItem("aiq_previous_path"));
+    } catch {
+      setPreviousPath(null);
+    }
+  }, [pathname]);
+
+  const cameFromHome = previousPath === "/home" || previousPath === "/";
+  const isDeepPage =
+    (pathname.startsWith("/collections/") && pathname !== "/collections/search") ||
+    pathname.startsWith("/users/") ||
+    pathname.startsWith("/collection-sets/") ||
+    pathname.startsWith("/settings") ||
+    (pathname.startsWith("/quiz/") && pathname !== "/quiz/start") ||
+    (pathname.startsWith("/battle/") && pathname !== "/battle/lobby");
+
   const showBackButton =
-    (pathname.startsWith("/collections/") &&
-      pathname !== "/collections/search") ||
-    pathname === "/settings";
+    pathname !== "/" && pathname !== "/home" && (isDeepPage || cameFromHome);
 
   const [isBattlePlaying, setIsBattlePlaying] = useState(false);
 
