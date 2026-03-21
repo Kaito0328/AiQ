@@ -90,6 +90,13 @@ export function useSafeRouter() {
           router.push(href, options);
         }
       };
+      const hardNavigateTo = (to: string) => {
+        if (typeof window !== "undefined") {
+          window.location.assign(new URL(to, window.location.origin).toString());
+        } else {
+          router.push(to, options);
+        }
+      };
       const uuidLike = "[0-9a-fA-F-]{36}";
       const isCollectionDetail = new RegExp(`^/collections/${uuidLike}$`).test(
         pathname,
@@ -222,10 +229,7 @@ export function useSafeRouter() {
       if (isCollectionDetail && hasLocalDetailData) {
         const collectionId = pathname.split("/")[2];
         if (collectionId) {
-          router.push(
-            `/collections/search#offlineCollectionId=${collectionId}`,
-            options,
-          );
+          hardNavigateTo(`/collections/search#offlineCollectionId=${collectionId}`);
           return;
         }
       }
@@ -233,7 +237,7 @@ export function useSafeRouter() {
       if (isUserDetail && hasLocalDetailData) {
         const userId = pathname.split("/")[2];
         if (userId) {
-          router.push(`/users#offlineUserId=${userId}`, options);
+          hardNavigateTo(`/users#offlineUserId=${userId}`);
           return;
         }
       }
@@ -242,7 +246,7 @@ export function useSafeRouter() {
         const userId = pathname.split("/")[2];
         if (userId && hasLocalDetailData) {
           // favorites が未訪問ならプロフィールへフォールバック
-          router.push(`/users#offlineUserId=${userId}`, options);
+          hardNavigateTo(`/users#offlineUserId=${userId}`);
           return;
         }
       }
@@ -275,6 +279,10 @@ export function useSafeRouter() {
         hardNavigate();
         return;
       }
+
+      // オフラインでここまで到達した「許可済み遷移」は常にハード遷移する
+      hardNavigate();
+      return;
     }
 
     router.push(href, options);
