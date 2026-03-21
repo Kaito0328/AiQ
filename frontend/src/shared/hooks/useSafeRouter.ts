@@ -92,7 +92,9 @@ export function useSafeRouter() {
       };
       const hardNavigateTo = (to: string) => {
         if (typeof window !== "undefined") {
-          window.location.assign(new URL(to, window.location.origin).toString());
+          window.location.assign(
+            new URL(to, window.location.origin).toString(),
+          );
         } else {
           router.push(to, options);
         }
@@ -229,7 +231,9 @@ export function useSafeRouter() {
       if (isCollectionDetail && hasLocalDetailData) {
         const collectionId = pathname.split("/")[2];
         if (collectionId) {
-          hardNavigateTo(`/collections/search#offlineCollectionId=${collectionId}`);
+          hardNavigateTo(
+            `/collections/search#offlineCollectionId=${collectionId}`,
+          );
           return;
         }
       }
