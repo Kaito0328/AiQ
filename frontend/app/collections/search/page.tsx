@@ -235,10 +235,6 @@ function CollectionSearchPageContent() {
   const offlineCollectionId =
     offlineCollectionIdFromHash ?? searchParams.get("offlineCollectionId");
 
-  if (offlineCollectionId) {
-    return <CollectionDetailPageContent collectionId={offlineCollectionId} />;
-  }
-
   const initialQuery = searchParams.get("q")?.trim() ?? "";
   const initialSort = normalizeSort(searchParams.get("sort"));
   const initialDifficultyMode = normalizeDifficultyMode(
