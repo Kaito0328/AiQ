@@ -74,8 +74,14 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   }, [user?.id, isOpen]);
 
   const handleNavigate = (path: string) => {
-    router.push(path);
     onClose();
+
+    if (!isOnline && typeof window !== "undefined") {
+      window.location.assign(new URL(path, window.location.origin).toString());
+      return;
+    }
+
+    router.push(path);
   };
 
   const handleLogout = () => {
