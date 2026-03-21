@@ -50,7 +50,6 @@ export function Header() {
     pathname.startsWith("/battle/") && pathname !== "/battle/lobby";
   const isQuizStart = pathname === "/quiz/start";
   const isActuallyOffline = !isNetworkOnline;
-  const isRuntimeOffline = isManualOffline || !isNetworkOnline;
 
   const isGameRoute =
     (pathname.startsWith("/quiz") &&
@@ -155,7 +154,7 @@ export function Header() {
             {/* 中央: ロゴとタイトル */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-0.5">
               <button
-                onClick={() => router.push(isRuntimeOffline ? "/" : "/home")}
+                onClick={() => router.push("/home")}
                 className="flex items-center gap-2 group pointer-events-auto"
               >
                 <View

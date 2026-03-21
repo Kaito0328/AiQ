@@ -83,7 +83,10 @@ export class AiQDatabase extends Dexie {
 
   async hasVisitedPrefix(prefix: string) {
     if (!prefix) return false;
-    const item = await this.visitedPages.where("path").startsWith(prefix).first();
+    const item = await this.visitedPages
+      .where("path")
+      .startsWith(prefix)
+      .first();
     return !!item;
   }
 
