@@ -35,8 +35,9 @@ impl AiService {
         let api_key = env::var("GEMINI_API_KEY")
             .map_err(|_| AppError::InternalServerError("GEMINI_API_KEY must be set".to_string()))?;
 
+        
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={}",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={}",
             api_key
         );
 
@@ -132,6 +133,9 @@ impl AiService {
                 }
             ],
             "generationConfig": {
+                "thinkingConfig": {
+                    "thinkingLevel": "low"
+                },
                 "responseMimeType": "application/json",
                 "responseSchema": {
                     "type": "array",
@@ -216,8 +220,9 @@ impl AiService {
         let api_key = env::var("GEMINI_API_KEY")
             .map_err(|_| AppError::InternalServerError("GEMINI_API_KEY must be set".to_string()))?;
 
+
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={}",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={}",
             api_key
         );
 
@@ -286,6 +291,9 @@ impl AiService {
                 }]
             },
             "generationConfig": {
+                "thinkingConfig": {
+                    "thinkingLevel": "low"
+                },
                 "response_mime_type": "application/json",
                 "response_schema": {
                     "type": "array",
