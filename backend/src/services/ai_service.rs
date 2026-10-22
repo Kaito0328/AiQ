@@ -36,10 +36,12 @@ impl AiService {
             .map_err(|_| AppError::InternalServerError("GEMINI_API_KEY must be set".to_string()))?;
 
         
+
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={}",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={}",
             api_key
         );
+
 
         let mut format_rules = String::new();
         if let Some(qf) = question_format {
@@ -221,10 +223,12 @@ impl AiService {
             .map_err(|_| AppError::InternalServerError("GEMINI_API_KEY must be set".to_string()))?;
 
 
+
         let url = format!(
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={}",
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={}",
             api_key
         );
+
 
         let mut format_rules = String::new();
         if let Some(qf) = question_format {
